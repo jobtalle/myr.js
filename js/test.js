@@ -5,7 +5,9 @@ function MyrTest() {
 MyrTest.prototype = {
     start() {
         myr.initialize(document.getElementById("renderer"));
-        myr.clearColor(new myr.Color(1, 0.5, 0.2));
+        myr.setClearColor(new myr.Color(0.2, 0.5, 0.2));
+        
+        this.surface = new myr.Surface(200, 200);
         
         this.lastDate = new Date();
         this.animate();
@@ -35,6 +37,10 @@ MyrTest.prototype = {
     },
     
     render() {
+        this.surface.bind();
+        this.surface.clear();
+        
+        myr.bind();
         myr.clear();
     }
 }
