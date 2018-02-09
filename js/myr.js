@@ -1,72 +1,80 @@
 var myr = {
     initialize: function(canvasElement) {
-        this.gl = canvasElement.getContext("webgl");
-        this.clearColor = new myr.Color(0, 0, 0, 0);
-        this.width = canvasElement.width;
-        this.height = canvasElement.height;
+        this._gl = canvasElement.getContext("webgl");
+        this._clearColor = new myr.Color(0, 0, 0, 0);
+        this._width = canvasElement.width;
+        this._height = canvasElement.height;
         
         this.bind();
     },
     
     setClearColor: function(color) {
-        this.clearColor = color;
+        this._clearColor = color;
     },
     
     clear: function() {
-        this.gl.clearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+        this._gl.clearColor(this._clearColor.r, this._clearColor.g, this._clearColor.b, this._clearColor.a);
+        this._gl.clear(this._gl.COLOR_BUFFER_BIT);
     },
     
     bind: function() {
-        this.surface = null;
+        this._surface = null;
         
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-        this.gl.viewport(0, 0, this.width, this.height);
+        this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+        this._gl.viewport(0, 0, this._width, this._height);
     }
 }
 
 myr.Surface = function(width, height) {
-    this.clearColor = new myr.Color(0, 0, 0, 0);
-    this.width = width;
-    this.height = height;
-    this.texture = myr.gl.createTexture();
-    this.framebuffer = myr.gl.createFramebuffer();
+    this._clearColor = new myr.Color(0, 0, 0, 0);
+    this._width = width;
+    this._height = height;
+    this.texture = myr._gl.createTexture();
+    this.framebuffer = myr._gl.createFramebuffer();
     
-    myr.gl.bindTexture(myr.gl.TEXTURE_2D, this.texture);
-    myr.gl.texParameteri(myr.gl.TEXTURE_2D, myr.gl.TEXTURE_MAG_FILTER, myr.gl.NEAREST);
-    myr.gl.texParameteri(myr.gl.TEXTURE_2D, myr.gl.TEXTURE_MIN_FILTER, myr.gl.LINEAR);
-    myr.gl.texImage2D(myr.gl.TEXTURE_2D, 0, myr.gl.RGBA, width, height, 0, myr.gl.RGBA, myr.gl.UNSIGNED_BYTE, null);
+    myr._gl.bindTexture(myr._gl.TEXTURE_2D, this.texture);
+    myr._gl.texParameteri(myr._gl.TEXTURE_2D, myr._gl.TEXTURE_MAG_FILTER, myr._gl.NEAREST);
+    myr._gl.texParameteri(myr._gl.TEXTURE_2D, myr._gl.TEXTURE_MIN_FILTER, myr._gl.LINEAR);
+    myr._gl.texImage2D(myr._gl.TEXTURE_2D, 0, myr._gl.RGBA, width, height, 0, myr._gl.RGBA, myr._gl.UNSIGNED_BYTE, null);
     
-    myr.gl.bindFramebuffer(myr.gl.FRAMEBUFFER, this.framebuffer);
-    myr.gl.framebufferTexture2D(
-        myr.gl.FRAMEBUFFER,
-        myr.gl.COLOR_ATTACHMENT0,
-        myr.gl.TEXTURE_2D,
+    myr._gl.bindFramebuffer(myr._gl.FRAMEBUFFER, this.framebuffer);
+    myr._gl.framebufferTexture2D(
+        myr._gl.FRAMEBUFFER,
+        myr._gl.COLOR_ATTACHMENT0,
+        myr._gl.TEXTURE_2D,
         this.texture,
         0);
     
-    myr.gl.bindFramebuffer(myr.gl.FRAMEBUFFER, null);
+    myr._gl.bindFramebuffer(myr._gl.FRAMEBUFFER, null);
 }
 
 myr.Surface.prototype.free = function() {
-    myr.gl.deleteTexture(this.texture);
-    myr.gl.deleteFramebuffer(this.framebuffer);
+    myr._gl.deleteTexture(this.texture);
+    myr._gl.deleteFramebuffer(this.framebuffer);
 }
 
-myr.Surface.prototype.clearColor = function(color) {
-    this.clearColor = color;
+myr.Surface.prototype.getWidth = function() {
+    return this._width;
+}
+
+myr.Surface.prototype.getHeight = function() {
+    return this._height;
+}
+
+myr.Surface.prototype.setClearColor = function(color) {
+    this._clearColor = color;
 }
 
 myr.Surface.prototype.clear = function() {
-    myr.gl.clearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
-    myr.gl.clear(myr.gl.COLOR_BUFFER_BIT);
+    myr._gl.clearColor(this._clearColor.r, this._clearColor.g, this._clearColor.b, this._clearColor.a);
+    myr._gl.clear(myr._gl.COLOR_BUFFER_BIT);
 }
 
 myr.Surface.prototype.bind = function() {
-    myr.surface = this;
+    myr._surface = this;
     
-    myr.gl.bindFramebuffer(myr.gl.FRAMEBUFFER, this.fbo);
-    myr.gl.viewport(0, 0, this.width, this.height);
+    myr._gl.bindFramebuffer(myr._gl.FRAMEBUFFER, this.fbo);
+    myr._gl.viewport(0, 0, this.width, this.height);
 }
 
 myr.Color = function(r, g, b, a) {

@@ -8,6 +8,7 @@ MyrTest.prototype = {
         myr.setClearColor(new myr.Color(0.2, 0.5, 0.2));
         
         this.surface = new myr.Surface(200, 200);
+        this.surface.setClearColor(new myr.Color(0.5, 0, 0));
         
         this.lastDate = new Date();
         this.animate();
