@@ -77,8 +77,6 @@ var Myr = function(canvasElement) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
         
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        
         this.free = function() {
             gl.deleteTexture(texture);
             gl.deleteFramebuffer(framebuffer);
@@ -94,6 +92,10 @@ var Myr = function(canvasElement) {
         
         this.getShader = function() {
             return shader;
+        };
+        
+        this.getFramebuffer = function() {
+            return framebuffer;
         };
         
         this.setClearColor = function(color) {
@@ -146,28 +148,16 @@ var Myr = function(canvasElement) {
         if(surface == target)
             return;
         
-        // Unbind target
+        // Unbind previous target
         
         surface = target;
         
         if(surface == null) {
-            if(shader != shaderDefault) {
-                shader = shaderDefault;
-                
-                gl.useProgram(shader.getProgram());
-            }
-            
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.viewport(0, 0, width, height);
         }
-        else {
-            if(shader != surface.getShader()) {
-                shader = surface.getShader();
-                
-                gl.useProgram(shader.getProgram());
-            }
-            
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        else {            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, surface.getFramebuffer());
             gl.viewport(0, 0, surface.getWidth(), surface.getHeight());
         }
     };
