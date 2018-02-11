@@ -1,12 +1,4 @@
 var Myr = function(canvasElement) {
-    var gl;
-    var clearColor;
-    var width, height;
-    var surface;
-    var shader;
-    var shaderDefault;
-    var bind;
-    
     var Color = this.Color = function(r, g, b, a) {
         this.r = r;
         this.g = g;
@@ -144,7 +136,7 @@ var Myr = function(canvasElement) {
         };
     };
     
-    bind = function(target) {
+    var bind = function(target) {
         if(surface == target)
             return;
         
@@ -179,13 +171,13 @@ var Myr = function(canvasElement) {
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
-    gl = canvasElement.getContext("webgl");
-    clearColor = new Color(0, 0, 0, 0);
-    width = canvasElement.width;
-    height = canvasElement.height;
-    shader = null;
-    surface = null;
-    shaderDefault = new Shader(
+    var gl = canvasElement.getContext("webgl");
+    var clearColor = new Color(0, 0, 0, 0);
+    var width = canvasElement.width;
+    var height = canvasElement.height;
+    var shader = null;
+    var surface = null;
+    var shaderDefault = new Shader(
         "void main() {" +
             "gl_Position = vec4(0, 0, 0, 1);" +
         "}",
