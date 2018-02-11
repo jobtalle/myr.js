@@ -4,7 +4,7 @@ function MyrTest() {
 
 MyrTest.prototype = {
     start() {
-        myr.initialize(document.getElementById("renderer"));
+        myr = new Myr(document.getElementById("renderer"));
         myr.setClearColor(new myr.Color(0.2, 0.5, 0.2));
         
         this.surface = new myr.Surface(200, 200);

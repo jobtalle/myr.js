@@ -1,8 +1,11 @@
-var myr = new function() {
+var Myr = function(canvasElement) {
     var gl;
     var clearColor;
     var width, height;
     var surface;
+    var shader;
+    var shaderDefault;
+    var bind;
     
     var Color = this.Color = function(r, g, b, a) {
         this.r = r;
@@ -63,6 +66,8 @@ var myr = new function() {
         var clearColor = new Color(0, 0, 0, 0);
         var texture = gl.createTexture();
         var framebuffer = gl.createFramebuffer();
+        var shader = shaderDefault;
+        var self = this;
         
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -87,15 +92,16 @@ var myr = new function() {
             return height;
         };
         
+        this.getShader = function() {
+            return shader;
+        };
+        
         this.setClearColor = function(color) {
             clearColor = color;
         };
         
         this.bind = function() {
-            surface = this;
-            
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.viewport(0, 0, width, height);
+            bind(self);
         };
         
         this.clear = function() {
@@ -104,20 +110,74 @@ var myr = new function() {
         };
     };
     
-    var bind = this.bind = function() {
-        surface = null;
+    var Shader = this.Shader = function(vertex, fragment) {
+        var program = gl.createProgram();
         
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, width, height);
+        var createShader = function(type, source) {
+            var shader = gl.createShader(type);
+            
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            
+            return shader;
+        };
+        
+        var shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
+        var shaderFragment = createShader(gl.FRAGMENT_SHADER, fragment);
+
+        gl.attachShader(program, shaderVertex);
+        gl.attachShader(program, shaderFragment);
+        gl.linkProgram(program);
+        
+        this.free = function() {
+            gl.detachShader(program, shaderVertex);
+            gl.detachShader(program, shaderFragment);
+            gl.deleteShader(shaderVertex);
+            gl.deleteShader(shaderFragment);
+            gl.deleteProgram(program);
+        };
+        
+        this.getProgram = function() {
+            return program;
+        };
     };
     
-    this.initialize = function(canvasElement) {
-        gl = canvasElement.getContext("webgl");
-        clearColor = new Color(0, 0, 0, 0);
-        width = canvasElement.width;
-        height = canvasElement.height;
+    bind = function(target) {
+        if(surface == target)
+            return;
         
-        bind();
+        // Unbind target
+        
+        surface = target;
+        
+        if(surface == null) {
+            if(shader != shaderDefault) {
+                shader = shaderDefault;
+                
+                gl.useProgram(shader.getProgram());
+            }
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, width, height);
+        }
+        else {
+            if(shader != surface.getShader()) {
+                shader = surface.getShader();
+                
+                gl.useProgram(shader.getProgram());
+            }
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, surface.getWidth(), surface.getHeight());
+        }
+    };
+    
+    this.bind = function() {
+        bind(null);
+    };
+    
+    this.free = function() {
+        this.shaderDefault.free();
     };
     
     this.setClearColor = function(color) {
@@ -128,4 +188,21 @@ var myr = new function() {
         gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
+    
+    gl = canvasElement.getContext("webgl");
+    clearColor = new Color(0, 0, 0, 0);
+    width = canvasElement.width;
+    height = canvasElement.height;
+    shader = null;
+    surface = null;
+    shaderDefault = new Shader(
+        "void main() {" +
+            "gl_Position = vec4(0, 0, 0, 1);" +
+        "}",
+        "void main() {" +
+            "gl_FragColor = vec4(1, 0, 1, 1);" +
+        "}"
+    );
+
+    this.bind();
 };
