@@ -55,11 +55,10 @@ let Myr = function(canvasElement) {
     };
     
     this.Surface = function(width, height) {
+        const texture = gl.createTexture();
+        const framebuffer = gl.createFramebuffer();
         let clearColor = new Color(0, 0, 0, 0);
-        let texture = gl.createTexture();
-        let framebuffer = gl.createFramebuffer();
         let shader = shaderDefault;
-        let self = this;
         
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -69,45 +68,22 @@ let Myr = function(canvasElement) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
         
-        this.free = function() {
+        this.getWidth = () => width;
+        this.getHeight = () => height;
+        this.getShader = () => shader;
+        this.getFramebuffer = () => framebuffer;
+        this.setClearColor = color => clearColor = color;
+        this.bind = () => bind(this);
+        this.clear = () => clear(clearColor);
+        this.free = () => {
             gl.deleteTexture(texture);
             gl.deleteFramebuffer(framebuffer);
-        };
-        
-        this.getWidth = function() {
-            return width;
-        };
-        
-        this.getHeight = function() {
-            return height;
-        };
-        
-        this.getShader = function() {
-            return shader;
-        };
-        
-        this.getFramebuffer = function() {
-            return framebuffer;
-        };
-        
-        this.setClearColor = function(color) {
-            clearColor = color;
-        };
-        
-        this.bind = function() {
-            bind(self);
-        };
-        
-        this.clear = function() {
-            gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-            gl.clear(gl.COLOR_BUFFER_BIT);
         };
     };
     
     const Shader = this.Shader = function(vertex, fragment) {
         const program = gl.createProgram();
-        
-        let createShader = function(type, source) {
+        const createShader = (type, source) => {
             const shader = gl.createShader(type);
             
             gl.shaderSource(shader, source);
@@ -118,25 +94,22 @@ let Myr = function(canvasElement) {
         
         const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
         const shaderFragment = createShader(gl.FRAGMENT_SHADER, fragment);
-
+        
         gl.attachShader(program, shaderVertex);
         gl.attachShader(program, shaderFragment);
         gl.linkProgram(program);
         
-        this.free = function() {
+        this.getProgram = () => program;
+        this.free = () => {
             gl.detachShader(program, shaderVertex);
             gl.detachShader(program, shaderFragment);
             gl.deleteShader(shaderVertex);
             gl.deleteShader(shaderFragment);
             gl.deleteProgram(program);
         };
-        
-        this.getProgram = function() {
-            return program;
-        };
     };
     
-    const bind = function(target) {
+    const bind = target => {
         if(surface == target)
             return;
         
@@ -154,37 +127,47 @@ let Myr = function(canvasElement) {
         }
     };
     
-    this.bind = function() {
-        bind(null);
-    };
-    
-    this.free = function() {
-        this.shaderDefault.free();
-    };
-    
-    this.setClearColor = function(color) {
-        clearColor = color;
-    };
-    
-    this.clear = function() {
-        gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    const clear = color => {
+        gl.clearColor(color.r, color.g, color.b, color.a);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
+    this.bind = () => bind(null);
+    this.setClearColor = color => clearColor = color;
+    this.clear = () => clear(clearColor);
+    this.free = () => {
+        shaderDefault.free();
+        
+        gl.deleteBuffer(quad);
+    }
+    
+    const RENDER_MODE_NONE = -1;
+    const RENDER_MODE_SPRITES = 0;
+    const RENDER_MODE_LINES = 1;
+    const RENDER_MODE_POINTS = 2;
+    const QUAD = [0, 0, 0, 1, 1, 1, 1, 0];
     const gl = canvasElement.getContext("webgl");
+    const quad = gl.createBuffer();
+    let mode = RENDER_MODE_NONE;
     let clearColor = new Color(0, 0, 0, 0);
     let width = canvasElement.width;
     let height = canvasElement.height;
     let shader = null;
     let surface = null;
-    const shaderDefault = new Shader(
+    let shaderDefault = new Shader(
+        "layout (location = 0) in vec2 vertex;" +
+        "layout (location = 1) in vec4 region;" +
+        "layout (location = 2) in vec2 position;" +
         "void main() {" +
-            "gl_Position = vec4(0, 0, 0, 1);" +
+            "gl_Position = vec4(vertex + position, 0, 1);" +
         "}",
         "void main() {" +
             "gl_FragColor = vec4(1, 0, 1, 1);" +
         "}"
     );
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(QUAD), gl.STATIC_DRAW);
 
     this.bind();
 };
