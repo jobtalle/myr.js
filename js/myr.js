@@ -1,5 +1,5 @@
-var Myr = function(canvasElement) {
-    var Color = this.Color = function(r, g, b, a) {
+let Myr = function(canvasElement) {
+    const Color = this.Color = function(r, g, b, a) {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -10,7 +10,7 @@ var Myr = function(canvasElement) {
             this.a = a;
     };
     
-    var Vector = this.Vector = function(x, y) {
+    const Vector = this.Vector = function(x, y) {
         this.x = x;
         this.y = y;
     };
@@ -55,11 +55,11 @@ var Myr = function(canvasElement) {
     };
     
     this.Surface = function(width, height) {
-        var clearColor = new Color(0, 0, 0, 0);
-        var texture = gl.createTexture();
-        var framebuffer = gl.createFramebuffer();
-        var shader = shaderDefault;
-        var self = this;
+        let clearColor = new Color(0, 0, 0, 0);
+        let texture = gl.createTexture();
+        let framebuffer = gl.createFramebuffer();
+        let shader = shaderDefault;
+        let self = this;
         
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -104,11 +104,11 @@ var Myr = function(canvasElement) {
         };
     };
     
-    var Shader = this.Shader = function(vertex, fragment) {
-        var program = gl.createProgram();
+    const Shader = this.Shader = function(vertex, fragment) {
+        const program = gl.createProgram();
         
-        var createShader = function(type, source) {
-            var shader = gl.createShader(type);
+        let createShader = function(type, source) {
+            const shader = gl.createShader(type);
             
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
@@ -116,8 +116,8 @@ var Myr = function(canvasElement) {
             return shader;
         };
         
-        var shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
-        var shaderFragment = createShader(gl.FRAGMENT_SHADER, fragment);
+        const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
+        const shaderFragment = createShader(gl.FRAGMENT_SHADER, fragment);
 
         gl.attachShader(program, shaderVertex);
         gl.attachShader(program, shaderFragment);
@@ -136,7 +136,7 @@ var Myr = function(canvasElement) {
         };
     };
     
-    var bind = function(target) {
+    const bind = function(target) {
         if(surface == target)
             return;
         
@@ -171,13 +171,13 @@ var Myr = function(canvasElement) {
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
-    var gl = canvasElement.getContext("webgl");
-    var clearColor = new Color(0, 0, 0, 0);
-    var width = canvasElement.width;
-    var height = canvasElement.height;
-    var shader = null;
-    var surface = null;
-    var shaderDefault = new Shader(
+    const gl = canvasElement.getContext("webgl");
+    let clearColor = new Color(0, 0, 0, 0);
+    let width = canvasElement.width;
+    let height = canvasElement.height;
+    let shader = null;
+    let surface = null;
+    const shaderDefault = new Shader(
         "void main() {" +
             "gl_Position = vec4(0, 0, 0, 1);" +
         "}",
