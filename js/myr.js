@@ -57,8 +57,8 @@ let Myr = function(canvasElement) {
     this.Surface = function(width, height) {
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
+        let shaders = shadersDefault;
         let clearColor = new Color(0, 0, 0, 0);
-        let shader = shaderDefault;
         
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -70,11 +70,13 @@ let Myr = function(canvasElement) {
         
         this.getWidth = () => width;
         this.getHeight = () => height;
-        this.getShader = () => shader;
         this.getFramebuffer = () => framebuffer;
         this.setClearColor = color => clearColor = color;
         this.bind = () => bind(this);
         this.clear = () => clear(clearColor);
+        this.draw = (x, y) => {
+            draw(RENDER_MODE_SPRITES, shaders, [x, y]);
+        };
         this.free = () => {
             gl.deleteTexture(texture);
             gl.deleteFramebuffer(framebuffer);
@@ -88,6 +90,9 @@ let Myr = function(canvasElement) {
             
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
+            
+            if(!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+                console.log(gl.getShaderInfoLog(shader));
             
             return shader;
         };
@@ -109,11 +114,23 @@ let Myr = function(canvasElement) {
         };
     };
     
+    const ShaderSet = function(sprites, lines, points) {
+        let shaders = [sprites, lines, points];
+        
+        this.get = mode => {
+            return shaders[mode];
+        };
+        
+        this.set = (mode, shader) => {
+            shaders[mode] = shader;
+        };
+    };
+    
     const bind = target => {
         if(surface == target)
             return;
         
-        // Unbind previous target
+        flush();
         
         surface = target;
         
@@ -132,13 +149,75 @@ let Myr = function(canvasElement) {
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
+    const appendBuffer = data => {
+        if(instanceBufferAt + data.length > instanceBufferCapacity) {
+            instanceBufferCapacity *= 2;
+            
+            const oldBuffer = instanceBuffer;
+            instanceBuffer = new Float32Array(instanceBufferCapacity);
+            
+            for(let i = 0; i < oldBuffer.byteLength; ++i)
+                instanceBuffer[i] = oldBuffer[i];
+        }
+        
+        for(let i = 0; i < data.length; ++i)
+            instanceBuffer[instanceBufferAt++] = data[i];
+        
+        ++instanceCount;
+    };
+    
+    const flush = this.flush = () => {
+        if(instanceCount == 0)
+            return;
+        
+        switch(renderMode) {
+            case RENDER_MODE_SPRITES:
+                gl.bindVertexArray(vaoSprites);
+                gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, instanceCount);
+                break;
+            case RENDER_MODE_LINES:
+                
+                break;
+            case RENDER_MODE_POINTS:
+                
+                break;
+        }
+        
+        instanceBufferAt = 0;
+        instanceCount = 0;
+    };
+    
+    const setMode = mode => {
+        renderMode = mode;
+    };
+    
+    const setShader = newShader => {
+        shader = newShader;
+        
+        gl.useProgram(shader.getProgram());
+    }
+    
+    const draw = (mode, shaderSet, data) => {
+        if(renderMode != mode) {
+            flush();
+            
+            setMode(mode);
+        
+            if(shader != shaderSet.get(mode))
+                setShader(shaderSet.get(mode));
+        }
+        
+        appendBuffer(data);
+    };
+    
     this.bind = () => bind(null);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
     this.free = () => {
-        shaderDefault.free();
+        shaderSprites.free();
         
         gl.deleteBuffer(quad);
+        gl.deleteVertexArray(vao);
     }
     
     const RENDER_MODE_NONE = -1;
@@ -146,28 +225,43 @@ let Myr = function(canvasElement) {
     const RENDER_MODE_LINES = 1;
     const RENDER_MODE_POINTS = 2;
     const QUAD = [0, 0, 0, 1, 1, 1, 1, 0];
-    const gl = canvasElement.getContext("webgl");
+    const gl = canvasElement.getContext("webgl2");
     const quad = gl.createBuffer();
-    let mode = RENDER_MODE_NONE;
+    const vaoSprites = gl.createVertexArray();
+    
+    const shaderSprites = new Shader(
+        "#version 300 es\n" +
+        "layout(location = 0) in highp vec2 vertex;" +
+        "void main() {" +
+            "gl_Position = vec4(vertex, 0, 1);" +
+        "}",
+        "#version 300 es\n" +
+        "layout (location = 0) out lowp vec4 color;" +
+        "void main() {" +
+            "color = vec4(1, 0.6, 0.4, 1);" +
+        "}"
+    );
+    
+    const shadersDefault = new ShaderSet(shaderSprites, shaderSprites, shaderSprites);
+    
+    let renderMode = RENDER_MODE_NONE;
+    let instanceBufferCapacity = 1024;
+    let instanceBufferAt = 0;
+    let instanceBuffer = new Float32Array(instanceBufferCapacity);
+    let instanceCount = 0;
     let clearColor = new Color(0, 0, 0, 0);
     let width = canvasElement.width;
     let height = canvasElement.height;
     let shader = null;
     let surface = null;
-    let shaderDefault = new Shader(
-        "layout (location = 0) in vec2 vertex;" +
-        "layout (location = 1) in vec4 region;" +
-        "layout (location = 2) in vec2 position;" +
-        "void main() {" +
-            "gl_Position = vec4(vertex + position, 0, 1);" +
-        "}",
-        "void main() {" +
-            "gl_FragColor = vec4(1, 0, 1, 1);" +
-        "}"
-    );
     
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(QUAD), gl.STATIC_DRAW);
+    
+    gl.bindVertexArray(vaoSprites);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
 
     this.bind();
 };
