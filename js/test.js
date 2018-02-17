@@ -34,7 +34,7 @@ MyrTest.prototype = {
     },
     
     update(timeStep) {
-        this.a += 0.05;
+        this.a += 0.03;
     },
     
     render() {
@@ -45,6 +45,7 @@ MyrTest.prototype = {
         myr.clear();
         
         this.surface.draw(Math.cos(this.a), 0);
+        this.surface.draw(0, Math.sin(this.a));
         
         myr.flush();
     }

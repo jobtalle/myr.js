@@ -170,6 +170,9 @@ let Myr = function(canvasElement) {
         if(instanceCount == 0)
             return;
         
+        gl.bindBuffer(gl.ARRAY_BUFFER, instances);
+        gl.bufferData(gl.ARRAY_BUFFER, instanceBuffer, gl.STATIC_DRAW, 0, instanceBufferAt);
+        
         switch(renderMode) {
             case RENDER_MODE_SPRITES:
                 gl.bindVertexArray(vaoSprites);
@@ -216,8 +219,9 @@ let Myr = function(canvasElement) {
     this.free = () => {
         shaderSprites.free();
         
-        gl.deleteBuffer(quad);
         gl.deleteVertexArray(vao);
+        gl.deleteBuffer(quad);
+        gl.deleteBuffer(instances);
     }
     
     const RENDER_MODE_NONE = -1;
@@ -227,13 +231,15 @@ let Myr = function(canvasElement) {
     const QUAD = [0, 0, 0, 1, 1, 1, 1, 0];
     const gl = canvasElement.getContext("webgl2");
     const quad = gl.createBuffer();
+    const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
     
     const shaderSprites = new Shader(
         "#version 300 es\n" +
         "layout(location = 0) in highp vec2 vertex;" +
+        "layout(location = 1) in highp vec2 position;" +
         "void main() {" +
-            "gl_Position = vec4(vertex, 0, 1);" +
+            "gl_Position = vec4(vertex + position, 0, 1);" +
         "}",
         "#version 300 es\n" +
         "layout (location = 0) out lowp vec4 color;" +
@@ -262,6 +268,10 @@ let Myr = function(canvasElement) {
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribDivisor(1, 1);
+    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 8, 0);
 
     this.bind();
 };
