@@ -156,6 +156,9 @@ let Myr = function(canvasElement) {
             const oldBuffer = instanceBuffer;
             instanceBuffer = new Float32Array(instanceBufferCapacity);
             
+            gl.bindBuffer(gl.ARRAY_BUFFER, instances);
+            gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity, gl.DYNAMIC_DRAW);
+            
             for(let i = 0; i < oldBuffer.byteLength; ++i)
                 instanceBuffer[i] = oldBuffer[i];
         }
@@ -171,7 +174,7 @@ let Myr = function(canvasElement) {
             return;
         
         gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-        gl.bufferData(gl.ARRAY_BUFFER, instanceBuffer, gl.STATIC_DRAW, 0, instanceBufferAt);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, instanceBuffer, 0, instanceBufferAt);
         
         switch(renderMode) {
             case RENDER_MODE_SPRITES:
@@ -260,6 +263,9 @@ let Myr = function(canvasElement) {
     let height = canvasElement.height;
     let shader = null;
     let surface = null;
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
+    gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity, gl.DYNAMIC_DRAW);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(QUAD), gl.STATIC_DRAW);
