@@ -54,16 +54,38 @@ let Myr = function(canvasElement) {
         return Math.atan2(this.y, this.x);
     };
     
-    this.Surface = function(width, height) {
+    this.Surface = function() {
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
+        let width = 0;
+        let height = 0;
         let shaders = shadersDefault;
         let clearColor = new Color(0, 0, 0, 0);
         
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        
+        if(arguments.length == 2) {
+            width = arguments[0];
+            height = arguments[1];
+            
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        }
+        else {
+            const image = new Image();
+            
+            image.onload = function() {
+                width = image.width;
+                height = image.height;
+                
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            };
+            
+            image.crossOrigin = "Anonymous";
+            image.src = arguments[0];
+        }
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
@@ -74,6 +96,7 @@ let Myr = function(canvasElement) {
         this.setClearColor = color => clearColor = color;
         this.bind = () => bind(this);
         this.clear = () => clear(clearColor);
+        this.ready = () => !(width == 0 || height == 0);
         this.draw = (x, y) => {
             draw(RENDER_MODE_SPRITES, shaders, [x, y]);
         };

@@ -10,6 +10,8 @@ MyrTest.prototype = {
         this.surface = new myr.Surface(200, 200);
         this.surface.setClearColor(new myr.Color(0.5, 0, 0));
         
+        this.fish = new myr.Surface("https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png");
+        
         this.lastDate = new Date();
         this.animate();
     },
@@ -41,11 +43,17 @@ MyrTest.prototype = {
         this.surface.bind();
         this.surface.clear();
         
+        if(this.fish.ready()) {
+            this.fish.bind();
+            this.fish.clear();
+        }
+        
         myr.bind();
         myr.clear();
         
         this.surface.draw(Math.cos(this.a), 0);
         this.surface.draw(0, Math.sin(this.a));
+        this.fish.draw(-1, -1);
         
         myr.flush();
     }
