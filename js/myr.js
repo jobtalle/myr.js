@@ -62,7 +62,7 @@ let Myr = function(canvasElement) {
         let shaders = shadersDefault;
         let clearColor = new Color(0, 0, 0, 0);
         
-        gl.activeTexture(TEXTURE_SURFACE);
+        gl.activeTexture(TEXTURE_EDITING);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -80,6 +80,8 @@ let Myr = function(canvasElement) {
                 width = image.width;
                 height = image.height;
                 
+                gl.activeTexture(TEXTURE_EDITING);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             };
             
@@ -98,8 +100,15 @@ let Myr = function(canvasElement) {
         this.clear = () => clear(clearColor);
         this.ready = () => !(width == 0 || height == 0);
         this.draw = (x, y) => {
-            if(this.ready())
+            if(this.ready()) {
+                if(currentTexture != texture) {
+                    flush();
+                    
+                    currentTexture = texture;
+                }
+                
                 draw(RENDER_MODE_SURFACES, shaders, [x, y]);
+            }
         };
         this.free = () => {
             gl.deleteTexture(texture);
@@ -107,7 +116,7 @@ let Myr = function(canvasElement) {
         };
     };
     
-    const Shader = this.Shader = function(vertex, fragment) {
+    const Shader = this.Shader = function(vertex, fragment, samplers) {
         const program = gl.createProgram();
         const createShader = (type, source) => {
             const shader = gl.createShader(type);
@@ -123,12 +132,28 @@ let Myr = function(canvasElement) {
         
         const shaderVertex = createShader(gl.VERTEX_SHADER, SHADER_VERSION + vertex);
         const shaderFragment = createShader(gl.FRAGMENT_SHADER, SHADER_VERSION + fragment);
+        const samplerNames = Object.keys(samplers);
+        const samplerLocations = new Object();
         
         gl.attachShader(program, shaderVertex);
         gl.attachShader(program, shaderFragment);
         gl.linkProgram(program);
         
-        this.getProgram = () => program;
+        for(var i = 0; i < samplerNames.length; ++i) {
+            const sampler = samplerNames[i];
+            
+            samplerLocations.sampler = gl.getUniformLocation(program, sampler);
+        }
+        
+        this.bind = () => {
+            gl.useProgram(program);
+            
+            for(var i = 0; i < samplerNames.length; ++i) {
+                const sampler = samplerNames[i];
+                
+                gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
+            }
+        };
         this.free = () => {
             gl.detachShader(program, shaderVertex);
             gl.detachShader(program, shaderFragment);
@@ -202,8 +227,10 @@ let Myr = function(canvasElement) {
         
         switch(renderMode) {
             case RENDER_MODE_SURFACES:
-                gl.bindVertexArray(vaoSprites);
                 gl.activeTexture(TEXTURE_SURFACE);
+                gl.bindTexture(gl.TEXTURE_2D, currentTexture);
+                
+                gl.bindVertexArray(vaoSprites);
                 gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, instanceCount);
                 break;
             case RENDER_MODE_SPRITES:
@@ -230,7 +257,7 @@ let Myr = function(canvasElement) {
     const setShader = newShader => {
         shader = newShader;
         
-        gl.useProgram(shader.getProgram());
+        shader.bind();
     }
     
     const draw = (mode, shaderSet, data) => {
@@ -268,6 +295,7 @@ let Myr = function(canvasElement) {
     const gl = canvasElement.getContext("webgl2");
     const TEXTURE_ATLAS = gl.TEXTURE0;
     const TEXTURE_SURFACE = gl.TEXTURE1;
+    const TEXTURE_EDITING = gl.TEXTURE2;
     const quad = gl.createBuffer();
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
@@ -280,13 +308,20 @@ let Myr = function(canvasElement) {
             "vec4 widthRow0;" +
             "vec4 heightRow1;" +
         "};" +
+        "out highp vec2 uv;" +
         "void main() {" +
+            "uv = vertex;" +
             "gl_Position = vec4(vertex + position, 0, 1);" +
         "}",
+        "uniform sampler2D source;" +
+        "in highp vec2 uv;" +
         "layout (location = 0) out lowp vec4 color;" +
         "void main() {" +
-            "color = vec4(1, 0.6, 0.4, 1);" +
-        "}"
+            "color = texture(source, uv);" +
+        "}",
+        {
+            source: 1
+        }
     );
     
     const shadersDefault = new ShaderSet(shaderSprites, shaderSprites, shaderSprites, shaderSprites);
@@ -302,6 +337,10 @@ let Myr = function(canvasElement) {
     let height = canvasElement.height;
     let shader = null;
     let surface = null;
+    let currentTexture = null;
+    
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity, gl.DYNAMIC_DRAW);

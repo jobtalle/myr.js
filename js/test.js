@@ -5,7 +5,7 @@ function MyrTest() {
 MyrTest.prototype = {
     start() {
         myr = new Myr(document.getElementById("renderer"));
-        myr.setClearColor(new myr.Color(0.2, 0.5, 0.2));
+        myr.setClearColor(new myr.Color(0.2, 0.5, 0.7));
         
         this.surface = new myr.Surface(200, 200);
         this.surface.setClearColor(new myr.Color(0.5, 0, 0));
@@ -36,17 +36,12 @@ MyrTest.prototype = {
     },
     
     update(timeStep) {
-        this.a += 0.03;
+        this.a += 0.01;
     },
     
     render() {
         this.surface.bind();
         this.surface.clear();
-        
-        if(this.fish.ready()) {
-            this.fish.bind();
-            this.fish.clear();
-        }
         
         myr.bind();
         myr.clear();
