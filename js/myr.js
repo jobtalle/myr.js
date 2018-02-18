@@ -62,6 +62,7 @@ let Myr = function(canvasElement) {
         let shaders = shadersDefault;
         let clearColor = new Color(0, 0, 0, 0);
         
+        gl.activeTexture(TEXTURE_SURFACE);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -79,7 +80,6 @@ let Myr = function(canvasElement) {
                 width = image.width;
                 height = image.height;
                 
-                gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             };
             
@@ -98,7 +98,8 @@ let Myr = function(canvasElement) {
         this.clear = () => clear(clearColor);
         this.ready = () => !(width == 0 || height == 0);
         this.draw = (x, y) => {
-            draw(RENDER_MODE_SPRITES, shaders, [x, y]);
+            if(this.ready())
+                draw(RENDER_MODE_SURFACES, shaders, [x, y]);
         };
         this.free = () => {
             gl.deleteTexture(texture);
@@ -120,8 +121,8 @@ let Myr = function(canvasElement) {
             return shader;
         };
         
-        const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
-        const shaderFragment = createShader(gl.FRAGMENT_SHADER, fragment);
+        const shaderVertex = createShader(gl.VERTEX_SHADER, SHADER_VERSION + vertex);
+        const shaderFragment = createShader(gl.FRAGMENT_SHADER, SHADER_VERSION + fragment);
         
         gl.attachShader(program, shaderVertex);
         gl.attachShader(program, shaderFragment);
@@ -137,8 +138,8 @@ let Myr = function(canvasElement) {
         };
     };
     
-    const ShaderSet = function(sprites, lines, points) {
-        let shaders = [sprites, lines, points];
+    const ShaderSet = function(surfaces, sprites, lines, points) {
+        let shaders = [surfaces, sprites, lines, points];
         
         this.get = mode => {
             return shaders[mode];
@@ -200,9 +201,13 @@ let Myr = function(canvasElement) {
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, instanceBuffer, 0, instanceBufferAt);
         
         switch(renderMode) {
-            case RENDER_MODE_SPRITES:
+            case RENDER_MODE_SURFACES:
                 gl.bindVertexArray(vaoSprites);
+                gl.activeTexture(TEXTURE_SURFACE);
                 gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, instanceCount);
+                break;
+            case RENDER_MODE_SPRITES:
+                
                 break;
             case RENDER_MODE_LINES:
                 
@@ -211,6 +216,8 @@ let Myr = function(canvasElement) {
                 
                 break;
         }
+        
+        gl.bindVertexArray(null);
         
         instanceBufferAt = 0;
         instanceCount = 0;
@@ -248,33 +255,42 @@ let Myr = function(canvasElement) {
         gl.deleteVertexArray(vao);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
+        gl.deleteBuffer(transformBuffer);
     }
     
+    const SHADER_VERSION = "#version 300 es\n";
     const RENDER_MODE_NONE = -1;
-    const RENDER_MODE_SPRITES = 0;
-    const RENDER_MODE_LINES = 1;
-    const RENDER_MODE_POINTS = 2;
+    const RENDER_MODE_SURFACES = 0;
+    const RENDER_MODE_SPRITES = 1;
+    const RENDER_MODE_LINES = 2;
+    const RENDER_MODE_POINTS = 3;
     const QUAD = [0, 0, 0, 1, 1, 1, 1, 0];
     const gl = canvasElement.getContext("webgl2");
+    const TEXTURE_ATLAS = gl.TEXTURE0;
+    const TEXTURE_SURFACE = gl.TEXTURE1;
     const quad = gl.createBuffer();
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
+    const transformBuffer = gl.createBuffer();
     
     const shaderSprites = new Shader(
-        "#version 300 es\n" +
-        "layout(location = 0) in highp vec2 vertex;" +
-        "layout(location = 1) in highp vec2 position;" +
+        "layout(location = 0) in vec2 vertex;" +
+        "layout(location = 1) in vec2 position;" +
+        "layout(std140) uniform transform {" +
+            "vec4 widthRow0;" +
+            "vec4 heightRow1;" +
+        "};" +
         "void main() {" +
             "gl_Position = vec4(vertex + position, 0, 1);" +
         "}",
-        "#version 300 es\n" +
         "layout (location = 0) out lowp vec4 color;" +
         "void main() {" +
             "color = vec4(1, 0.6, 0.4, 1);" +
         "}"
     );
     
-    const shadersDefault = new ShaderSet(shaderSprites, shaderSprites, shaderSprites);
+    const shadersDefault = new ShaderSet(shaderSprites, shaderSprites, shaderSprites, shaderSprites);
+    const transform = new Float32Array(8);
     
     let renderMode = RENDER_MODE_NONE;
     let instanceBufferCapacity = 1024;
@@ -293,6 +309,10 @@ let Myr = function(canvasElement) {
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(QUAD), gl.STATIC_DRAW);
     
+    gl.bindBuffer(gl.UNIFORM_BUFFER, transformBuffer);
+    gl.bufferData(gl.UNIFORM_BUFFER, transform, gl.DYNAMIC_DRAW);
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, transformBuffer);
+    
     gl.bindVertexArray(vaoSprites);
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.enableVertexAttribArray(0);
@@ -301,6 +321,8 @@ let Myr = function(canvasElement) {
     gl.enableVertexAttribArray(1);
     gl.vertexAttribDivisor(1, 1);
     gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 8, 0);
+    
+    gl.bindVertexArray(null);
 
     this.bind();
 };
