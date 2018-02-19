@@ -89,6 +89,37 @@ let Myr = function(canvasElement) {
             this._01 * transform._20 + this._11 * transform._21 + this._21);
     };
     
+    Transform.prototype.copy = function() {
+        return new Transform(this._00, this._10, this._20, this._01, this._11, this._21);
+    };
+    
+    Transform.prototype.rotate = function(angle) {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        
+        const _00 = this._00;
+        const _10 = this._10;
+        const _01 = this._01;
+        const _11 = this._11;
+        
+        this._00 = _00 * cos - _10 * sin;
+        this._10 = _00 * sin + _10 * cos;
+        this._01 = _01 * cos - _11 * sin;
+        this._11 = _01 * sin + _11 * cos;
+    };
+    
+    Transform.prototype.translate = function(x, y) {
+        this._20 += this._00 * x + this._10 * y;
+        this._21 += this._01 * x + this._11 * y;
+    };
+    
+    Transform.prototype.scale = function(scale) {
+        this._00 *= scale;
+        this._10 *= scale;
+        this._01 *= scale;
+        this._11 *= scale;
+    };
+    
     this.Surface = function() {
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
