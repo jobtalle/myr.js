@@ -311,7 +311,8 @@ let Myr = function(canvasElement) {
         "out highp vec2 uv;" +
         "void main() {" +
             "uv = vertex;" +
-            "gl_Position = vec4(vertex + position, 0, 1);" +
+            "vec2 transformed = vertex + position;" +
+            "gl_Position = vec4(vec2(transformed.x - 1.0, 1.0 - transformed.y), 0, 1);" +
         "}",
         "uniform sampler2D source;" +
         "in highp vec2 uv;" +

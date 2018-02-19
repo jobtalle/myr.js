@@ -49,7 +49,7 @@ MyrTest.prototype = {
         this.surface.draw(Math.cos(this.a), 0);
         this.surface.draw(0, Math.sin(this.a));
         
-        this.fish.draw(-1, -1);
+        this.fish.draw(0, 0);
         
         myr.flush();
     }
