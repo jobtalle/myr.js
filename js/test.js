@@ -46,8 +46,8 @@ MyrTest.prototype = {
         myr.bind();
         myr.clear();
         
-        this.surface.draw(Math.cos(this.a), 0);
-        this.surface.draw(0, Math.sin(this.a));
+        this.surface.draw(Math.cos(this.a) * 200, 0);
+        this.surface.draw(0, Math.sin(this.a) * 200);
         
         this.fish.draw(0, 0);
         

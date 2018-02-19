@@ -176,7 +176,7 @@ let Myr = function(canvasElement) {
                     currentTexture = texture;
                 }
                 
-                draw(RENDER_MODE_SURFACES, shaders, [x, y]);
+                draw(RENDER_MODE_SURFACES, shaders, [x, y, width, height]);
             }
         };
         this.free = () => {
@@ -390,7 +390,7 @@ let Myr = function(canvasElement) {
     
     const shaderSprites = new Shader(
         "layout(location = 0) in vec2 vertex;" +
-        "layout(location = 1) in vec2 position;" +
+        "layout(location = 1) in vec4 positionSize;" +
         "layout(std140) uniform transform {" +
             "vec4 widthRow0;" +
             "vec4 heightRow1;" +
@@ -398,7 +398,8 @@ let Myr = function(canvasElement) {
         "out highp vec2 uv;" +
         "void main() {" +
             "uv = vertex;" +
-            "vec2 transformed = vertex + position;" +
+            "vec2 dimensions = vec2(widthRow0.w, heightRow1.w);" +
+            "vec2 transformed = (vertex * positionSize.zw + positionSize.xy) / dimensions;" +
             "gl_Position = vec4(transformed.x * 2.0 - 1.0, 1.0 - transformed.y * 2.0, 0, 1);" +
         "}",
         "uniform sampler2D source;" +
@@ -448,7 +449,7 @@ let Myr = function(canvasElement) {
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.enableVertexAttribArray(1);
     gl.vertexAttribDivisor(1, 1);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 8, 0);
+    gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 16, 0);
     
     gl.bindVertexArray(null);
 
