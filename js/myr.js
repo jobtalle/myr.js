@@ -123,6 +123,8 @@ let Myr = function(canvasElement) {
     this.Surface = function() {
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
+        const transformStack = [new Transform()];
+        
         let width = 0;
         let height = 0;
         let shaders = shadersDefault;
@@ -160,6 +162,7 @@ let Myr = function(canvasElement) {
         
         this.getWidth = () => width;
         this.getHeight = () => height;
+        this.getTransform = () => transformStack[transformStack.length - 1];
         this.getFramebuffer = () => framebuffer;
         this.setClearColor = color => clearColor = color;
         this.bind = () => bind(this);
@@ -252,10 +255,14 @@ let Myr = function(canvasElement) {
         if(surface == null) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.viewport(0, 0, width, height);
+            
+            sendTransform(getTransform(), width, height);
         }
         else {            
             gl.bindFramebuffer(gl.FRAMEBUFFER, surface.getFramebuffer());
             gl.viewport(0, 0, surface.getWidth(), surface.getHeight());
+            
+            sendTransform(surface.getTransform(), surface.getWidth(), surface.getHeight());
         }
     };
     
@@ -272,7 +279,7 @@ let Myr = function(canvasElement) {
             instanceBuffer = new Float32Array(instanceBufferCapacity);
             
             gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-            gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity, gl.DYNAMIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
             
             for(let i = 0; i < oldBuffer.byteLength; ++i)
                 instanceBuffer[i] = oldBuffer[i];
@@ -316,6 +323,19 @@ let Myr = function(canvasElement) {
         instanceCount = 0;
     };
     
+    const sendTransform = (matrix, width, height) => {
+        transform[0] = matrix._00;
+        transform[1] = matrix._10;
+        transform[2] = matrix._20;
+        transform[3] = width;
+        transform[4] = matrix._01;
+        transform[5] = matrix._11;
+        transform[6] = matrix._21;
+        transform[7] = height;
+        
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, transform);
+    };
+    
     const setMode = mode => {
         renderMode = mode;
     };
@@ -339,6 +359,7 @@ let Myr = function(canvasElement) {
         appendBuffer(data);
     };
     
+    const getTransform = this.getTransform = () => transformStack[transformStack.length - 1];
     this.bind = () => bind(null);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
@@ -393,6 +414,7 @@ let Myr = function(canvasElement) {
     
     const shadersDefault = new ShaderSet(shaderSprites, shaderSprites, shaderSprites, shaderSprites);
     const transform = new Float32Array(8);
+    const transformStack = [new Transform()];
     
     let renderMode = RENDER_MODE_NONE;
     let instanceBufferCapacity = 1024;
@@ -410,13 +432,13 @@ let Myr = function(canvasElement) {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-    gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(QUAD), gl.STATIC_DRAW);
     
     gl.bindBuffer(gl.UNIFORM_BUFFER, transformBuffer);
-    gl.bufferData(gl.UNIFORM_BUFFER, transform, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.UNIFORM_BUFFER, 32, gl.DYNAMIC_DRAW);
     gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, transformBuffer);
     
     gl.bindVertexArray(vaoSprites);
