@@ -392,15 +392,15 @@ let Myr = function(canvasElement) {
         "layout(location = 0) in vec2 vertex;" +
         "layout(location = 1) in vec4 positionSize;" +
         "layout(std140) uniform transform {" +
-            "vec4 widthRow0;" +
-            "vec4 heightRow1;" +
+            "vec4 tw;" +
+            "vec4 th;" +
         "};" +
         "out highp vec2 uv;" +
         "void main() {" +
             "uv = vertex;" +
-            "vec2 dimensions = vec2(widthRow0.w, heightRow1.w);" +
-            "vec2 transformed = (vertex * positionSize.zw + positionSize.xy) / dimensions;" +
-            "gl_Position = vec4(transformed.x * 2.0 - 1.0, 1.0 - transformed.y * 2.0, 0, 1);" +
+            "mat3 transform = mat3(tw.xyz, th.xyz, vec3(0, 0, 1));" +
+            "vec2 transformed = 2.0 * (vec3(vertex * positionSize.zw + positionSize.xy, 1) * transform).xy / vec2(tw.w, th.w);" +
+            "gl_Position = vec4(transformed.x - 1.0, 1.0 - transformed.y, 0, 1);" +
         "}",
         "uniform sampler2D source;" +
         "in highp vec2 uv;" +
@@ -452,6 +452,6 @@ let Myr = function(canvasElement) {
     gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 16, 0);
     
     gl.bindVertexArray(null);
-
+    
     this.bind();
 };
