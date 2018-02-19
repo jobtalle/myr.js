@@ -54,6 +54,41 @@ let Myr = function(canvasElement) {
         return Math.atan2(this.y, this.x);
     };
     
+    const Transform = this.Transform = function(_00, _10, _20, _01, _11, _21) {
+        if(_00 == undefined) {
+            this._00 = 1;
+            this._10 = 0;
+            this._20 = 0;
+            this._01 = 0;
+            this._11 = 1;
+            this._21 = 0;
+        }
+        else {
+            this._00 = _00;
+            this._10 = _10;
+            this._20 = _20;
+            this._01 = _01;
+            this._11 = _11;
+            this._21 = _21;
+        }
+    };
+    
+    Transform.prototype.apply = function(vector) {
+        return new Vector(
+            this._00 * vector.x + this._10 * vector.y + this._20,
+            this._01 * vector.x + this._11 * vector.y + this._21);
+    };
+    
+    Transform.prototype.multiply = function(transform) {
+        return new Transform(
+            this._00 * transform._00 + this._10 * transform._01,
+            this._00 * transform._10 + this._10 * transform._11,
+            this._00 * transform._20 + this._10 * transform._21 + this._20,
+            this._01 * transform._00 + this._11 * transform._01,
+            this._01 * transform._10 + this._11 * transform._11,
+            this._01 * transform._20 + this._11 * transform._21 + this._21);
+    };
+    
     this.Surface = function() {
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
@@ -139,7 +174,7 @@ let Myr = function(canvasElement) {
         gl.attachShader(program, shaderFragment);
         gl.linkProgram(program);
         
-        for(var i = 0; i < samplerNames.length; ++i) {
+        for(let i = 0; i < samplerNames.length; ++i) {
             const sampler = samplerNames[i];
             
             samplerLocations.sampler = gl.getUniformLocation(program, sampler);
@@ -148,7 +183,7 @@ let Myr = function(canvasElement) {
         this.bind = () => {
             gl.useProgram(program);
             
-            for(var i = 0; i < samplerNames.length; ++i) {
+            for(let i = 0; i < samplerNames.length; ++i) {
                 const sampler = samplerNames[i];
                 
                 gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
@@ -312,7 +347,7 @@ let Myr = function(canvasElement) {
         "void main() {" +
             "uv = vertex;" +
             "vec2 transformed = vertex + position;" +
-            "gl_Position = vec4(vec2(transformed.x - 1.0, 1.0 - transformed.y), 0, 1);" +
+            "gl_Position = vec4(transformed.x * 2.0 - 1.0, 1.0 - transformed.y * 2.0, 0, 1);" +
         "}",
         "uniform sampler2D source;" +
         "in highp vec2 uv;" +
