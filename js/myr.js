@@ -113,11 +113,11 @@ let Myr = function(canvasElement) {
         this._21 += this._01 * x + this._11 * y;
     };
     
-    Transform.prototype.scale = function(scale) {
-        this._00 *= scale;
-        this._10 *= scale;
-        this._01 *= scale;
-        this._11 *= scale;
+    Transform.prototype.scale = function(x, y) {
+        this._00 *= x;
+        this._10 *= y;
+        this._01 *= x;
+        this._11 *= y;
     };
     
     this.Surface = function() {
