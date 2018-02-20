@@ -8,7 +8,6 @@ MyrTest.prototype = {
         myr.setClearColor(new myr.Color(0.2, 0.5, 0.7));
         
         this.surface = new myr.Surface(200, 200);
-        this.surface.setClearColor(new myr.Color(0.5, 0, 0));
         
         this.fish = new myr.Surface("https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png");
         
@@ -41,6 +40,7 @@ MyrTest.prototype = {
     
     render() {
         this.surface.bind();
+        this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
         this.surface.clear();
         
         myr.bind();

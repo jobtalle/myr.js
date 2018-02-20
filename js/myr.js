@@ -134,6 +134,8 @@ let Myr = function(canvasElement) {
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         
         if(arguments.length == 2) {
             width = arguments[0];
@@ -150,6 +152,7 @@ let Myr = function(canvasElement) {
                 
                 gl.activeTexture(TEXTURE_EDITING);
                 gl.bindTexture(gl.TEXTURE_2D, texture);
+                
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             };
             
@@ -397,7 +400,7 @@ let Myr = function(canvasElement) {
         "};" +
         "out highp vec2 uv;" +
         "void main() {" +
-            "uv = vertex;" +
+            "uv = vec2(vertex.x, 1.0 - vertex.y);" +
             "mat3 transform = mat3(tw.xyz, th.xyz, vec3(0, 0, 1));" +
             "vec2 transformed = 2.0 * (vec3(vertex * positionSize.zw + positionSize.xy, 1) * transform).xy / vec2(tw.w, th.w);" +
             "gl_Position = vec4(transformed.x - 1.0, 1.0 - transformed.y, 0, 1);" +
@@ -431,6 +434,7 @@ let Myr = function(canvasElement) {
     
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
