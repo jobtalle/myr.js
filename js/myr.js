@@ -178,8 +178,13 @@ let Myr = function(canvasElement) {
                     
                     currentTexture = texture;
                 }
+                const cos = Math.cos(0.5);
+                const sin = Math.sin(0.5);
                 
-                draw(RENDER_MODE_SURFACES, shaders, [x, y, width, height]);
+                draw(RENDER_MODE_SURFACES, shaders, [
+                    0, 0, 1, 1,
+                    width, 0, 0, height,
+                    0, 0, x, y]);
             }
         };
         this.free = () => {
@@ -373,7 +378,7 @@ let Myr = function(canvasElement) {
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
         gl.deleteBuffer(transformBuffer);
-    }
+    };
     
     const SHADER_VERSION = "#version 300 es\n";
     const RENDER_MODE_NONE = -1;
@@ -393,16 +398,19 @@ let Myr = function(canvasElement) {
     
     const shaderSprites = new Shader(
         "layout(location = 0) in vec2 vertex;" +
-        "layout(location = 1) in vec4 positionSize;" +
+        "layout(location = 1) in vec4 atlas;" +
+        "layout(location = 2) in vec4 matrix;" +
+        "layout(location = 3) in vec4 position;" +
         "layout(std140) uniform transform {" +
             "vec4 tw;" +
             "vec4 th;" +
         "};" +
         "out highp vec2 uv;" +
         "void main() {" +
-            "uv = vec2(vertex.x, 1.0 - vertex.y);" +
-            "mat3 transform = mat3(tw.xyz, th.xyz, vec3(0, 0, 1));" +
-            "vec2 transformed = 2.0 * (vec3(vertex * positionSize.zw + positionSize.xy, 1) * transform).xy / vec2(tw.w, th.w);" +
+            "uv = atlas.xy + vec2(vertex.x, 1.0 - vertex.y) * atlas.zw;" +
+            "mat2 tLocal = mat2(matrix.xy, matrix.zw);" +
+            "mat3 tGlobal = mat3(tw.xyz, th.xyz, vec3(0, 0, 1));" +
+            "vec2 transformed = (vec3((vertex - position.xy) * tLocal + position.zw, 1) * tGlobal).xy / vec2(tw.w, th.w) * 2.0;" +
             "gl_Position = vec4(transformed.x - 1.0, 1.0 - transformed.y, 0, 1);" +
         "}",
         "uniform sampler2D source;" +
@@ -433,6 +441,7 @@ let Myr = function(canvasElement) {
     let currentTexture = null;
     
     gl.enable(gl.BLEND);
+    gl.disable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     
@@ -453,7 +462,13 @@ let Myr = function(canvasElement) {
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.enableVertexAttribArray(1);
     gl.vertexAttribDivisor(1, 1);
-    gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 16, 0);
+    gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 48, 0);
+    gl.enableVertexAttribArray(2);
+    gl.vertexAttribDivisor(2, 1);
+    gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 48, 16);
+    gl.enableVertexAttribArray(3);
+    gl.vertexAttribDivisor(3, 1);
+    gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 48, 32);
     
     gl.bindVertexArray(null);
     
