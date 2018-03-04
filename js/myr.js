@@ -280,6 +280,8 @@ let Myr = function(canvasElement) {
     };
     
     const clear = color => {
+        flush();
+        
         gl.clearColor(color.r, color.g, color.b, color.a);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
