@@ -55,14 +55,8 @@ let Myr = function(canvasElement) {
     };
     
     const Transform = this.Transform = function(_00, _10, _20, _01, _11, _21) {
-        if(_00 == undefined) {
-            this._00 = 1;
-            this._10 = 0;
-            this._20 = 0;
-            this._01 = 0;
-            this._11 = 1;
-            this._21 = 0;
-        }
+        if(_00 == undefined)
+            this.identity();
         else {
             this._00 = _00;
             this._10 = _10;
@@ -81,6 +75,24 @@ let Myr = function(canvasElement) {
     
     Transform.prototype.copy = function() {
         return new Transform(this._00, this._10, this._20, this._01, this._11, this._21);
+    };
+    
+    Transform.prototype.identity = function() {
+        this._00 = 1;
+        this._10 = 0;
+        this._20 = 0;
+        this._01 = 0;
+        this._11 = 1;
+        this._21 = 0;
+    };
+    
+    Transform.prototype.set = function(transform) {
+        this._00 = transform._00;
+        this._10 = transform._10;
+        this._20 = transform._20;
+        this._01 = transform._01;
+        this._11 = transform._11;
+        this._21 = transform._21;
     };
     
     Transform.prototype.multiply = function(transform) {
@@ -268,7 +280,7 @@ let Myr = function(canvasElement) {
         flush();
         
         if(surface != null)
-            this.pop();
+            pop();
         
         surface = target;
         
@@ -280,9 +292,7 @@ let Myr = function(canvasElement) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, surface.getFramebuffer());
             gl.viewport(0, 0, surface.getWidth(), surface.getHeight());
             
-            transformStack.push(new Transform());
-            
-            transformDirty = true;
+            pushIdentity();
         }
     };
     
@@ -398,10 +408,33 @@ let Myr = function(canvasElement) {
         appendBuffer(data);
     };
     
-    this.push = () => transformStack.push(this.getTransform());
+    const pushIdentity = () => {
+        if(transformAt + 1 == transformStack.length) {
+            transformStack.push(new Transform());
+            
+            ++transformAt;
+        }
+        else
+            transformStack[++transformAt].identity();
+        
+        transformDirty = true;
+    };
     
-    this.pop = () => {
-        transformStack.pop();
+    this.push = () => {
+        if(transformAt + 1 == transformStack.length) {
+            transformStack.push(this.getTransform());
+            
+            ++transformAt;
+        }
+        else {
+            transformStack[transformAt + 1].set(getTransform());
+            
+            ++transformAt;
+        }
+    };
+    
+    const pop = this.pop = () => {
+        --transformAt;
         
         transformDirty = true;
     };
@@ -430,8 +463,8 @@ let Myr = function(canvasElement) {
         transformDirty = true;
     };
     
-    const getTransform = () => transformStack[transformStack.length - 1];
-    this.getTransform = () => transformStack[transformStack.length - 1].copy();
+    const getTransform = () => transformStack[transformAt];
+    this.getTransform = () => getTransform().copy();
     
     this.bind = () => bind(null);
     this.setClearColor = color => clearColor = color;
@@ -493,6 +526,7 @@ let Myr = function(canvasElement) {
     const transform = new Float32Array(8);
     const transformStack = [new Transform()];
     
+    let transformAt = 0;
     let transformDirty = true;
     let renderMode = RENDER_MODE_NONE;
     let instanceBufferCapacity = 1024;
