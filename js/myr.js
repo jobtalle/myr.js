@@ -162,11 +162,16 @@ let Myr = function(canvasElement) {
             gl.deleteFramebuffer(framebuffer);
         };
         
+        this.bind = () => {
+            bind(this);
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.viewport(0, 0, width, height);
+        };
+        
         this.getWidth = () => width;
         this.getHeight = () => height;
-        this.getFramebuffer = () => framebuffer;
         this.setClearColor = color => clearColor = color;
-        this.bind = () => bind(this);
         this.clear = () => clear(clearColor);
         this.ready = () => !(width == 0 || height == 0);
         
@@ -284,19 +289,11 @@ let Myr = function(canvasElement) {
         
         flush();
         
-        if(surface != null)
-            this.pop();
-        
         surface = target;
         
-        if(surface == null) {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            gl.viewport(0, 0, width, height);
-        }
-        else {            
-            gl.bindFramebuffer(gl.FRAMEBUFFER, surface.getFramebuffer());
-            gl.viewport(0, 0, surface.getWidth(), surface.getHeight());
-            
+        if(surface != null) {
+            this.pop();
+        
             pushIdentity();
         }
     };
@@ -473,9 +470,15 @@ let Myr = function(canvasElement) {
         gl.deleteBuffer(transformBuffer);
     };
     
+    this.bind = () => {
+        bind(null);
+        
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, width, height);
+    };
+    
     const getTransform = () => transformStack[transformAt];
     this.getTransform = () => getTransform().copy();
-    this.bind = () => bind(null);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
     
@@ -491,7 +494,10 @@ let Myr = function(canvasElement) {
         "out highp vec2 uv;" +
         "void main() {" +
             "uv=atlas.xy+vec2(vertex.x,1.0-vertex.y)*atlas.zw;" +
-            "vec2 transformed=(((vertex-position.xy)*mat2(matrix.xy,matrix.zw)+position.zw)*mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/vec2(tw.w,th.w)*2.0;" +
+            "vec2 transformed=(((vertex-position.xy)*" + 
+                "mat2(matrix.xy,matrix.zw)+position.zw)*" + 
+                "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+                "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed.x-1.0,1.0-transformed.y,0,1);" +
         "}",
         "uniform sampler2D source;" +
