@@ -260,13 +260,14 @@ let Myr = function(canvasElement) {
         
         flush();
         
+        if(surface != null)
+            this.pop();
+        
         surface = target;
         
         if(surface == null) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.viewport(0, 0, width, height);
-            
-            this.pop();
         }
         else {            
             gl.bindFramebuffer(gl.FRAMEBUFFER, surface.getFramebuffer());
@@ -442,7 +443,7 @@ let Myr = function(canvasElement) {
     const RENDER_MODE_LINES = 2;
     const RENDER_MODE_POINTS = 3;
     const QUAD = [0, 0, 0, 1, 1, 1, 1, 0];
-    const gl = canvasElement.getContext("webgl2");
+    const gl = canvasElement.getContext("webgl2", {preserveDrawingBuffer: true});
     const TEXTURE_ATLAS = gl.TEXTURE0;
     const TEXTURE_SURFACE = gl.TEXTURE1;
     const TEXTURE_EDITING = gl.TEXTURE2;
@@ -465,7 +466,7 @@ let Myr = function(canvasElement) {
             "uv = atlas.xy + vec2(vertex.x, 1.0 - vertex.y) * atlas.zw;" +
             "mat2 tLocal = mat2(matrix.xy, matrix.zw);" +
             "mat2 tGlobal = mat2(tw.xy, th.xy);" +
-            "vec2 transformed = (((vertex - position.xy) * tLocal) * tGlobal + position.zw + vec2(tw.z, th.z)) / vec2(tw.w, th.w) * 2.0;" +
+            "vec2 transformed = (((vertex - position.xy) * tLocal + position.zw) * tGlobal + vec2(tw.z, th.z)) / vec2(tw.w, th.w) * 2.0;" +
             "gl_Position = vec4(transformed.x - 1.0, 1.0 - transformed.y, 0, 1);" +
         "}",
         "uniform sampler2D source;" +
