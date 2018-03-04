@@ -466,8 +466,8 @@ let Myr = function(canvasElement) {
         "void main() {" +
             "uv = atlas.xy + vec2(vertex.x, 1.0 - vertex.y) * atlas.zw;" +
             "mat2 tLocal = mat2(matrix.xy, matrix.zw);" +
-            "mat3 tGlobal = mat3(tw.xyz, th.xyz, vec3(0, 0, 1));" +
-            "vec2 transformed = (vec3((vertex - position.xy) * tLocal + position.zw, 1) * tGlobal).xy / vec2(tw.w, th.w) * 2.0;" +
+            "mat2 tGlobal = mat2(tw.xy, th.xy);" +
+            "vec2 transformed = (((vertex - position.xy) * tLocal) * tGlobal + position.zw + vec2(tw.z, th.z)) / vec2(tw.w, th.w) * 2.0;" +
             "gl_Position = vec4(transformed.x - 1.0, 1.0 - transformed.y, 0, 1);" +
         "}",
         "uniform sampler2D source;" +
