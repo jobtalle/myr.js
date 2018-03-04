@@ -126,6 +126,16 @@ let Myr = function(canvasElement) {
         this._11 = _01 * sin + _11 * cos;
     };
     
+    Transform.prototype.shear = function(x, y) {
+        const _00 = this._00;
+        const _01 = this._01;
+        
+        this._00 += this._10 * y;
+        this._10 += _00 * x;
+        this._01 += this._11 * y;
+        this._11 += _01 * x;
+    };
+    
     Transform.prototype.translate = function(x, y) {
         this._20 += this._00 * x + this._10 * y;
         this._21 += this._01 * x + this._11 * y;
@@ -451,6 +461,12 @@ let Myr = function(canvasElement) {
     
     this.rotate = angle => {
         getTransform().rotate(angle);
+        
+        transformDirty = true;
+    };
+    
+    this.shear = (x, y) => {
+        getTransform().shear(x, y);
         
         transformDirty = true;
     };
