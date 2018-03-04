@@ -179,9 +179,8 @@ let Myr = function(canvasElement) {
         let shaders = shadersDefault;
         let clearColor = new Color(0, 0, 0, 0);
         
-        attributes[0] = attributes[1] = 0;
+        attributes[0] = attributes[1] = attributes[8] = attributes[9] = 0;
         attributes[2] = attributes[3] = 1;
-        attributes[8] = attributes[9] = 0;
         
         gl.activeTexture(TEXTURE_EDITING);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -199,7 +198,7 @@ let Myr = function(canvasElement) {
         else {
             const image = new Image();
             
-            image.onload = function() {
+            image.onload = () => {
                 width = image.width;
                 height = image.height;
                 
@@ -217,7 +216,7 @@ let Myr = function(canvasElement) {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
     };
     
-    const Shader = this.Shader = function(vertex, fragment, samplers) {
+    this.Shader = function(vertex, fragment, samplers) {
         const createShader = (type, source) => {
             const shader = gl.createShader(type);
             
@@ -286,7 +285,7 @@ let Myr = function(canvasElement) {
         flush();
         
         if(surface != null)
-            pop();
+            this.pop();
         
         surface = target;
         
@@ -385,10 +384,6 @@ let Myr = function(canvasElement) {
         transformDirty = false;
     };
     
-    const setMode = mode => {
-        renderMode = mode;
-    };
-    
     const setShader = newShader => {
         shader = newShader;
         
@@ -405,7 +400,7 @@ let Myr = function(canvasElement) {
         if(renderMode != mode) {
             flush();
             
-            setMode(mode);
+            renderMode = mode;
         
             if(shader != shaderSet.get(mode))
                 setShader(shaderSet.get(mode));
@@ -439,7 +434,7 @@ let Myr = function(canvasElement) {
         }
     };
     
-    const pop = this.pop = () => {
+    this.pop = () => {
         --transformAt;
         
         transformDirty = true;
@@ -484,7 +479,7 @@ let Myr = function(canvasElement) {
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
     
-    const shaderSprites = new Shader(
+    const shaderSprites = new this.Shader(
         "layout(location = 0) in vec2 vertex;" +
         "layout(location = 1) in vec4 atlas;" +
         "layout(location = 2) in vec4 matrix;" +
