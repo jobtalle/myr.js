@@ -139,6 +139,37 @@ let Myr = function(canvasElement) {
     };
     
     this.Surface = function() {
+        this.draw = (x, y) => {
+            if(this.ready()) {
+                if(currentTexture != texture) {
+                    flush();
+                    
+                    currentTexture = texture;
+                }
+                
+                attributes[4] = width;
+                attributes[5] = attributes[6] = 0;
+                attributes[7] = height;
+                attributes[10] = x;
+                attributes[11] = y;
+                
+                draw(RENDER_MODE_SURFACES, shaders, attributes);
+            }
+        };
+        
+        this.free = () => {
+            gl.deleteTexture(texture);
+            gl.deleteFramebuffer(framebuffer);
+        };
+        
+        this.getWidth = () => width;
+        this.getHeight = () => height;
+        this.getFramebuffer = () => framebuffer;
+        this.setClearColor = color => clearColor = color;
+        this.bind = () => bind(this);
+        this.clear = () => clear(clearColor);
+        this.ready = () => !(width == 0 || height == 0);
+        
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
         const attributes = new Array(12);
@@ -184,40 +215,9 @@ let Myr = function(canvasElement) {
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-        
-        this.getWidth = () => width;
-        this.getHeight = () => height;
-        this.getFramebuffer = () => framebuffer;
-        this.setClearColor = color => clearColor = color;
-        this.bind = () => bind(this);
-        this.clear = () => clear(clearColor);
-        this.ready = () => !(width == 0 || height == 0);
-        this.draw = (x, y) => {
-            if(this.ready()) {
-                if(currentTexture != texture) {
-                    flush();
-                    
-                    currentTexture = texture;
-                }
-                
-                attributes[4] = width;
-                attributes[5] = attributes[6] = 0;
-                attributes[7] = height;
-                attributes[10] = x;
-                attributes[11] = y;
-                
-                draw(RENDER_MODE_SURFACES, shaders, attributes);
-            }
-        };
-        
-        this.free = () => {
-            gl.deleteTexture(texture);
-            gl.deleteFramebuffer(framebuffer);
-        };
     };
     
     const Shader = this.Shader = function(vertex, fragment, samplers) {
-        const program = gl.createProgram();
         const createShader = (type, source) => {
             const shader = gl.createShader(type);
             
@@ -230,6 +230,27 @@ let Myr = function(canvasElement) {
             return shader;
         };
         
+        this.bind = () => {
+            gl.useProgram(program);
+            
+            for(let i = 0; i < samplerNames.length; ++i) {
+                const sampler = samplerNames[i];
+                
+                gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
+            }
+        };
+        
+        this.free = () => {
+            gl.detachShader(program, shaderVertex);
+            gl.detachShader(program, shaderFragment);
+            gl.deleteShader(shaderVertex);
+            gl.deleteShader(shaderFragment);
+            gl.deleteProgram(program);
+        };
+        
+        const SHADER_VERSION = "#version 300 es\n";
+        
+        const program = gl.createProgram();
         const shaderVertex = createShader(gl.VERTEX_SHADER, SHADER_VERSION + vertex);
         const shaderFragment = createShader(gl.FRAGMENT_SHADER, SHADER_VERSION + fragment);
         const samplerNames = Object.keys(samplers);
@@ -244,23 +265,6 @@ let Myr = function(canvasElement) {
             
             samplerLocations.sampler = gl.getUniformLocation(program, sampler);
         }
-        
-        this.bind = () => {
-            gl.useProgram(program);
-            
-            for(let i = 0; i < samplerNames.length; ++i) {
-                const sampler = samplerNames[i];
-                
-                gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
-            }
-        };
-        this.free = () => {
-            gl.detachShader(program, shaderVertex);
-            gl.detachShader(program, shaderFragment);
-            gl.deleteShader(shaderVertex);
-            gl.deleteShader(shaderFragment);
-            gl.deleteProgram(program);
-        };
     };
     
     const ShaderSet = function(surfaces, sprites, lines, points) {
@@ -465,12 +469,6 @@ let Myr = function(canvasElement) {
         transformDirty = true;
     };
     
-    const getTransform = () => transformStack[transformAt];
-    this.getTransform = () => getTransform().copy();
-    
-    this.bind = () => bind(null);
-    this.setClearColor = color => clearColor = color;
-    this.clear = () => clear(clearColor);
     this.free = () => {
         shaderSprites.free();
         
@@ -480,16 +478,11 @@ let Myr = function(canvasElement) {
         gl.deleteBuffer(transformBuffer);
     };
     
-    const SHADER_VERSION = "#version 300 es\n";
-    const RENDER_MODE_NONE = -1;
-    const RENDER_MODE_SURFACES = 0;
-    const RENDER_MODE_SPRITES = 1;
-    const RENDER_MODE_LINES = 2;
-    const RENDER_MODE_POINTS = 3;
-    const QUAD = [0, 0, 0, 1, 1, 1, 1, 0];
-    const TEXTURE_ATLAS = gl.TEXTURE0;
-    const TEXTURE_SURFACE = gl.TEXTURE1;
-    const TEXTURE_EDITING = gl.TEXTURE2;
+    const getTransform = () => transformStack[transformAt];
+    this.getTransform = () => getTransform().copy();
+    this.bind = () => bind(null);
+    this.setClearColor = color => clearColor = color;
+    this.clear = () => clear(clearColor);
     
     const shaderSprites = new Shader(
         "layout(location = 0) in vec2 vertex;" +
@@ -518,6 +511,16 @@ let Myr = function(canvasElement) {
             source: 1
         }
     );
+    
+    const RENDER_MODE_NONE = -1;
+    const RENDER_MODE_SURFACES = 0;
+    const RENDER_MODE_SPRITES = 1;
+    const RENDER_MODE_LINES = 2;
+    const RENDER_MODE_POINTS = 3;
+    const QUAD = [0, 0, 0, 1, 1, 1, 1, 0];
+    const TEXTURE_ATLAS = gl.TEXTURE0;
+    const TEXTURE_SURFACE = gl.TEXTURE1;
+    const TEXTURE_EDITING = gl.TEXTURE2;
     
     const quad = gl.createBuffer();
     const instances = gl.createBuffer();
