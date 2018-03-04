@@ -480,27 +480,25 @@ let Myr = function(canvasElement) {
     this.clear = () => clear(clearColor);
     
     const shaderSprites = new this.Shader(
-        "layout(location = 0) in vec2 vertex;" +
-        "layout(location = 1) in vec4 atlas;" +
-        "layout(location = 2) in vec4 matrix;" +
-        "layout(location = 3) in vec4 position;" +
+        "layout(location=0) in vec2 vertex;" +
+        "layout(location=1) in vec4 atlas;" +
+        "layout(location=2) in vec4 matrix;" +
+        "layout(location=3) in vec4 position;" +
         "layout(std140) uniform transform {" +
             "vec4 tw;" +
             "vec4 th;" +
         "};" +
         "out highp vec2 uv;" +
         "void main() {" +
-            "uv = atlas.xy + vec2(vertex.x, 1.0 - vertex.y) * atlas.zw;" +
-            "mat2 tLocal = mat2(matrix.xy, matrix.zw);" +
-            "mat2 tGlobal = mat2(tw.xy, th.xy);" +
-            "vec2 transformed = (((vertex - position.xy) * tLocal + position.zw) * tGlobal + vec2(tw.z, th.z)) / vec2(tw.w, th.w) * 2.0;" +
-            "gl_Position = vec4(transformed.x - 1.0, 1.0 - transformed.y, 0, 1);" +
+            "uv=atlas.xy+vec2(vertex.x,1.0-vertex.y)*atlas.zw;" +
+            "vec2 transformed=(((vertex-position.xy)*mat2(matrix.xy,matrix.zw)+position.zw)*mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/vec2(tw.w,th.w)*2.0;" +
+            "gl_Position=vec4(transformed.x-1.0,1.0-transformed.y,0,1);" +
         "}",
         "uniform sampler2D source;" +
         "in highp vec2 uv;" +
-        "layout (location = 0) out lowp vec4 color;" +
+        "layout(location=0) out lowp vec4 color;" +
         "void main() {" +
-            "color = texture(source, uv);" +
+            "color=texture(source,uv);" +
         "}",
         {
             source: 1
