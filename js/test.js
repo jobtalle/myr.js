@@ -39,10 +39,6 @@ MyrTest.prototype = {
     },
     
     render() {
-        this.surface.bind();
-        this.surface.clear();
-        this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
-        
         myr.bind();
         myr.push();
         myr.rotate(0.1);
@@ -62,7 +58,14 @@ MyrTest.prototype = {
         
         myr.pop();
         
-        this.fish.draw(0, 0);
+        this.fish.draw(10, 10);
+        
+        this.surface.bind();
+        this.surface.clear();
+        this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
+        
+        myr.bind();
+        this.fish.draw(15, 15);
         
         myr.flush();
     }

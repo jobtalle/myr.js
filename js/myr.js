@@ -170,21 +170,22 @@ let Myr = function(canvasElement) {
     
     this.Surface = function() {
         this.draw = (x, y) => {
-            if(this.ready()) {
-                if(currentTexture != texture) {
-                    flush();
-                    
-                    currentTexture = texture;
-                }
-                
-                attributes[4] = width;
-                attributes[5] = attributes[6] = 0;
-                attributes[7] = height;
-                attributes[10] = x;
-                attributes[11] = y;
-                
-                draw(RENDER_MODE_SURFACES, shaders, attributes);
+            if(!this.ready())
+                return;
+            
+            if(currentTexture != texture) {
+                flush();
+
+                currentTexture = texture;
             }
+
+            attributes[4] = width;
+            attributes[5] = attributes[6] = 0;
+            attributes[7] = height;
+            attributes[10] = x;
+            attributes[11] = y;
+
+            draw(RENDER_MODE_SURFACES, shaders, attributes);
         };
         
         this.free = () => {
@@ -255,7 +256,7 @@ let Myr = function(canvasElement) {
         const createShader = (type, source) => {
             const shader = gl.createShader(type);
             
-            gl.shaderSource(shader, source);
+            gl.shaderSource(shader, "#version 300 es\n" + source);
             gl.compileShader(shader);
             
             if(!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
@@ -282,11 +283,9 @@ let Myr = function(canvasElement) {
             gl.deleteProgram(program);
         };
         
-        const SHADER_VERSION = "#version 300 es\n";
-        
         const program = gl.createProgram();
-        const shaderVertex = createShader(gl.VERTEX_SHADER, SHADER_VERSION + vertex);
-        const shaderFragment = createShader(gl.FRAGMENT_SHADER, SHADER_VERSION + fragment);
+        const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
+        const shaderFragment = createShader(gl.FRAGMENT_SHADER, fragment);
         const samplerNames = Object.keys(samplers);
         const samplerLocations = new Object();
         
@@ -315,13 +314,13 @@ let Myr = function(canvasElement) {
         
         flush();
         
-        surface = target;
-        
-        if(surface != null) {
+        if(surface != null)
             this.pop();
         
+        if(target != null)
             pushIdentity();
-        }
+        
+        surface = target;
     };
     
     const clear = color => {
@@ -384,7 +383,7 @@ let Myr = function(canvasElement) {
     };
     
     const sendTransform = () => {
-        const matrix = getTransform();
+        const matrix = transformStack[transformAt];
         
         if(surface == null) {
             transform[3] = width;
@@ -407,12 +406,6 @@ let Myr = function(canvasElement) {
         transformDirty = false;
     };
     
-    const setShader = newShader => {
-        shader = newShader;
-        
-        shader.bind();
-    };
-    
     const draw = (mode, shaderSet, data) => {
         if(transformDirty) {
             flush();
@@ -426,10 +419,16 @@ let Myr = function(canvasElement) {
             renderMode = mode;
         
             if(shader != shaderSet.get(mode))
-                setShader(shaderSet.get(mode));
+                (shader = shaderSet.get(mode)).bind();
         }
         
         appendBuffer(data);
+    };
+    
+    const getTransform = () => {
+        transformDirty = true;
+        
+        return transformStack[transformAt];
     };
     
     const pushIdentity = () => {
@@ -445,50 +444,16 @@ let Myr = function(canvasElement) {
     };
     
     this.push = () => {
-        if(transformAt + 1 == transformStack.length) {
+        if(transformAt + 1 == transformStack.length)
             transformStack.push(this.getTransform());
-            
-            ++transformAt;
-        }
-        else {
-            transformStack[transformAt + 1].set(getTransform());
-            
-            ++transformAt;
-        }
+        else
+            transformStack[transformAt + 1].set(transformStack[transformAt]);
+        
+        ++transformAt;
     };
     
     this.pop = () => {
         --transformAt;
-        
-        transformDirty = true;
-    };
-    
-    this.transform = transform => {
-        getTransform().multiply(transform);
-        
-        transformDirty = true;
-    };
-    
-    this.translate = (x, y) => {
-        getTransform().translate(x, y);
-        
-        transformDirty = true;
-    };
-    
-    this.rotate = angle => {
-        getTransform().rotate(angle);
-        
-        transformDirty = true;
-    };
-    
-    this.shear = (x, y) => {
-        getTransform().shear(x, y);
-        
-        transformDirty = true;
-    };
-    
-    this.scale = (x, y) => {
-        getTransform().scale(x, y);
         
         transformDirty = true;
     };
@@ -509,8 +474,12 @@ let Myr = function(canvasElement) {
         gl.viewport(0, 0, width, height);
     };
     
-    const getTransform = () => transformStack[transformAt];
-    this.getTransform = () => getTransform().copy();
+    this.getTransform = () => transformStack[transformAt].copy();
+    this.transform = transform => getTransform().multiply(transform);
+    this.translate = (x, y) => getTransform().translate(x, y);
+    this.rotate = angle => getTransform().rotate(angle);
+    this.shear = (x, y) => getTransform().shear(x, y);
+    this.scale = (x, y) => getTransform().scale(x, y);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
     
