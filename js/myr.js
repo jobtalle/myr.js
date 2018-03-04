@@ -79,18 +79,22 @@ let Myr = function(canvasElement) {
             this._01 * vector.x + this._11 * vector.y + this._21);
     };
     
-    Transform.prototype.multiply = function(transform) {
-        return new Transform(
-            this._00 * transform._00 + this._10 * transform._01,
-            this._00 * transform._10 + this._10 * transform._11,
-            this._00 * transform._20 + this._10 * transform._21 + this._20,
-            this._01 * transform._00 + this._11 * transform._01,
-            this._01 * transform._10 + this._11 * transform._11,
-            this._01 * transform._20 + this._11 * transform._21 + this._21);
-    };
-    
     Transform.prototype.copy = function() {
         return new Transform(this._00, this._10, this._20, this._01, this._11, this._21);
+    };
+    
+    Transform.prototype.multiply = function(transform) {
+        const _00 = this._00;
+        const _10 = this._10;
+        const _01 = this._01;
+        const _11 = this._11;
+        
+        this._00 = _00 * transform._00 + _10 * transform._01;
+        this._10 = _00 * transform._10 + _10 * transform._11;
+        this._20 += _00 * transform._20 + _10 * transform._21;
+        this._01 = _01 * transform._00 + _11 * transform._01;
+        this._11 = _01 * transform._10 + _11 * transform._11;
+        this._21 += _01 * transform._20 + _11 * transform._21;
     };
     
     Transform.prototype.rotate = function(angle) {
@@ -264,13 +268,15 @@ let Myr = function(canvasElement) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.viewport(0, 0, width, height);
             
-            sendTransform(getTransform(), width, height);
+            this.pop();
         }
         else {            
             gl.bindFramebuffer(gl.FRAMEBUFFER, surface.getFramebuffer());
             gl.viewport(0, 0, surface.getWidth(), surface.getHeight());
             
-            sendTransform(surface.getTransform(), surface.getWidth(), surface.getHeight());
+            transformStack.push(new Transform());
+            
+            transformDirty = true;
         }
     };
     
@@ -331,17 +337,28 @@ let Myr = function(canvasElement) {
         instanceCount = 0;
     };
     
-    const sendTransform = (matrix, width, height) => {
+    const sendTransform = () => {
+        const matrix = getTransform();
+        
+        if(surface == null) {
+            transform[3] = width;
+            transform[7] = height;
+        }
+        else {
+            transform[3] = surface.getWidth();
+            transform[7] = surface.getHeight();
+        }
+        
         transform[0] = matrix._00;
         transform[1] = matrix._10;
         transform[2] = matrix._20;
-        transform[3] = width;
         transform[4] = matrix._01;
         transform[5] = matrix._11;
         transform[6] = matrix._21;
-        transform[7] = height;
         
         gl.bufferSubData(gl.UNIFORM_BUFFER, 0, transform);
+        
+        transformDirty = false;
     };
     
     const setMode = mode => {
@@ -355,6 +372,12 @@ let Myr = function(canvasElement) {
     }
     
     const draw = (mode, shaderSet, data) => {
+        if(transformDirty) {
+            flush();
+            
+            sendTransform();
+        }
+        
         if(renderMode != mode) {
             flush();
             
@@ -367,7 +390,41 @@ let Myr = function(canvasElement) {
         appendBuffer(data);
     };
     
-    const getTransform = this.getTransform = () => transformStack[transformStack.length - 1];
+    this.push = () => transformStack.push(this.getTransform());
+    
+    this.pop = () => {
+        transformStack.pop();
+        
+        transformDirty = true;
+    };
+    
+    this.transform = transform => {
+        getTransform().multiply(transform);
+        
+        transformDirty = true;
+    };
+    
+    this.translate = (x, y) => {
+        getTransform().translate(x, y);
+        
+        transformDirty = true;
+    };
+    
+    this.rotate = angle => {
+        getTransform().rotate(angle);
+        
+        transformDirty = true;
+    };
+    
+    this.scale = (x, y) => {
+        getTransform().scale(x, y);
+        
+        transformDirty = true;
+    };
+    
+    const getTransform = () => transformStack[transformStack.length - 1];
+    this.getTransform = () => transformStack[transformStack.length - 1].copy();
+    
     this.bind = () => bind(null);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
@@ -428,6 +485,7 @@ let Myr = function(canvasElement) {
     const transform = new Float32Array(8);
     const transformStack = [new Transform()];
     
+    let transformDirty = true;
     let renderMode = RENDER_MODE_NONE;
     let instanceBufferCapacity = 1024;
     let instanceBufferAt = 0;

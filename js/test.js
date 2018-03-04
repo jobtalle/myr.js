@@ -40,13 +40,25 @@ MyrTest.prototype = {
     
     render() {
         this.surface.bind();
-        this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
         this.surface.clear();
+        this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
         
         myr.bind();
         myr.clear();
         
         this.surface.draw(Math.cos(this.a) * 200 + 200, 200);
+        
+        myr.push();
+        myr.translate(200, 200);
+        
+        const t = new myr.Transform();
+        t.scale(2, 2);
+        myr.transform(t);
+        
+        this.surface.draw(0, 0);
+        
+        myr.pop();
+        
         this.surface.draw(200, Math.sin(this.a) * 200 + 200);
         
         this.fish.draw(0, 0);
