@@ -1,5 +1,5 @@
 let Myr = function(canvasElement) {
-    const gl = canvasElement.getContext("webgl2", {preserveDrawingBuffer: true});
+    const gl = canvasElement.getContext("webgl2");
     
     const Color = this.Color = function(r, g, b, a) {
         this.r = r;
@@ -17,16 +17,29 @@ let Myr = function(canvasElement) {
         this.y = y;
     };
     
+    Vector.prototype.copy = function() {
+        return new Vector(this.x, this.y);
+    };
+    
     Vector.prototype.add = function(vector) {
-        return new Vector(this.x + vector.x, this.y + vector.y);
+        this.x += vector.x;
+        this.y += vector.y;
+        
+        return this;
     };
 
     Vector.prototype.subtract = function(vector) {
-        return new Vector(this.x - vector.x, this.y - vector.y);
+        this.x -= vector.x;
+        this.y -= vector.y;
+        
+        return this;
     };
 
     Vector.prototype.negate = function() {
-        return new Vector(-this.x, -this.y);
+        this.x = -this.x;
+        this.y = -this.y;
+        
+        return this;
     };
 
     Vector.prototype.dot = function(vector) {
@@ -38,14 +51,19 @@ let Myr = function(canvasElement) {
     };
 
     Vector.prototype.multiply = function(scalar) {
-        return new Vector(this.x * scalar, this.y * scalar);
+        this.x *= scalar;
+        this.y *= scalar;
+        
+        return this;
     };
 
     Vector.prototype.divide = function(scalar) {
         if(scalar === 0)
-            return new Vector(0, 0);
+            this.x = this.y = 0;
         else
-            return this.multiply(1 / scalar);
+            return this.multiply(1.0 / scalar);
+        
+        return this;
     };
 
     Vector.prototype.normalize = function() {
@@ -70,9 +88,11 @@ let Myr = function(canvasElement) {
     };
     
     Transform.prototype.apply = function(vector) {
-        return new Vector(
-            this._00 * vector.x + this._10 * vector.y + this._20,
-            this._01 * vector.x + this._11 * vector.y + this._21);
+        const x = vector.x;
+        const y = vector.y;
+        
+        vector.x = this._00 * x + this._10 * y + this._20;
+        vector.y = this._01 * x + this._11 * y + this._21;
     };
     
     Transform.prototype.copy = function() {
