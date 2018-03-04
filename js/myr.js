@@ -127,7 +127,6 @@ let Myr = function(canvasElement) {
     this.Surface = function() {
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
-        const transformStack = [new Transform()];
         
         let width = 0;
         let height = 0;
@@ -169,7 +168,6 @@ let Myr = function(canvasElement) {
         
         this.getWidth = () => width;
         this.getHeight = () => height;
-        this.getTransform = () => transformStack[transformStack.length - 1];
         this.getFramebuffer = () => framebuffer;
         this.setClearColor = color => clearColor = color;
         this.bind = () => bind(this);

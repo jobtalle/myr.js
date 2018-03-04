@@ -55,7 +55,7 @@ MyrTest.prototype = {
         t.scale(2, 2);
         myr.transform(t);
         
-        this.surface.draw(0, 0);
+        this.surface.draw(200, 200);
         
         myr.pop();
         
