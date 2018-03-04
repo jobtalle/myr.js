@@ -127,11 +127,16 @@ let Myr = function(canvasElement) {
     this.Surface = function() {
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
+        const attributes = new Array(12);
         
         let width = 0;
         let height = 0;
         let shaders = shadersDefault;
         let clearColor = new Color(0, 0, 0, 0);
+        
+        attributes[0] = attributes[1] = 0;
+        attributes[2] = attributes[3] = 1;
+        attributes[8] = attributes[9] = 0;
         
         gl.activeTexture(TEXTURE_EDITING);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -180,15 +185,17 @@ let Myr = function(canvasElement) {
                     
                     currentTexture = texture;
                 }
-                const cos = Math.cos(0.5);
-                const sin = Math.sin(0.5);
                 
-                draw(RENDER_MODE_SURFACES, shaders, [
-                    0, 0, 1, 1,
-                    width, 0, 0, height,
-                    0, 0, x, y]);
+                attributes[4] = width;
+                attributes[5] = attributes[6] = 0;
+                attributes[7] = height;
+                attributes[10] = x;
+                attributes[11] = y;
+                
+                draw(RENDER_MODE_SURFACES, shaders, attributes);
             }
         };
+        
         this.free = () => {
             gl.deleteTexture(texture);
             gl.deleteFramebuffer(framebuffer);
