@@ -1,4 +1,6 @@
 let Myr = function(canvasElement) {
+    const gl = canvasElement.getContext("webgl2", {preserveDrawingBuffer: true});
+    
     const Color = this.Color = function(r, g, b, a) {
         this.r = r;
         this.g = g;
@@ -387,7 +389,7 @@ let Myr = function(canvasElement) {
         shader = newShader;
         
         shader.bind();
-    }
+    };
     
     const draw = (mode, shaderSet, data) => {
         if(transformDirty) {
@@ -485,14 +487,9 @@ let Myr = function(canvasElement) {
     const RENDER_MODE_LINES = 2;
     const RENDER_MODE_POINTS = 3;
     const QUAD = [0, 0, 0, 1, 1, 1, 1, 0];
-    const gl = canvasElement.getContext("webgl2", {preserveDrawingBuffer: true});
     const TEXTURE_ATLAS = gl.TEXTURE0;
     const TEXTURE_SURFACE = gl.TEXTURE1;
     const TEXTURE_EDITING = gl.TEXTURE2;
-    const quad = gl.createBuffer();
-    const instances = gl.createBuffer();
-    const vaoSprites = gl.createVertexArray();
-    const transformBuffer = gl.createBuffer();
     
     const shaderSprites = new Shader(
         "layout(location = 0) in vec2 vertex;" +
@@ -522,6 +519,10 @@ let Myr = function(canvasElement) {
         }
     );
     
+    const quad = gl.createBuffer();
+    const instances = gl.createBuffer();
+    const vaoSprites = gl.createVertexArray();
+    const transformBuffer = gl.createBuffer();
     const shadersDefault = new ShaderSet(shaderSprites, shaderSprites, shaderSprites, shaderSprites);
     const transform = new Float32Array(8);
     const transformStack = [new Transform()];

@@ -52,10 +52,7 @@ MyrTest.prototype = {
         
         myr.push();
         myr.translate(200, 200);
-        
-        const t = new myr.Transform();
-        t.scale(2, 2);
-        myr.transform(t);
+        myr.scale(2, 2);
         
         this.surface.draw(100, 100);
         
@@ -63,8 +60,11 @@ MyrTest.prototype = {
         
         this.surface.draw(200, Math.sin(this.a) * 200 + 200);
         
-        myr.flush();
         myr.pop();
+        
+        this.fish.draw(0, 0);
+        
+        myr.flush();
     }
 }
 
