@@ -234,5 +234,64 @@ Constructs a color object from red, green and blue. The values must lie in the r
 Constructs a color object from red, green, blue and alpha. The values must lie in the range [0, 1].
 
 ## Vector
+This object represents a vector in 2D space. Several useful vector operation functions are provided.
+
+### `Vector(x, y)`
+Constructs a vector object.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|X value
+y|`Number`|Y value
+
+### `copy()`
+Returns a copy of this vector object.
+
+### `add(vector)`
+Add another vector to this one.
+
+Parameter | Type | Description
+-|-|-
+vector|[`Vector`](#vector)|A vector object
+
+### `subtract(vector)`
+Subtract another vector from this one.
+
+Parameter | Type | Description
+-|-|-
+vector|[`Vector`](#vector)|A vector object
+
+### `negate()`
+Negate the vector values.
+
+### `dot(vector)`
+Returns the dot product of this vector and another one.
+
+Parameter | Type | Description
+-|-|-
+vector|[`Vector`](#vector)|A vector object
+
+### `length()`
+Returns the length of the vector.
+
+### `multiply(scalar)`
+Multiplies the vector by a scalar.
+
+Parameter | Type | Description
+-|-|-
+scalar|`Number`|A number
+
+### `divide(scalar)`
+Divides the vector by a scalar.
+
+Parameter | Type | Description
+-|-|-
+scalar|`Number`|A number
+
+### `normalize()`
+Normalizes the vector.
+
+### `angle()`
+Returns the angle this vector is pointing towards.
 
 ## Shader
