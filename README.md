@@ -2,9 +2,7 @@
 
 **myr.js** is a WebGL 2 based 2D graphics renderer. The engine is optimized for rendering large amounts of sprites, and also supports render targets, custom shaders, primitives and advanced transformations. There are no external dependencies. **myr.js** has been licensed under the [MIT license](LICENSE). All source code is contained in the [myr.js](js/myr.js) file.
 
-# Documentation
-
-## Initialization
+# Initialization
 **myr.js** can be initialized by calling the `Myr` function, which requires a canvas element as an argument. All global functions and objects are members of the returned object. The provided canvas must be able to provide a *WebGL 2* context.
 
 Initialization would typically look like this:
@@ -16,7 +14,7 @@ let myr = new Myr(document.getElementById("some-canvas-id"));
 myr.setClearColor(new myr.Color(0.2, 0.5, 0.7));
 ```
 
-## Objects
+# Objects
 The **myr.js** object exposes several objects:
 
 Object | Description
@@ -27,7 +25,7 @@ Object | Description
 [`Vector`](#vector)|A 2D vector
 
 
-## Global functions
+# Global functions
 Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
 
 ### `setClearColor(color)`
@@ -96,7 +94,7 @@ Parameter | Type | Description
 x|`Number`|Horizontal scale
 y|`Number`|Vertical scale
 
-## Surface
+# Surface
 A surface in **myr.js** can be a render target. After binding it using its member function `bind()`, all render calls render to this surface. The surface itself can also be rendered. Additionally, the surface may be constructed from images, making surfaces useful for large image or background rendering since large images don't fit well on sprite sheets.
 
 ### `Surface(width, height)`
@@ -147,7 +145,7 @@ Returns the height of the surface.
 ### `free()`
 Frees the surface and all memory allocated by it.
 
-## Transform
+# Transform
 The transform object wraps a homogeneous 2D transformation matrix. Several different transform functions are provided, but the matrix can also be filled by hand. Transform objects are used in the global transformation stack to transform everything that is being rendered.
 
 ### `Transform()`
@@ -223,7 +221,7 @@ Parameter | Type | Description
 x|`Number`|Horizontal scale
 y|`Number`|Vertical scale
 
-## Color
+# Color
 This object represents a color with a red, green, blue and alpha component.
 
 ### `Color(r, g, b)`
@@ -232,7 +230,7 @@ Constructs a color object from red, green and blue. The values must lie in the r
 ### `Color(r, g, b, a)`
 Constructs a color object from red, green, blue and alpha. The values must lie in the range [0, 1].
 
-## Vector
+# Vector
 This object represents a vector in 2D space. Several useful vector operation functions are provided.
 
 ### `Vector(x, y)`
