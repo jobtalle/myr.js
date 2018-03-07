@@ -225,6 +225,13 @@ x|`Number`|Horizontal scale
 y|`Number`|Vertical scale
 
 ## Color
+This object represents a color with a red, green, blue and alpha component.
+
+### `Color(r, g, b)`
+Constructs a color object from red, green and blue. The values must lie in the range [0, 1]. The color will have an alpha value of `1.0`.
+
+### `Color(r, g, b, a)`
+Constructs a color object from red, green, blue and alpha. The values must lie in the range [0, 1].
 
 ## Vector
 
