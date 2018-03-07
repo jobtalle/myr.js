@@ -18,6 +18,7 @@ myr.setClearColor(new myr.Color(0.2, 0.5, 0.7));
 
 ## Objects
 The **myr.js** object exposes several objects:
+
 Object | Description
 -|-
 [`Surface`](#surface)|A render target which can be rendered to, which may be initialized to an existing image
