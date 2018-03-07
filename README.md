@@ -43,6 +43,56 @@ Clears the canvas to the currently set clear color
 ### `free()`
 Frees the **myr.js** object and the OpenGL objects it maintains. Note that this function does not free objects like [surfaces](#surface) and [shaders](#shader), these must be freed individually.
 
+### `bind()`
+Binds the canvas as the current render target. Always bind before rendering.
+
+### `getTransform()`
+Return the [transformation](#transform) which is currently on top of the transform stack.
+
+### `push()`
+Push the current [transformation](#transform) onto the stack.
+
+### `pop()`
+Pop the current [transformation](#transform) from the stack, restoring the last pushed transformation.
+
+### `transform(transform)`
+Transform the current [transformation](#transform) by multiplying it with another transformation.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transform to multiply the current transformation with
+
+### `translate(x, y)`
+Translate the current transformation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|Horizontal movement
+y|`Number`|Vertical movement
+
+### `rotate(angle)`
+Rotate the current transformation.
+
+Parameter | Type | Description
+-|-|-
+angle|`Number`|Angle in radians
+
+### `shear(x, y)`
+Shear the current transformation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|Horizontal shear
+y|`Number`|Vertical shear
+
+### `scale(x, y)`
+Scale the current transformation
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|Horizontal scale
+y|`Number`|Vertical scale
+
 ## Surface
 
 ## Shader
