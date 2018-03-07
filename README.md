@@ -29,6 +29,7 @@ Object | Description
 
 
 ## Global functions
+Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the matrix on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function, and the `pop()` function can be called after the transformations are done to get back to the original state.
 
 ### `setClearColor(color)`
 Set the clear color of the **myr.js** object. When `clear()` is called, the screen will be cleared using this color.
@@ -50,7 +51,7 @@ Binds the canvas as the current render target.
 Return the [transformation](#transform) which is currently on top of the stack.
 
 ### `push()`
-Push the current [transformation](#transform) onto the stack. The new current transformation is now no transformation (the identity matrix).
+Push the current [transformation](#transform) onto the stack, saving the current transformation state.
 
 ### `pop()`
 Pop the current [transformation](#transform) from the stack, restoring the last pushed transformation.
@@ -94,6 +95,7 @@ x|`Number`|Horizontal scale
 y|`Number`|Vertical scale
 
 ## Surface
+A surface in **myr.js** can be a render target. After binding it using its member function `bind()`, all render calls render to this surface. The surface itself can also be rendered. Additionally, the surface may be constructed from images, making surfaces useful for large image or background rendering since large images don't fit well on sprite sheets.
 
 ### `Surface(width, height)`
 Constructs a surface of a specific size.
