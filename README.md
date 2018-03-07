@@ -38,19 +38,19 @@ Parameter | Type | Description
 color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called
 
 ### `clear()`
-Clears the canvas to the currently set clear color
+Clears the canvas to the currently set clear color.
 
 ### `free()`
 Frees the **myr.js** object and the OpenGL objects it maintains. Note that this function does not free objects like [surfaces](#surface) and [shaders](#shader), these must be freed individually.
 
 ### `bind()`
-Binds the canvas as the current render target. Always bind before rendering.
+Binds the canvas as the current render target.
 
 ### `getTransform()`
-Return the [transformation](#transform) which is currently on top of the transform stack.
+Return the [transformation](#transform) which is currently on top of the stack.
 
 ### `push()`
-Push the current [transformation](#transform) onto the stack.
+Push the current [transformation](#transform) onto the stack. The new current transformation is now no transformation (the identity matrix).
 
 ### `pop()`
 Pop the current [transformation](#transform) from the stack, restoring the last pushed transformation.
@@ -94,6 +94,54 @@ x|`Number`|Horizontal scale
 y|`Number`|Vertical scale
 
 ## Surface
+
+### `Surface(width, height)`
+Constructs a surface of a specific size.
+
+Parameter | Type | Description
+-|-|-
+width|`Number`|Width in pixels
+height|`Number`|Height in pixels
+
+### `Surface(image)`
+Constructs a surface from an existing image. The function `ready()` will return `false` until the image is loaded.
+
+Parameter | Type | Description
+-|-|-
+image|`String`|A URL to a valid image file
+
+### `bind()`
+Binds the surface, making it the current render target until another one is bound.
+
+### `setClearColor(color)`
+Set the clear color of this surface. When `clear()` is called, the surface will be cleared using this color.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called
+
+### `clear()`
+Clears the surface to the currently set clear color.
+
+### `ready()`
+Returns a `Boolean` indicating whether the surface is ready for use. Surfaces constructed from an image will be ready once the image is loaded. Surfaces that don't require an image are always immediately ready.
+
+### `draw(x, y)`
+Draws this surface on the currently bound target. Note that surfaces can only render to other targets, never to themselves.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to render to
+y|`Number`|The Y position to render to
+
+### `getWidth()`
+Returns the width of the surface.
+
+### `getHeight()`
+Returns the height of the surface.
+
+### `free()`
+Frees the surface and all memory allocated by it.
 
 ## Shader
 
