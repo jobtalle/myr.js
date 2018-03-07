@@ -16,6 +16,17 @@ let myr = new Myr(document.getElementById("some-canvas-id"));
 myr.setClearColor(new myr.Color(0.2, 0.5, 0.7));
 ```
 
+## Objects
+The **myr.js** object exposes several objects:
+Object|Description
+-|-
+[`Surface`](#surface)|A render target which can be rendered to, which may be initialized to an existing image
+[`Shader`](#shader)|A (custom) shader
+[`Transform`](#transform)|A 2D transformation
+[`Color`](#color)|A color containing a red, green, blue and alpha channel
+[`Vector`](#vector)|A 2D vector
+
+
 ## Global functions
 
 ### `setClearColor(color)`
