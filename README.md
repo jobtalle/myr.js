@@ -113,7 +113,7 @@ Parameter | Type | Description
 image|`String`|A URL to a valid image file
 
 ### `bind()`
-Binds the surface, making it the current render target until another one is bound.
+Binds the surface, making it the current render target until another one is bound. After binding, an empty [transform](#transform) is pushed onto the transformation stack.
 
 ### `setClearColor(color)`
 Set the clear color of this surface. When `clear()` is called, the surface will be cleared using this color.
