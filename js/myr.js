@@ -332,10 +332,8 @@ let Myr = function(canvasElement) {
     
     const appendBuffer = data => {
         if(instanceBufferAt + data.length > instanceBufferCapacity) {
-            instanceBufferCapacity *= 2;
-            
             const oldBuffer = instanceBuffer;
-            instanceBuffer = new Float32Array(instanceBufferCapacity);
+            instanceBuffer = new Float32Array(instanceBufferCapacity *= 2);
             
             gl.bindBuffer(gl.ARRAY_BUFFER, instances);
             gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
@@ -378,13 +376,10 @@ let Myr = function(canvasElement) {
         
         gl.bindVertexArray(null);
         
-        instanceBufferAt = 0;
-        instanceCount = 0;
+        instanceBufferAt = instanceCount = 0;
     };
     
     const sendTransform = () => {
-        const matrix = transformStack[transformAt];
-        
         if(surface == null) {
             transform[3] = width;
             transform[7] = height;
@@ -394,12 +389,12 @@ let Myr = function(canvasElement) {
             transform[7] = surface.getHeight();
         }
         
-        transform[0] = matrix._00;
-        transform[1] = matrix._10;
-        transform[2] = matrix._20;
-        transform[4] = matrix._01;
-        transform[5] = matrix._11;
-        transform[6] = matrix._21;
+        transform[0] = transformStack[transformAt]._00;
+        transform[1] = transformStack[transformAt]._10;
+        transform[2] = transformStack[transformAt]._20;
+        transform[4] = transformStack[transformAt]._01;
+        transform[5] = transformStack[transformAt]._11;
+        transform[6] = transformStack[transformAt]._21;
         
         gl.bufferSubData(gl.UNIFORM_BUFFER, 0, transform);
         
@@ -425,31 +420,20 @@ let Myr = function(canvasElement) {
         appendBuffer(data);
     };
     
-    const getTransform = () => {
-        transformDirty = true;
-        
-        return transformStack[transformAt];
-    };
-    
     const pushIdentity = () => {
-        if(transformAt + 1 == transformStack.length) {
+        if(++transformAt == transformStack.length)
             transformStack.push(new Transform());
-            
-            ++transformAt;
-        }
         else
-            transformStack[++transformAt].identity();
+            transformStack[transformAt].identity();
         
         transformDirty = true;
     };
     
     this.push = () => {
-        if(transformAt + 1 == transformStack.length)
-            transformStack.push(this.getTransform());
+        if(++transformAt == transformStack.length)
+            transformStack.push(transformStack[transformAt - 1].copy());
         else
-            transformStack[transformAt + 1].set(transformStack[transformAt]);
-        
-        ++transformAt;
+            transformStack[transformAt].set(transformStack[transformAt - 1]);
     };
     
     this.pop = () => {
@@ -474,12 +458,18 @@ let Myr = function(canvasElement) {
         gl.viewport(0, 0, width, height);
     };
     
-    this.getTransform = () => transformStack[transformAt].copy();
-    this.transform = transform => getTransform().multiply(transform);
-    this.translate = (x, y) => getTransform().translate(x, y);
-    this.rotate = angle => getTransform().rotate(angle);
-    this.shear = (x, y) => getTransform().shear(x, y);
-    this.scale = (x, y) => getTransform().scale(x, y);
+    const touchTransform = () => {
+        transformDirty = true;
+        
+        return transformStack[transformAt];
+    };
+    
+    this.getTransform = () => transformStack[transformAt];
+    this.transform = transform => touchTransform().multiply(transform);
+    this.translate = (x, y) => touchTransform().translate(x, y);
+    this.rotate = angle => touchTransform().rotate(angle);
+    this.shear = (x, y) => touchTransform().shear(x, y);
+    this.scale = (x, y) => touchTransform().scale(x, y);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
     

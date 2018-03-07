@@ -64,9 +64,6 @@ MyrTest.prototype = {
         this.surface.clear();
         this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
         
-        myr.bind();
-        this.fish.draw(15, 15);
-        
         myr.flush();
     }
 }
