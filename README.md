@@ -148,10 +148,84 @@ Returns the height of the surface.
 ### `free()`
 Frees the surface and all memory allocated by it.
 
-## Shader
-
 ## Transform
+The transform object wraps a homogeneous 2D transformation matrix. Several different transform functions are provided, but the matrix can also be filled by hand. Transform objects are used in the global transformation stack to transform everything that is being rendered.
+
+### `Transform()`
+Constructs a `Transform` object, which is initialized as the identity matrix (no transform).
+
+### `Transform(_00, _10, _20, _01, _11, _21)`
+Constructs a `Transform` object with custom values. Note that only the top two rows of the matrix can be entered, since the bottom row for 2D transformations will always be `[0, 0, 1]`.
+
+Parameter | Type | Description
+-|-|-
+_00|`Number`|Value [0, 0] of the matrix
+_10|`Number`|Value [1, 0] of the matrix
+_20|`Number`|Value [2, 0] of the matrix
+_01|`Number`|Value [0, 1] of the matrix
+_11|`Number`|Value [1, 1] of the matrix
+_21|`Number`|Value [2, 1] of the matrix
+
+### `apply(vector)`
+Multiplies the given vector by this transformation matrix. This function may prove useful when a coordinate instead of a rendering call must be transformed.
+
+Parameter | Type | Description
+-|-|-
+vector|[`Vector`](#vector)|A vector object to transform
+
+### `copy()`
+Returns a copy of this transform object.
+
+### `identity()`
+Sets the transformation to the identity matrix.
+
+### `set(transform)`
+Sets the transformation to another transformation.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transform object
+
+### `multiply(transform)`
+Multiplies this transformation with another transformation by matrix multiplication. This is useful for combining different transforms together.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transform object
+
+### `rotate(angle)`
+Rotate by a number of radians.
+
+Parameter | Type | Description
+-|-|-
+angle|`Number`|The number of radians to rotate by
+
+### `shear(x, y)`
+Shear this transformation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|Horizontal shear
+y|`Number`|Vertical shear
+
+### `translate(x, y)`
+Translate this transformation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|Horizontal translation
+y|`Number`|Vertical translation
+
+### `scale(x, y)`
+Scale this transformation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|Horizontal scale
+y|`Number`|Vertical scale
 
 ## Color
 
 ## Vector
+
+## Shader
