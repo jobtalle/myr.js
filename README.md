@@ -29,7 +29,7 @@ Object | Description
 
 
 ## Global functions
-Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the matrix on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function, and the `pop()` function can be called after the transformations are done to get back to the original state.
+Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
 
 ### `setClearColor(color)`
 Set the clear color of the **myr.js** object. When `clear()` is called, the screen will be cleared using this color.
@@ -41,11 +41,14 @@ color|[`Color`](#color)|A color which the canvas will be cleared to when `clear(
 ### `clear()`
 Clears the canvas to the currently set clear color.
 
-### `free()`
-Frees the **myr.js** object and the OpenGL objects it maintains. Note that this function does not free objects like [surfaces](#surface) and [shaders](#shader), these must be freed individually.
-
 ### `bind()`
 Binds the canvas as the current render target.
+
+### `flush()`
+This function finishes all previously given draw calls. This function should be called at the very end of the render loop.
+
+### `free()`
+Frees the **myr.js** object and the OpenGL objects it maintains. Note that this function does not free objects like [surfaces](#surface) and [shaders](#shader), these must be freed individually.
 
 ### `getTransform()`
 Return the [transformation](#transform) which is currently on top of the stack.
