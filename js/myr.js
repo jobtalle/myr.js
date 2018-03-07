@@ -252,7 +252,7 @@ let Myr = function(canvasElement) {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
     };
     
-    this.Shader = function(vertex, fragment, samplers) {
+    const Shader = function(vertex, fragment, samplers) {
         const createShader = (type, source) => {
             const shader = gl.createShader(type);
             
@@ -489,7 +489,7 @@ let Myr = function(canvasElement) {
     const transform = new Float32Array(8);
     const transformStack = [new Transform()];
     const shadersDefault = new ShaderSet(
-        new this.Shader(
+        new Shader(
             "layout(location=0) in vec2 vertex;" +
             "layout(location=1) in vec4 atlas;" +
             "layout(location=2) in vec4 matrix;" +

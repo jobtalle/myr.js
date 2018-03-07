@@ -22,7 +22,6 @@ The **myr.js** object exposes several objects:
 Object | Description
 -|-
 [`Surface`](#surface)|A render target which can be rendered to, which may be initialized to an existing image
-[`Shader`](#shader)|A (custom) shader
 [`Transform`](#transform)|A 2D transformation
 [`Color`](#color)|A color containing a red, green, blue and alpha channel
 [`Vector`](#vector)|A 2D vector
@@ -48,7 +47,7 @@ Binds the canvas as the current render target.
 This function finishes all previously given draw calls. This function should be called at the very end of the render loop.
 
 ### `free()`
-Frees the **myr.js** object and the OpenGL objects it maintains. Note that this function does not free objects like [surfaces](#surface) and [shaders](#shader), these must be freed individually.
+Frees the **myr.js** object and the OpenGL objects it maintains. Note that this function does not free objects like [surfaces](#surface), these must be freed individually.
 
 ### `getTransform()`
 Return the [transformation](#transform) which is currently on top of the stack.
@@ -293,5 +292,3 @@ Normalizes the vector.
 
 ### `angle()`
 Returns the angle this vector is pointing towards.
-
-## Shader
