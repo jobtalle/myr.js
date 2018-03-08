@@ -168,23 +168,61 @@ let Myr = function(canvasElement) {
         this._11 *= y;
     };
     
+    const setAttributesDraw = (attributes, uvLeft, uvTop, uvRight, uvBottom, w, h, x, y) => {
+        attributes[0] = uvLeft;
+        attributes[1] = uvTop;
+        attributes[2] = uvRight;
+        attributes[3] = uvBottom;
+        attributes[4] = w;
+        attributes[5] = attributes[6] = 0;
+        attributes[7] = h;
+        attributes[8] = x;
+        attributes[9] = y;
+    };
+    
+    const setAttributesDrawPart = (attributes, uvLeft, uvTop, uvRight, uvBottom, w, h, x, y,
+                                  left, top, width, height) => {
+        const uvWidth = uvRight - uvLeft;
+        const uvHeight = uvBottom - uvTop;
+        
+        attributes[0] = uvLeft + uvWidth * (left / w);
+        attributes[1] = uvTop + uvHeight * (top / h);
+        attributes[2] = uvRight - uvWidth * (width / w);
+        attributes[3] = uvBottom - uvHeight * (height / h);
+        attributes[4] = w;
+        attributes[5] = attributes[6] = 0;
+        attributes[7] = h;
+        attributes[8] = x;
+        attributes[9] = y;
+    };
+    
     this.Surface = function() {
-        this.draw = (x, y) => {
-            if(!this.ready())
-                return;
-            
+        const bindTexture = () => {
             if(currentTexture != texture) {
                 flush();
 
                 currentTexture = texture;
             }
-
-            attributes[4] = width;
-            attributes[5] = attributes[6] = 0;
-            attributes[7] = height;
-            attributes[10] = x;
-            attributes[11] = y;
-
+        };
+        
+        this.draw = (x, y) => {
+            if(!this.ready())
+                return;
+            
+            bindTexture();
+            setAttributesDraw(attributes, 0, 0, 1, 1, width, height, x, y);
+            
+            draw(RENDER_MODE_SURFACES, shaders, attributes);
+        };
+        
+        this.drawPart = (x, y, left, top, width, height) => {
+            if(!this.ready())
+                return;
+            
+            bindTexture();
+            setAttributesDrawPart(attributes, 0, 0, 1, 1, this.getWidth(), this.getHeight(), x, y,
+                                 left, top, width, height);
+            
             draw(RENDER_MODE_SURFACES, shaders, attributes);
         };
         
@@ -215,8 +253,7 @@ let Myr = function(canvasElement) {
         let shaders = shadersDefault.copy();
         let clearColor = new Color(0, 0, 0, 0);
         
-        attributes[0] = attributes[1] = attributes[8] = attributes[9] = 0;
-        attributes[2] = attributes[3] = 1;
+        attributes[10] = attributes[11] = 0;
         
         gl.activeTexture(TEXTURE_EDITING);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -501,8 +538,8 @@ let Myr = function(canvasElement) {
             "out highp vec2 uv;" +
             "void main() {" +
                 "uv=atlas.xy+vec2(vertex.x,1.0-vertex.y)*atlas.zw;" +
-                "vec2 transformed=(((vertex-position.xy)*" + 
-                    "mat2(matrix.xy,matrix.zw)+position.zw)*" + 
+                "vec2 transformed=(((vertex-position.zw)*" + 
+                    "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
                     "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                     "vec2(tw.w,th.w)*2.0;" +
                 "gl_Position=vec4(transformed.x-1.0,1.0-transformed.y,0,1);" +

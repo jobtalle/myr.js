@@ -60,6 +60,10 @@ MyrTest.prototype = {
         
         this.fish.draw(10, 10);
         
+        //this.surface.drawPart(this.surface.getWidth() / 4, this.surface.getHeight() / 4, this.surface.getWidth() / 4, this.surface.getHeight() / 4, this.surface.getWidth() / 2, this.surface.getHeight() / 2);
+        this.surface.drawPart(0, 0, 0, 0, this.surface.getWidth() / 2, this.surface.getHeight() / 2);
+        //this.surface.draw(0, 0);
+        
         this.surface.bind();
         this.surface.clear();
         this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
