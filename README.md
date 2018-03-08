@@ -33,7 +33,7 @@ Set the clear color of the **myr.js** object. When `clear()` is called, the scre
 
 Parameter | Type | Description
 -|-|-
-color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called
+color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called.
 
 ### `clear()`
 Clears the canvas to the currently set clear color.
@@ -87,7 +87,7 @@ x|`Number`|Horizontal shear
 y|`Number`|Vertical shear
 
 ### `scale(x, y)`
-Scale the current transformation
+Scale the current transformation.
 
 Parameter | Type | Description
 -|-|-
