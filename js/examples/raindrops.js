@@ -1,3 +1,11 @@
+/* Myriad - Raindrop example.
+ *
+ * This example serves to demonstrate the ease at which Myriad renders thousands of images.
+ * Please note that most of the overhead should come from the iterative loops over each raindrop,
+ * and that many more images can often be drawn by simply optimizing your logic!
+ * For example, this scene could easily be achieved by rendering to a single surface, and looping that instead.
+ */
+
 function RaindropExample() {
     this.dropSpeed = 300;
     this.raindrops = [];
@@ -16,7 +24,9 @@ RaindropExample.prototype = {
         this.screenHeight = canvas.height;
 
         // Get the image of the raindrop and make it a surface.
-        this.raindrop = new this.myr.Surface("https://raw.githubusercontent.com/Lukeslux/myr.js/develop/sprites/raindrop.png");
+        this.raindrop = new this.myr.Surface(
+            "https://raw.githubusercontent.com/JobTalle/myr.js/develop/js/examples/raindrop.png"
+        );
 
         // Kick-start the rendering loop.
         this.lastDate = new Date();
@@ -77,12 +87,14 @@ RaindropExample.prototype = {
 
     /* Render to the canvas. */
     render: function() {
+        // We declare that we want to draw to the canvas, and clear it with the clear color.
         this.myr.bind();
         this.myr.clear();
 
         for (var i = 0; i < this.raindrops.length; i++)
             this.raindrop.draw(this.raindrops[i][0], this.raindrops[i][1]);
-        
+
+        // Flush all render requests such that we actually see our raindrops.
         this.myr.flush();
     },
 
