@@ -1,39 +1,42 @@
 function RaindropExample() {
-    this.NUM_RAINDROPS = 1000;
-
     this.dropSpeed = 300;
+    this.raindrops = [];
     this.fps = 0;
 }
 
 RaindropExample.prototype = {
     /* Initialize Myr and load the required surface. */
-    start() {
-        canvas = document.getElementById("renderer");
-        myr = new Myr(canvas);
-        myr.setClearColor(new myr.Color(0, 0, 0));
+     start: function() {
+        var canvas = document.getElementById("renderer");
+        this.myr = new Myr(canvas);
+        this.myr.setClearColor(new this.myr.Color(0, 0, 0));
 
         // Store the canvas size for positioning the rain correctly.
         this.screenWidth = canvas.width;
         this.screenHeight = canvas.height;
 
         // Get the image of the raindrop and make it a surface.
-        this.raindrop = new myr.Surface("https://raw.githubusercontent.com/Lukeslux/myr.js/develop/sprites/raindrop.png");
+        this.raindrop = new this.myr.Surface("https://raw.githubusercontent.com/Lukeslux/myr.js/develop/sprites/raindrop.png");
 
-        // Initialize an array of y coordinates.
-        var spawnRange = this.screenHeight;
-        this.raindropXLocations = Array.apply(null,
-                                  Array(this.NUM_RAINDROPS)).map(function (y, index) {
-                                      return 2 * Math.random() * spawnRange - spawnRange;
-                                  });
-
-
-        // Kickstart the rendering loop.
+        // Kick-start the rendering loop.
         this.lastDate = new Date();
         this.animate();
     },
+
+    /* Adds another coordinate to the raindrop array. */
+    addRaindrop: function() {
+        var x = Math.random() * this.screenWidth;
+        var y = Math.random() * this.screenHeight;
+        this.raindrops.push([x,y]);
+    },
+
+    /* Return the total amount of raindrops on the screen. */
+    numRaindrops: function () {
+        return this.raindrops.length;
+    },
     
     /* Request an update for the next frame, update the logic, and call render. */
-    animate() {
+    animate: function() {
         requestAnimationFrame(this.animate.bind(this));
 
         var timeStep = this.getTimeStep();
@@ -43,7 +46,7 @@ RaindropExample.prototype = {
     },
     
     /* Return the passed time relative to the previous time this method has been called. */
-    getTimeStep() {
+    getTimeStep: function() {
         var date = new Date();
         var timeStep = (date - this.lastDate) / 1000;
         
@@ -58,58 +61,65 @@ RaindropExample.prototype = {
     /* Update internal state. 
      * @param {float} timeStep - The time passed relative to the previous update.
      */
-    update(timeStep) {
-        for (var i = 0; i < this.raindropXLocations.length; i++) {
-            // Move the waterdrops, we use modulo to move at different speeds.
+    update: function(timeStep) {
+        for (var i = 0; i < this.raindrops.length; i++) {
+            // Move the raindrops, we use modulo to move at different speeds.
             var speedMod = (i % 4 + 1);
-            this.raindropXLocations[i] += timeStep * this.dropSpeed / speedMod;
+            this.raindrops[i][1] += timeStep * this.dropSpeed / speedMod;
 
             // If the raindrop is outside the screen, we reset the position to the top.
-            if (this.raindropXLocations[i] - this.raindrop.getHeight() > this.screenHeight)
+            if (this.raindrops[i][1] - this.raindrop.getHeight() > this.screenHeight)
             {
-                this.raindropXLocations[i] = -this.raindrop.getHeight();
+                this.raindrops[i][1] = -this.raindrop.getHeight();
             }
         }
     },
-    
 
     /* Render to the canvas. */
-    render() {
-        myr.bind();
-        myr.clear();
+    render: function() {
+        this.myr.bind();
+        this.myr.clear();
 
-        var xStep = this.screenWidth / this.raindropXLocations.length;
-        for (var i = 0; i < this.raindropXLocations.length; i++) {
-            this.raindrop.draw(i * xStep, this.raindropXLocations[i]);
-        }
+        for (var i = 0; i < this.raindrops.length; i++)
+            this.raindrop.draw(this.raindrops[i][0], this.raindrops[i][1]);
         
-        myr.flush();
+        this.myr.flush();
     },
 
     /* Update the current fps.*/
-    updateFPS(timeStep) {
+    updateFPS: function(timeStep) {
         this.fps = 1 / timeStep;
     },
 
     /* Return the fps. */
-    getFPS() {
+    getFPS: function() {
         return this.fps;
     }
-}
+};
 
 // Start the game.
 var example = new RaindropExample();
 example.start();
 
-// Start the fps plot.
-var smoothie = new SmoothieChart({tooltip:true});
-smoothie.streamTo(document.getElementById("fpsPlot"), 1000);
+// Start the fps and raindrop count plot.
+var fpsPlot = new SmoothieChart({tooltip:true});
+fpsPlot.streamTo(document.getElementById("fpsPlot"), 1000);
+var countPlot = new SmoothieChart({tooltip:true});
+countPlot.streamTo(document.getElementById("countPlot"), 1000);
 var fpsLine = new TimeSeries();
+var countLine = new TimeSeries();
 
 // Add the fps value to the line every second
 setInterval(function() {
     fpsLine.append(new Date().getTime(), example.getFPS());
 }, 1000);
 
+// Add a raindrop 0.1 second.
+setInterval(function() {
+    example.addRaindrop();
+    countLine.append(new Date().getTime(), example.numRaindrops());
+}, 100);
+
 // Add to SmoothieChart
-smoothie.addTimeSeries(fpsLine);
+fpsPlot.addTimeSeries(fpsLine);
+countPlot.addTimeSeries(countLine);
