@@ -120,7 +120,7 @@ Set the clear color of this surface. When `clear()` is called, the surface will 
 
 Parameter | Type | Description
 -|-|-
-color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called
+color|[`Color`](#color)|A color which the surface will be cleared to when `clear()` is called
 
 ### `clear()`
 Clears the surface to the currently set clear color.
