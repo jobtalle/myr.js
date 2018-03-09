@@ -104,7 +104,7 @@ example.start();
 // Start the fps and raindrop count plot.
 var fpsPlot = new SmoothieChart({tooltip:true});
 fpsPlot.streamTo(document.getElementById("fpsPlot"), 1000);
-var countPlot = new SmoothieChart({tooltip:true});
+var countPlot = new SmoothieChart({tooltip:true, interpolation:'linear'});
 countPlot.streamTo(document.getElementById("countPlot"), 1000);
 var fpsLine = new TimeSeries();
 var countLine = new TimeSeries();
@@ -114,9 +114,10 @@ setInterval(function() {
     fpsLine.append(new Date().getTime(), example.getFPS());
 }, 1000);
 
-// Add a raindrop 0.1 second.
+// Add a raindrop every 0.1 second, unless the fps dips below 21.
 setInterval(function() {
-    example.addRaindrop();
+    if (example.getFPS() > 20)
+        example.addRaindrop();
     countLine.append(new Date().getTime(), example.numRaindrops());
 }, 100);
 
