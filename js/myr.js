@@ -189,9 +189,9 @@ let Myr = function(canvasElement) {
         attributes[1] = uvTop + uvHeight * (top / h);
         attributes[2] = uvRight - uvWidth * (width / w);
         attributes[3] = uvBottom - uvHeight * (height / h);
-        attributes[4] = w;
+        attributes[4] = width;
         attributes[5] = attributes[6] = 0;
-        attributes[7] = h;
+        attributes[7] = height;
         attributes[8] = x;
         attributes[9] = y;
     };
@@ -537,7 +537,7 @@ let Myr = function(canvasElement) {
             "};" +
             "out highp vec2 uv;" +
             "void main() {" +
-                "uv=atlas.xy+vec2(vertex.x,1.0-vertex.y)*atlas.zw;" +
+                "uv=atlas.xy+vec2(vertex.x,vertex.y)*atlas.zw;" +
                 "vec2 transformed=(((vertex-position.zw)*" + 
                     "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
                     "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
@@ -574,7 +574,7 @@ let Myr = function(canvasElement) {
     gl.enable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
