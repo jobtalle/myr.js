@@ -385,7 +385,7 @@ let Myr = function(canvasElement) {
         ++instanceCount;
     };
     
-    const flush = this.flush = () => {
+    const flush = () => {
         if(instanceCount == 0)
             return;
         
@@ -488,11 +488,15 @@ let Myr = function(canvasElement) {
         gl.deleteBuffer(transformBuffer);
     };
     
-    this.bind = () => {
+    this.flush = () => {
         bind(null);
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, width, height);
+        
+        defaultSurface.draw(0, 0);
+        
+        flush();
     };
     
     const touchTransform = () => {
@@ -501,14 +505,15 @@ let Myr = function(canvasElement) {
         return transformStack[transformAt];
     };
     
+    this.bind = () => defaultSurface.bind();
     this.getTransform = () => transformStack[transformAt];
     this.transform = transform => touchTransform().multiply(transform);
     this.translate = (x, y) => touchTransform().translate(x, y);
     this.rotate = angle => touchTransform().rotate(angle);
     this.shear = (x, y) => touchTransform().shear(x, y);
     this.scale = (x, y) => touchTransform().scale(x, y);
-    this.setClearColor = color => clearColor = color;
-    this.clear = () => clear(clearColor);
+    this.setClearColor = color => defaultSurface.setClearColor(color);
+    this.clear = () => defaultSurface.clear();
     
     const RENDER_MODE_NONE = -1;
     const RENDER_MODE_SURFACES = 0;
@@ -524,7 +529,7 @@ let Myr = function(canvasElement) {
     const vaoSprites = gl.createVertexArray();
     const transformBuffer = gl.createBuffer();
     const transform = new Float32Array(8);
-    const transformStack = [new Transform()];
+    const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
     const shadersDefault = new ShaderSet(
         new Shader(
             "layout(location=0) in vec2 vertex;" +
@@ -542,7 +547,7 @@ let Myr = function(canvasElement) {
                     "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
                     "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                     "vec2(tw.w,th.w)*2.0;" +
-                "gl_Position=vec4(transformed.x-1.0,1.0-transformed.y,0,1);" +
+                "gl_Position=vec4(transformed.x-1.0,transformed.y-1.0,0,1);" +
             "}",
             "uniform sampler2D source;" +
             "in highp vec2 uv;" +
@@ -564,9 +569,9 @@ let Myr = function(canvasElement) {
     let instanceBufferAt = 0;
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
-    let clearColor = new Color(0, 0, 0, 0);
     let width = canvasElement.width;
     let height = canvasElement.height;
+    let defaultSurface = new this.Surface(width, height);
     let shader = null;
     let surface = null;
     let currentTexture = null;
@@ -574,7 +579,6 @@ let Myr = function(canvasElement) {
     gl.enable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
