@@ -168,8 +168,8 @@ let Myr = function(canvasElement) {
         this._11 *= y;
     };
     
-    const setAttributesUV = (attributes, uvLeft, uvTop, uvRight, uvBottom, w, h,
-                             left, top, width, height) => {
+    const setAttributesUvPart = (attributes, uvLeft, uvTop, uvRight, uvBottom, w, h,
+                                 left, top, width, height) => {
         const uvWidth = uvRight - uvLeft;
         const uvHeight = uvBottom - uvTop;
         
@@ -193,7 +193,7 @@ let Myr = function(canvasElement) {
     
     const setAttributesDrawPart = (attributes, uvLeft, uvTop, uvRight, uvBottom, w, h, x, y,
                                    left, top, width, height) => {
-        setAttributesUV(attributes, uvLeft, uvTop, uvRight, uvBottom, w, h, left, top, width, height);
+        setAttributesUvPart(attributes, uvLeft, uvTop, uvRight, uvBottom, w, h, left, top, width, height);
         
         attributes[4] = width;
         attributes[5] = attributes[6] = 0;
