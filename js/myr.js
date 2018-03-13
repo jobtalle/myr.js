@@ -174,8 +174,8 @@ let Myr = function(canvasElement) {
         
         attributes[0] = uvLeft + uvWidth * left;
         attributes[1] = uvTop + uvHeight * top;
-        attributes[2] = attributes[0] + uvWidth * (width - left);
-        attributes[3] = attributes[1] + uvHeight * (height - top);
+        attributes[2] = uvLeft + uvWidth * width;
+        attributes[3] = uvTop + uvHeight * height;
     };
     
     const setAttributesDraw = (attributes, width, height, x, y) => {
