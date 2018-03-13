@@ -391,7 +391,7 @@ let Myr = function(canvasElement) {
         ++instanceCount;
     };
     
-    const flush = () => {
+    const flush = this.flush = () => {
         if(instanceCount == 0)
             return;
         
@@ -485,6 +485,13 @@ let Myr = function(canvasElement) {
         transformDirty = true;
     };
     
+    this.bind = () => {
+        bind(null);
+        
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, width, height);
+    };
+    
     this.free = () => {
         shaderSprites.free();
         
@@ -494,32 +501,20 @@ let Myr = function(canvasElement) {
         gl.deleteBuffer(transformBuffer);
     };
     
-    this.flush = () => {
-        bind(null);
-        
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, width, height);
-        
-        defaultSurface.draw(0, 0);
-        
-        flush();
-    };
-    
     const touchTransform = () => {
         transformDirty = true;
         
         return transformStack[transformAt];
     };
     
-    this.bind = () => defaultSurface.bind();
     this.getTransform = () => transformStack[transformAt];
     this.transform = transform => touchTransform().multiply(transform);
     this.translate = (x, y) => touchTransform().translate(x, y);
     this.rotate = angle => touchTransform().rotate(angle);
     this.shear = (x, y) => touchTransform().shear(x, y);
     this.scale = (x, y) => touchTransform().scale(x, y);
-    this.setClearColor = color => defaultSurface.setClearColor(color);
-    this.clear = () => defaultSurface.clear();
+    this.setClearColor = color => clearColor = color;
+    this.clear = () => clear(clearColor);
     
     const RENDER_MODE_NONE = -1;
     const RENDER_MODE_SURFACES = 0;
@@ -575,9 +570,9 @@ let Myr = function(canvasElement) {
     let instanceBufferAt = 0;
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
+    let clearColor = new Color(0, 0, 0);
     let width = canvasElement.width;
     let height = canvasElement.height;
-    let defaultSurface = new this.Surface(width, height);
     let shader = null;
     let surface = null;
     let currentTexture = null;
