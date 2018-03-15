@@ -58,6 +58,7 @@ MyrTest.prototype = {
         
         myr.pop();
         
+        this.surface.drawScaled(0, 0, 2, 2);
         this.fish.drawPart(150, 150,
                            this.fish.getWidth() / 4,
                            this.fish.getHeight() / 4,

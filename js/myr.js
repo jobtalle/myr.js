@@ -181,7 +181,7 @@ let Myr = function(canvasElement) {
         attributes[3] = uvTop + uvHeight * height;
     };
     
-    const setAttributesDraw = (attributes, width, height, x, y) => {
+    const setAttributesDraw = (attributes, x, y, width, height) => {
         attributes[4] = width;
         attributes[5] = attributes[6] = 0;
         attributes[7] = height;
@@ -212,7 +212,7 @@ let Myr = function(canvasElement) {
             bindTexture();
             
             setAttributesUv(attributes, 0, 0, 1, 1);
-            setAttributesDraw(attributes, width, height, x, y);
+            setAttributesDraw(attributes, x, y, width, height);
             
             draw(RENDER_MODE_SURFACES, shaders, attributes);
         };
@@ -227,7 +227,19 @@ let Myr = function(canvasElement) {
             const hf = 1 / height;
             
             setAttributesUvPart(attributes, 0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
-            setAttributesDraw(attributes, w, h, x, y);
+            setAttributesDraw(attributes, x, y, w, h);
+            
+            draw(RENDER_MODE_SURFACES, shaders, attributes);
+        };
+        
+        this.drawScaled = (x, y, xScale, yScale) => {
+            if(!this.ready())
+                return;
+            
+            bindTexture();
+            
+            setAttributesUv(attributes, 0, 0, 1, 1);
+            setAttributesDraw(attributes, x, y, width * xScale, height * yScale);
             
             draw(RENDER_MODE_SURFACES, shaders, attributes);
         };
