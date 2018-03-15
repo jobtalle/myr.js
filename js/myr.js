@@ -287,7 +287,7 @@ let Myr = function(canvasElement) {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         }
         else {
-            const image = new Image();
+            const image = document.createElement("img");
             
             image.onload = () => {
                 width = image.width;
