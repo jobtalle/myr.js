@@ -1,5 +1,8 @@
 let Myr = function(canvasElement) {
-    const gl = canvasElement.getContext("webgl2");
+    const gl = canvasElement.getContext("webgl2", {
+        antialias: false,
+        depth: false
+    });
     
     const Color = this.Color = function(r, g, b, a) {
         this.r = r;
