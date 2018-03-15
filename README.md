@@ -95,7 +95,7 @@ x|`Number`|Horizontal scale
 y|`Number`|Vertical scale
 
 # Surface
-A surface in **myr.js** can be a render target. After binding it using its member function `bind()`, all render calls render to this surface. The surface itself can also be rendered. Additionally, the surface may be constructed from images, making surfaces useful for large image or background rendering since large images don't fit well on sprite sheets.
+A surface in **myr.js** can be a render target. After binding it using its member function `bind()`, all render calls render to this surface. The surface itself can also be rendered. Additionally, the surface may be constructed from images, making surfaces useful for large image or background rendering since large images don't fit well on sprite sheets. Note that surfaces can only render to other targets, never to themselves.
 
 ### `Surface(width, height)`
 Constructs a surface of a specific size.
@@ -129,12 +129,34 @@ Clears the surface to the currently set clear color.
 Returns a `Boolean` indicating whether the surface is ready for use. Surfaces constructed from an image will be ready once the image is loaded. Surfaces that don't require an image are always immediately ready.
 
 ### `draw(x, y)`
-Draws this surface on the currently bound target. Note that surfaces can only render to other targets, never to themselves.
+Draws this surface on the currently bound target.
 
 Parameter | Type | Description
 -|-|-
 x|`Number`|The X position to render to
 y|`Number`|The Y position to render to
+
+### `drawScaled(x, y, xScale, yScale)`
+Draws this surface on the currently bound target with scaling applied.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to render to
+y|`Number`|The Y position to render to
+xScale|`Number`|The horizontal scale factor
+yScale|`Number`|The vertical scale factor
+
+### `drawPart(x, y, left, top, width, height)`
+Draws a part of this surface on the currently bound render target. Make sure the specified region is part of the surface; rendering parts that fall outside this surface results in undefined behavior.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to render to
+y|`Number`|The Y position to render to
+left|`Number`|The X position on the surface to render from
+top|`Number`|The Y position on the surface to render from
+width|`Number`|The width of the region to draw
+height|`Number`|The height of the region to draw
 
 ### `getWidth()`
 Returns the width of the surface.
