@@ -1,11 +1,33 @@
 /* Myriad - Cube example.
  *
  * This example serves to demonstrate the use of transformation in Myriad.
+ * It draws an isometric tower using cubes, which are constructed from transformed squares.
  */
 
 function CubeExample() {
-    this.rotation = 0;
     this.fps = 0;
+
+    // Define a simple 3D house in a grid.
+    this.map = [[[1, 1, 1, 1, 1],
+                 [1, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 1],
+                 [1, 1, 1, 1, 1]],
+                [[1, 1, 0, 1, 1],
+                 [1, 0, 0, 0, 1],
+                 [0, 0, 0, 0, 0],
+                 [1, 0, 0, 0, 1],
+                 [1, 1, 0, 1, 1]],
+                [[1, 1, 1, 1, 1],
+                 [1, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 1],
+                 [1, 1, 1, 1, 1]],
+                [[1, 0, 1, 0, 1],
+                 [0, 0, 0, 0, 0],
+                 [1, 0, 0, 0, 1],
+                 [0, 0, 0, 0, 0],
+                 [1, 0, 1, 0, 1]]];
 }
 
 CubeExample.prototype = {
@@ -19,11 +41,17 @@ CubeExample.prototype = {
         this.screenWidth = canvas.width;
         this.screenHeight = canvas.height;
 
-        // Define a yellow transparent square surface half the size of the screen.
-        var squareSize = this.screenHeight * 0.2;
-        this.square = new this.myr.Surface(squareSize, squareSize);
-        this.square.setClearColor(new this.myr.Color(1, .8, 0, 0.5));
-        this.square.clear();
+        // Define a square brick surface and its shadow.
+        var squareSize = 32;
+        this.square = new this.myr.Surface("./brick.png");
+        this.shadeSquare = new this.myr.Surface(squareSize, squareSize);
+        this.shadeSquare.setClearColor(new this.myr.Color(0, 0, 0, 0.8));
+        this.shadeSquare.clear();
+
+        // Define the isometric scale and the dimensions of the cube's upper square.
+        this.isoScale = 0.5773;
+        this.cubeTopWidth = squareSize * Math.sqrt(2);
+        this.cubeTopHeight = this.cubeTopWidth * this.isoScale;
 
         // Kick-start the rendering loop.
         this.lastDate = new Date();
@@ -36,7 +64,6 @@ CubeExample.prototype = {
 
         var timeStep = this.getTimeStep();
         this.updateFPS(timeStep);
-        this.update(timeStep);
         this.render();
     },
     
@@ -53,13 +80,6 @@ CubeExample.prototype = {
         return timeStep;
     },
 
-    /* Update internal state. 
-     * @param {float} timeStep - The time passed relative to the previous update.
-     */
-    update: function(timeStep) {
-        this.rotation += timeStep;
-    },
-
     /* Convert a degree to radians.
      * @param {float} degree - The degrees.
      */
@@ -72,38 +92,33 @@ CubeExample.prototype = {
      * @param {float} y - The Y position.
      */
     renderCube: function (x, y) {
-        // Define w/h ratio for camera pitch at 35.2643, and the middle of the square.
-        var scale = 0.5773;
         var mid = this.square.getWidth() / 2;
 
         // Draw top.
         this.myr.push();
         this.myr.translate(x, y);
-        this.myr.scale(1, scale);
+        this.myr.scale(1, this.isoScale);
         this.myr.rotate(this.degToRad(45));
         this.myr.translate(-mid, -mid);
         this.square.draw(0, 0);
         this.myr.pop();
 
-        // Determine properties of the top.
-        var topWidth = mid * Math.sqrt(2);
-        var topHeight = topWidth * 0.866;
-
         // Draw left.
         this.myr.push();
-        this.myr.translate(x - topWidth / 2, y + topHeight);
+        this.myr.translate(x - this.cubeTopWidth / 4, y + this.cubeTopHeight * 3/4);
         this.myr.rotate(this.degToRad(30));
-        this.myr.scale(scale, 1);
+        this.myr.scale(this.isoScale, 1);
         this.myr.rotate(this.degToRad(45));
         this.myr.translate(-mid, -mid);
         this.square.draw(0, 0);
+        this.shadeSquare.draw(0, 0);
         this.myr.pop();
 
         // Draw right.
         this.myr.push();
-        this.myr.translate(x + topWidth / 2, y + topHeight);
+        this.myr.translate(x + this.cubeTopWidth / 4, y + this.cubeTopHeight * 3/4);
         this.myr.rotate(this.degToRad(-30));
-        this.myr.scale(scale, 1);
+        this.myr.scale(this.isoScale, 1);
         this.myr.rotate(this.degToRad(45));
         this.myr.translate(-mid, -mid);
         this.square.draw(0, 0);
@@ -117,9 +132,18 @@ CubeExample.prototype = {
         this.myr.clear();
 
         // Render a grid of cubes.
-        this.renderCube(100 , 100);
-        this.renderCube(170, 140);
-        this.renderCube(240, 180);
+        var shiftX = this.cubeTopWidth / 2;
+        var shiftY = (this.map.length + this.map[0].length) * this.cubeTopHeight / 2;
+
+        for (var slice = 0; slice < this.map.length; slice++)
+            for (var row = 0; row < this.map[slice].length; row++)
+                for (var col = this.map[slice][row].length; col >= 0; col--)
+                    if (this.map[slice][row][col]) {
+                        var x = (row + col) * this.cubeTopWidth  / 2;
+                        var y = (row - col) * this.cubeTopHeight / 2 -
+                                slice * this.cubeTopHeight;
+                        this.renderCube(shiftX + x , shiftY + y);
+                    }
 
         // Flush all render requests such that we actually see our cube.
         this.myr.flush();
