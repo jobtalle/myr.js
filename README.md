@@ -128,6 +128,15 @@ Clears the surface to the currently set clear color.
 ### `ready()`
 Returns a `Boolean` indicating whether the surface is ready for use. Surfaces constructed from an image will be ready once the image is loaded. Surfaces that don't require an image are always immediately ready.
 
+### `getWidth()`
+Returns the width of the surface.
+
+### `getHeight()`
+Returns the height of the surface.
+
+### `free()`
+Frees the surface and all memory allocated by it.
+
 ### `draw(x, y)`
 Draws this surface on the currently bound target.
 
@@ -185,15 +194,6 @@ left|`Number`|The X position on the surface to render from
 top|`Number`|The Y position on the surface to render from
 width|`Number`|The width of the region to draw
 height|`Number`|The height of the region to draw
-
-### `getWidth()`
-Returns the width of the surface.
-
-### `getHeight()`
-Returns the height of the surface.
-
-### `free()`
-Frees the surface and all memory allocated by it.
 
 # Transform
 The transform object wraps a homogeneous 2D transformation matrix. Several different transform functions are provided, but the matrix can also be filled by hand. Transform objects are used in the global transformation stack to transform everything that is being rendered.
