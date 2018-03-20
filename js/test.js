@@ -58,6 +58,12 @@ MyrTest.prototype = {
         
         myr.pop();
         
+		let t = new myr.Transform();
+		t.translate(50, 50);
+		t.rotate(1);
+		
+		this.surface.drawTransformed(t);
+		/*8
         this.surface.drawScaled(0, 0, 2, 2);
         this.fish.drawPart(150, 150,
                            this.fish.getWidth() / 4,
@@ -66,7 +72,7 @@ MyrTest.prototype = {
                            this.fish.getHeight() / 2);
         
         myr.flush();
-        
+        */
         this.surface.bind();
         this.surface.clear();
         this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
