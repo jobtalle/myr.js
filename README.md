@@ -136,6 +136,13 @@ Parameter | Type | Description
 x|`Number`|The X position to render to
 y|`Number`|The Y position to render to
 
+### `drawTransformed(transform)`
+Draws this surface on the currently bound target after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this surface
+
 ### `drawScaled(x, y, xScale, yScale)`
 Draws this surface on the currently bound target with scaling applied.
 
