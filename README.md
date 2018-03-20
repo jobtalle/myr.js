@@ -136,13 +136,6 @@ Parameter | Type | Description
 x|`Number`|The X position to render to
 y|`Number`|The Y position to render to
 
-### `drawTransformed(transform)`
-Draws this surface on the currently bound target after applying a transformation to it.
-
-Parameter | Type | Description
--|-|-
-transform|[`Transform`](#transform)|A transformation to apply to this surface
-
 ### `drawScaled(x, y, xScale, yScale)`
 Draws this surface on the currently bound target after applying scaling.
 
@@ -163,6 +156,13 @@ y|`Number`|The Y position to render to
 xShear|`Number`|Horizontal shearing
 yShear|`Number`|Vertical shearing
 
+### `drawTransformed(transform)`
+Draws this surface on the currently bound target after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this surface
+
 ### `drawPart(x, y, left, top, width, height)`
 Draws a part of this surface on the currently bound render target. Make sure the specified region is part of the surface; rendering parts that fall outside this surface results in undefined behavior.
 
@@ -170,6 +170,17 @@ Parameter | Type | Description
 -|-|-
 x|`Number`|The X position to render to
 y|`Number`|The Y position to render to
+left|`Number`|The X position on the surface to render from
+top|`Number`|The Y position on the surface to render from
+width|`Number`|The width of the region to draw
+height|`Number`|The height of the region to draw
+
+### `drawPartTransformed(transform, left, top, width, height)`
+Draws a part of this surface on the currently bound render target. Make sure the specified region is part of the surface; rendering parts that fall outside this surface results in undefined behavior.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this surface
 left|`Number`|The X position on the surface to render from
 top|`Number`|The Y position on the surface to render from
 width|`Number`|The width of the region to draw

@@ -234,7 +234,31 @@ let Myr = function(canvasElement) {
             
             draw(RENDER_MODE_SURFACES, shaders, attributes);
         };
-		
+        
+        this.drawScaled = (x, y, xScale, yScale) => {
+            if(!this.ready())
+                return;
+            
+            bindTexture();
+            
+            setAttributesUv(attributes, 0, 0, 1, 1);
+            setAttributesDraw(attributes, x, y, width * xScale, height * yScale);
+            
+            draw(RENDER_MODE_SURFACES, shaders, attributes);
+        };
+        
+        this.drawSheared = (x, y, xShear, yShear) => {
+            if(!this.ready())
+                return;
+            
+            bindTexture();
+            
+            setAttributesUv(attributes, 0, 0, 1, 1);
+            setAttributesDrawSheared(attributes, x, y, width, height, xShear, yShear);
+            
+            draw(RENDER_MODE_SURFACES, shaders, attributes);
+        };
+        
 		this.drawTransformed = transform => {
 			if(!this.ready())
 				return;
@@ -262,26 +286,17 @@ let Myr = function(canvasElement) {
             draw(RENDER_MODE_SURFACES, shaders, attributes);
         };
         
-        this.drawScaled = (x, y, xScale, yScale) => {
+        this.drawPartTransformed = (transform, left, top, w, h) => {
             if(!this.ready())
                 return;
             
             bindTexture();
             
-            setAttributesUv(attributes, 0, 0, 1, 1);
-            setAttributesDraw(attributes, x, y, width * xScale, height * yScale);
+            const wf = 1 / width;
+            const hf = 1 / height;
             
-            draw(RENDER_MODE_SURFACES, shaders, attributes);
-        };
-        
-        this.drawSheared = (x, y, xShear, yShear) => {
-            if(!this.ready())
-                return;
-            
-            bindTexture();
-            
-            setAttributesUv(attributes, 0, 0, 1, 1);
-            setAttributesDrawSheared(attributes, x, y, width, height, xShear, yShear);
+            setAttributesUvPart(attributes, 0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
+            setAttributesDrawTransform(attributes, transform, w, h);
             
             draw(RENDER_MODE_SURFACES, shaders, attributes);
         };
