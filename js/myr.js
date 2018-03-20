@@ -195,8 +195,17 @@ let Myr = function(canvasElement) {
         attributes[8] = x;
         attributes[9] = y;
     };
+    
+    const setAttributesDrawSheared = (attributes, x, y, width, height, xShear, yShear) => {
+        attributes[4] = width;
+        attributes[5] = width * xShear;
+        attributes[6] = height * yShear;
+        attributes[7] = height;
+        attributes[8] = x;
+        attributes[9] = y;
+    };
 	
-	const setAttributesTransform = (attributes, transform, width, height) => {
+	const setAttributesDrawTransform = (attributes, transform, width, height) => {
 		attributes[4] = transform._00 * width;
 		attributes[5] = transform._10 * height;
 		attributes[6] = transform._01 * width;
@@ -233,7 +242,7 @@ let Myr = function(canvasElement) {
 			bindTexture();
 			
 			setAttributesUv(attributes, 0, 0, 1, 1);
-			setAttributesTransform(attributes, transform, width, height);
+			setAttributesDrawTransform(attributes, transform, width, height);
 			
 			draw(RENDER_MODE_SURFACES, shaders, attributes);
 		};
@@ -261,6 +270,18 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDraw(attributes, x, y, width * xScale, height * yScale);
+            
+            draw(RENDER_MODE_SURFACES, shaders, attributes);
+        };
+        
+        this.drawSheared = (x, y, xShear, yShear) => {
+            if(!this.ready())
+                return;
+            
+            bindTexture();
+            
+            setAttributesUv(attributes, 0, 0, 1, 1);
+            setAttributesDrawSheared(attributes, x, y, width, height, xShear, yShear);
             
             draw(RENDER_MODE_SURFACES, shaders, attributes);
         };

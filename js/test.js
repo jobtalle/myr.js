@@ -54,16 +54,9 @@ MyrTest.prototype = {
         
         myr.pop();
         
-        this.surface.draw(200, Math.sin(this.a) * 200 + 200);
+        this.surface.drawSheared(200, Math.sin(this.a) * 200 + 200, 0, 1);
         
         myr.pop();
-        
-		let t = new myr.Transform();
-		t.translate(50, 150);
-		t.rotate(1);
-		t.shear(0, 1);
-		
-		this.surface.drawTransformed(t);
 		
         this.fish.drawPart(150, 150,
                            this.fish.getWidth() / 4,
