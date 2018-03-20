@@ -83,16 +83,16 @@ Shear the current transformation.
 
 Parameter | Type | Description
 -|-|-
-x|`Number`|Horizontal shear
-y|`Number`|Vertical shear
+x|`Number`|Horizontal shearing
+y|`Number`|Vertical shearing
 
 ### `scale(x, y)`
 Scale the current transformation.
 
 Parameter | Type | Description
 -|-|-
-x|`Number`|Horizontal scale
-y|`Number`|Vertical scale
+x|`Number`|Horizontal scaling
+y|`Number`|Vertical scaling
 
 # Surface
 A surface in **myr.js** can be a render target. After binding it using its member function `bind()`, all render calls render to this surface. The surface itself can also be rendered. Additionally, the surface may be constructed from images, making surfaces useful for large image or background rendering since large images don't fit well on sprite sheets. Note that surfaces can only render to other targets, never to themselves.
@@ -144,7 +144,7 @@ Parameter | Type | Description
 transform|[`Transform`](#transform)|A transformation to apply to this surface
 
 ### `drawScaled(x, y, xScale, yScale)`
-Draws this surface on the currently bound target with scaling applied.
+Draws this surface on the currently bound target after applying scaling.
 
 Parameter | Type | Description
 -|-|-
@@ -152,6 +152,16 @@ x|`Number`|The X position to render to
 y|`Number`|The Y position to render to
 xScale|`Number`|The horizontal scale factor
 yScale|`Number`|The vertical scale factor
+
+### `drawSheared(x, y, xShear, yShear)`
+Draws this surface on the currently bound target after applying shearing.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to render to
+y|`Number`|The Y position to render to
+xShear|`Number`|Horizontal shearing
+yShear|`Number`|Vertical shearing
 
 ### `drawPart(x, y, left, top, width, height)`
 Draws a part of this surface on the currently bound render target. Make sure the specified region is part of the surface; rendering parts that fall outside this surface results in undefined behavior.
