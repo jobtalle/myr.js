@@ -25,7 +25,7 @@ RaindropExample.prototype = {
 
         // Get the image of the raindrop and make it a surface.
         this.raindrop = new this.myr.Surface(
-            "https://raw.githubusercontent.com/JobTalle/myr.js/develop/js/examples/raindrop.png"
+            "./raindrop.png"
         );
 
         // Kick-start the rendering loop.
