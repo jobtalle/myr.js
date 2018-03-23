@@ -215,19 +215,11 @@ let Myr = function(canvasElement) {
 	};
     
     this.Surface = function() {
-        const bindTexture = () => {
-            if(currentTexture != texture) {
-                flush();
-
-                currentTexture = texture;
-            }
-        };
-        
         this.draw = (x, y) => {
             if(!this.ready())
                 return;
             
-            bindTexture();
+            bindTexture(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDraw(attributes, x, y, width, height);
@@ -239,7 +231,7 @@ let Myr = function(canvasElement) {
             if(!this.ready())
                 return;
             
-            bindTexture();
+            bindTexture(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDraw(attributes, x, y, width * xScale, height * yScale);
@@ -251,7 +243,7 @@ let Myr = function(canvasElement) {
             if(!this.ready())
                 return;
             
-            bindTexture();
+            bindTexture(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDrawSheared(attributes, x, y, width, height, xShear, yShear);
@@ -263,7 +255,7 @@ let Myr = function(canvasElement) {
 			if(!this.ready())
 				return;
 			
-			bindTexture();
+			bindTexture(texture);
 			
 			setAttributesUv(attributes, 0, 0, 1, 1);
 			setAttributesDrawTransform(attributes, transform, width, height);
@@ -275,7 +267,7 @@ let Myr = function(canvasElement) {
             if(!this.ready())
                 return;
             
-            bindTexture();
+            bindTexture(texture);
             
             const wf = 1 / width;
             const hf = 1 / height;
@@ -290,7 +282,7 @@ let Myr = function(canvasElement) {
             if(!this.ready())
                 return;
             
-            bindTexture();
+            bindTexture(texture);
             
             const wf = 1 / width;
             const hf = 1 / height;
@@ -433,6 +425,14 @@ let Myr = function(canvasElement) {
             pushIdentity();
         
         surface = target;
+    };
+    
+    const bindTexture = texture => {
+        if(currentTexture != texture) {
+            flush();
+
+            currentTexture = texture;
+        }
     };
     
     const clear = color => {
