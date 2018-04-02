@@ -112,6 +112,15 @@ Parameter | Type | Description
 -|-|-
 image|`String`|A URL to a valid image file
 
+### `Surface(image, width, height)`
+Construct a surface from an existing image. The width and height will be set from the beginning instead of after the image has been loaded.
+
+Parameter | Type | Description
+-|-|-
+image|`String`|A URL to a valid image file
+width|`Number`|Width in pixels
+height|`Number`|Height in pixels
+
 ### `bind()`
 Binds the surface, making it the current render target until another one is bound. After binding, an empty [transform](#transform) is pushed onto the transformation stack.
 

@@ -7,10 +7,20 @@ MyrTest.prototype = {
         myr = new Myr(document.getElementById("renderer"));
         myr.setClearColor(new myr.Color(0.2, 0.5, 0.7));
         
+        this.sheet = new myr.Surface("sprites/spritesheet.png", 154, 17);
+        
+        for(let i = 0; i < sheet.length; ++i) {
+            const sprite = sheet[i];
+            
+            myr.register(
+                sprite.name,
+                [new myr.SpriteRegion(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0)]);
+        }
+        
+        this.sprite = new myr.Sprite("biemer_green");
         this.surface = new myr.Surface(200, 200);
         
         this.fish = new myr.Surface("https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png");
-        this.sheet = new myr.Surface("sprites/spritesheet.png");
         
         this.lastDate = new Date();
         this.animate();
@@ -69,6 +79,7 @@ MyrTest.prototype = {
                            this.fish.getWidth() / 2,
                            this.fish.getHeight() / 2);
         this.sheet.draw(0, 0);
+        this.sprite.draw(10, 50);
         
         myr.flush();
         

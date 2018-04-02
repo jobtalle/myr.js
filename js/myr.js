@@ -216,7 +216,7 @@ let Myr = function(canvasElement) {
     
     this.Surface = function() {
         this.draw = (x, y) => {
-            bindTexture(texture);
+            bindTextureSurface(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDraw(attributes, x, y, width, height);
@@ -225,7 +225,7 @@ let Myr = function(canvasElement) {
         };
         
         this.drawScaled = (x, y, xScale, yScale) => {
-            bindTexture(texture);
+            bindTextureSurface(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDraw(attributes, x, y, width * xScale, height * yScale);
@@ -234,7 +234,7 @@ let Myr = function(canvasElement) {
         };
         
         this.drawSheared = (x, y, xShear, yShear) => {
-            bindTexture(texture);
+            bindTextureSurface(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDrawSheared(attributes, x, y, width, height, xShear, yShear);
@@ -243,7 +243,7 @@ let Myr = function(canvasElement) {
         };
         
         this.drawTransformed = transform => {
-            bindTexture(texture);
+            bindTextureSurface(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDrawTransform(attributes, transform, width, height);
@@ -252,7 +252,7 @@ let Myr = function(canvasElement) {
         };
         
         this.drawPart = (x, y, left, top, w, h) => {
-            bindTexture(texture);
+            bindTextureSurface(texture);
             
             const wf = 1 / width;
             const hf = 1 / height;
@@ -264,7 +264,7 @@ let Myr = function(canvasElement) {
         };
         
         this.drawPartTransformed = (transform, left, top, w, h) => {
-            bindTexture(texture);
+            bindTextureSurface(texture);
             
             const wf = 1 / width;
             const hf = 1 / height;
@@ -287,16 +287,19 @@ let Myr = function(canvasElement) {
             gl.viewport(0, 0, width, height);
         };
         
+        this.getTexture = () => texture;
+        this.getShaders = () => shaders;
         this.getWidth = () => width;
         this.getHeight = () => height;
         this.setClearColor = color => clearColor = color;
         this.clear = () => clear(clearColor);
-        this.ready = () => !(width == 0 || height == 0);
+        this.ready = () => ready;
         
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
-        const attributes = new Array(12);
+        const attributes = new Float32Array(12);
         
+        let ready = false;
         let width = 0;
         let height = 0;
         let shaders = shadersDefault.copy();
@@ -314,20 +317,30 @@ let Myr = function(canvasElement) {
         if(arguments.length == 2) {
             width = arguments[0];
             height = arguments[1];
+            ready = true;
             
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         }
         else {
             const image = document.createElement("img");
             
+            if(arguments[2] != undefined) {
+                width = arguments[1];
+                height = arguments[2];
+            }
+            
             image.onload = () => {
-                width = image.width;
-                height = image.height;
+                if(width == 0 || height == 0) {
+                    width = image.width;
+                    height = image.height;
+                }
                 
                 gl.activeTexture(TEXTURE_EDITING);
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                
+                ready = true;
             };
             
             image.crossOrigin = "Anonymous";
@@ -338,6 +351,36 @@ let Myr = function(canvasElement) {
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    };
+    
+    this.Sprite = function(name) {
+        this.draw = (x, y) => {
+            bindTextureAtlas(frames[frame].texture);
+            
+            setAttributesUv(attributes, frames[frame].uvX, frames[frame].uvY, frames[frame].uvWidth, frames[frame].uvHeight);
+            setAttributesDraw(attributes, x, y, frames[frame].width, frames[frame].height);
+            
+            draw(RENDER_MODE_SPRITES, shadersDefault, attributes);
+        };
+        
+        const frames = sprites[name].frames;
+        const fps = sprites[name].fps;
+        const attributes = new Float32Array(12);
+        let frame = 0;
+        
+        attributes[10] = attributes[11] = 0;
+    };
+    
+    this.SpriteRegion = function(sheet, x, y, width, height, xOrigin, yOrigin) {
+        this.texture = sheet.getTexture();
+        this.width = width;
+        this.height = height;
+        this.xOrigin = xOrigin;
+        this.yOrigin = yOrigin;
+        this.uvX = x / sheet.getWidth();
+        this.uvY = y / sheet.getHeight();
+        this.uvWidth = width / sheet.getWidth();
+        this.uvHeight = height / sheet.getHeight();
     };
     
     const Shader = function(vertex, fragment, samplers) {
@@ -411,11 +454,25 @@ let Myr = function(canvasElement) {
         surface = target;
     };
     
-    const bindTexture = texture => {
-        if(currentTexture != texture) {
+    const bindTextureSurface = texture => {
+        if(currentTextureSurface != texture) {
             flush();
-
-            currentTexture = texture;
+            
+            gl.activeTexture(TEXTURE_SURFACE);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            
+            currentTextureSurface = texture;
+        }
+    };
+    
+    const bindTextureAtlas = texture => {
+        if(currentTextureAtlas != texture) {
+            flush();
+            
+            gl.activeTexture(TEXTURE_ATLAS);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            
+            currentTextureAtlas = texture;
         }
     };
     
@@ -453,14 +510,9 @@ let Myr = function(canvasElement) {
         
         switch(renderMode) {
             case RENDER_MODE_SURFACES:
-                gl.activeTexture(TEXTURE_SURFACE);
-                gl.bindTexture(gl.TEXTURE_2D, currentTexture);
-                
+            case RENDER_MODE_SPRITES:
                 gl.bindVertexArray(vaoSprites);
                 gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, instanceCount);
-                break;
-            case RENDER_MODE_SPRITES:
-                
                 break;
             case RENDER_MODE_LINES:
                 
@@ -469,8 +521,6 @@ let Myr = function(canvasElement) {
                 
                 break;
         }
-        
-        gl.bindVertexArray(null);
         
         instanceBufferAt = instanceCount = 0;
     };
@@ -545,6 +595,18 @@ let Myr = function(canvasElement) {
         gl.viewport(0, 0, width, height);
     };
     
+    this.register = (name, frames, fps) => {
+        sprites[name] = {
+            "surface": surface,
+            "frames": frames,
+            "fps": fps
+        };
+    };
+        
+    this.unregister = name => {
+        delete sprites[name];
+    };
+    
     this.free = () => {
         shaderSprites.free();
         
@@ -574,15 +636,16 @@ let Myr = function(canvasElement) {
     const RENDER_MODE_SPRITES = 1;
     const RENDER_MODE_LINES = 2;
     const RENDER_MODE_POINTS = 3;
-    const TEXTURE_ATLAS = gl.TEXTURE0;
-    const TEXTURE_SURFACE = gl.TEXTURE1;
-    const TEXTURE_EDITING = gl.TEXTURE2;
+    const TEXTURE_SURFACE = gl.TEXTURE0;
+    const TEXTURE_EDITING = gl.TEXTURE1;
+    const TEXTURE_ATLAS = gl.TEXTURE2;
     
     const quad = gl.createBuffer();
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
     const transformBuffer = gl.createBuffer();
     const transform = new Float32Array(8);
+    const sprites = [];
     const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
     const shadersDefault = new ShaderSet(
         new Shader(
@@ -610,9 +673,35 @@ let Myr = function(canvasElement) {
                 "color=texture(source,uv);" +
             "}",
             {
-                source: 1
+                source: 0
             }),
-        null,
+        new Shader(
+            "layout(location=0) in vec2 vertex;" +
+            "layout(location=1) in vec4 atlas;" +
+            "layout(location=2) in vec4 matrix;" +
+            "layout(location=3) in vec4 position;" +
+            "layout(std140) uniform transform {" +
+                "vec4 tw;" +
+                "vec4 th;" +
+            "};" +
+            "out highp vec2 uv;" +
+            "void main() {" +
+                "uv=atlas.xy+vec2(vertex.x,vertex.y)*atlas.zw;" +
+                "vec2 transformed=(((vertex-position.zw)*" + 
+                    "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
+                    "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+                    "vec2(tw.w,th.w)*2.0;" +
+                "gl_Position=vec4(transformed.x-1.0,transformed.y-1.0,0,1);" +
+            "}",
+            "uniform sampler2D source;" +
+            "in highp vec2 uv;" +
+            "layout(location=0) out lowp vec4 color;" +
+            "void main() {" +
+                "color=texture(source,uv);" +
+            "}",
+            {
+                source: 2
+            }),
         null,
         null);
     
@@ -628,7 +717,8 @@ let Myr = function(canvasElement) {
     let height = canvasElement.height;
     let shader = null;
     let surface = null;
-    let currentTexture = null;
+    let currentTextureSurface = null;
+    let currentTextureAtlas = null;
     
     gl.enable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
