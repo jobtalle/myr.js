@@ -216,9 +216,6 @@ let Myr = function(canvasElement) {
     
     this.Surface = function() {
         this.draw = (x, y) => {
-            if(!this.ready())
-                return;
-            
             bindTexture(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
@@ -228,9 +225,6 @@ let Myr = function(canvasElement) {
         };
         
         this.drawScaled = (x, y, xScale, yScale) => {
-            if(!this.ready())
-                return;
-            
             bindTexture(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
@@ -240,9 +234,6 @@ let Myr = function(canvasElement) {
         };
         
         this.drawSheared = (x, y, xShear, yShear) => {
-            if(!this.ready())
-                return;
-            
             bindTexture(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
@@ -252,9 +243,6 @@ let Myr = function(canvasElement) {
         };
         
         this.drawTransformed = transform => {
-            if(!this.ready())
-                return;
-            
             bindTexture(texture);
             
             setAttributesUv(attributes, 0, 0, 1, 1);
@@ -264,9 +252,6 @@ let Myr = function(canvasElement) {
         };
         
         this.drawPart = (x, y, left, top, w, h) => {
-            if(!this.ready())
-                return;
-            
             bindTexture(texture);
             
             const wf = 1 / width;
@@ -279,9 +264,6 @@ let Myr = function(canvasElement) {
         };
         
         this.drawPartTransformed = (transform, left, top, w, h) => {
-            if(!this.ready())
-                return;
-            
             bindTexture(texture);
             
             const wf = 1 / width;
@@ -350,6 +332,8 @@ let Myr = function(canvasElement) {
             
             image.crossOrigin = "Anonymous";
             image.src = arguments[0];
+            
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         }
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
