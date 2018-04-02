@@ -364,30 +364,35 @@ let Myr = function(canvasElement) {
     
     this.Sprite = function(name) {
         this.draw = (x, y) => {
-            bindTextureAtlas(frames[frame].texture);
+            const frame = this.getFrame();
+            
+            bindTextureAtlas(frame[0]);
             
             prepareDraw(RENDER_MODE_SPRITES, 12);
             
-            setAttributesUv(frames[frame].uvX, frames[frame].uvY, frames[frame].uvWidth, frames[frame].uvHeight);
-            setAttributesDraw(x, y, frames[frame].width, frames[frame].height);
-            setAttributesOrigin(0, 0);
+            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
+            setAttributesDraw(x, y, frame[1], frame[2]);
+            setAttributesOrigin(frame[3], frame[4]);
         };
         
-        const frames = sprites[name].frames;
-        const fps = sprites[name].fps;
-        let frame = 0;
+        this.animate = timeStep => {
+            at += timeStep;
+            
+            if(at >= frames.length)
+                at -= frames.length;
+        };
+        
+        this.setFrame = frame => at = frame;
+        this.getFrame = () =>  frames[Math.floor(at)];
+        
+        const frames = sprites[name].getFrames();
+        const fps = sprites[name].getFps();
+        let at = 0;
     };
     
-    this.SpriteRegion = function(sheet, x, y, width, height, xOrigin, yOrigin) {
-        this.texture = sheet.getTexture();
-        this.width = width;
-        this.height = height;
-        this.xOrigin = xOrigin;
-        this.yOrigin = yOrigin;
-        this.uvX = x / sheet.getWidth();
-        this.uvY = y / sheet.getHeight();
-        this.uvWidth = width / sheet.getWidth();
-        this.uvHeight = height / sheet.getHeight();
+    const SpriteEntry = function(frames, fps) {
+        this.getFrames = () => frames;
+        this.getFps = () => fps;
     };
     
     const Shader = function(vertex, fragment, samplers) {
@@ -604,14 +609,33 @@ let Myr = function(canvasElement) {
         gl.viewport(0, 0, width, height);
     };
     
-    this.register = (name, frames, fps) => {
-        sprites[name] = {
-            "surface": surface,
-            "frames": frames,
-            "fps": fps
-        };
+    this.register = function() {
+        const frames = [];
+        let fps = 0;
+        
+        for(let i = 1; i < 2 || i < arguments.length - 1; ++i)
+            frames.push(arguments[i]);
+        
+        if(frames.length > 1)
+            fps = arguments[arguments.length - 1];
+        
+        sprites[arguments[0]] = new SpriteEntry(frames, fps);
     };
         
+    this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin) => {
+        return [
+            sheet.getTexture(),
+            width,
+            height,
+            xOrigin,
+            yOrigin,
+            x / sheet.getWidth(),
+            y / sheet.getHeight(),
+            width / sheet.getWidth(),
+            height / sheet.getHeight()
+        ];
+    };
+    
     this.unregister = name => {
         delete sprites[name];
     };
