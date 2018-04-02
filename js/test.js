@@ -80,6 +80,8 @@ MyrTest.prototype = {
                            this.fish.getHeight() / 2);
         this.sheet.draw(0, 0);
         this.sprite.draw(10, 50);
+        this.sprite.draw(10, 70);
+        this.sprite.draw(10, 90);
         
         myr.flush();
         
