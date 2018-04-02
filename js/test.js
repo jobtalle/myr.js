@@ -10,6 +10,7 @@ MyrTest.prototype = {
         this.surface = new myr.Surface(200, 200);
         
         this.fish = new myr.Surface("https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png");
+        this.sheet = new myr.Surface("sprites/spritesheet.png");
         
         this.lastDate = new Date();
         this.animate();
@@ -67,6 +68,7 @@ MyrTest.prototype = {
                            this.fish.getHeight() / 4,
                            this.fish.getWidth() / 2,
                            this.fish.getHeight() / 2);
+        this.sheet.draw(0, 0);
         
         myr.flush();
         
