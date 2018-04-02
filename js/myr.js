@@ -221,7 +221,7 @@ let Myr = function(canvasElement) {
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDraw(attributes, x, y, width, height);
             
-            draw(RENDER_MODE_SURFACES, shaders, attributes);
+            draw(RENDER_MODE_SURFACES, attributes);
         };
         
         this.drawScaled = (x, y, xScale, yScale) => {
@@ -230,7 +230,7 @@ let Myr = function(canvasElement) {
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDraw(attributes, x, y, width * xScale, height * yScale);
             
-            draw(RENDER_MODE_SURFACES, shaders, attributes);
+            draw(RENDER_MODE_SURFACES, attributes);
         };
         
         this.drawSheared = (x, y, xShear, yShear) => {
@@ -239,7 +239,7 @@ let Myr = function(canvasElement) {
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDrawSheared(attributes, x, y, width, height, xShear, yShear);
             
-            draw(RENDER_MODE_SURFACES, shaders, attributes);
+            draw(RENDER_MODE_SURFACES, attributes);
         };
         
         this.drawTransformed = transform => {
@@ -248,7 +248,7 @@ let Myr = function(canvasElement) {
             setAttributesUv(attributes, 0, 0, 1, 1);
             setAttributesDrawTransform(attributes, transform, width, height);
             
-            draw(RENDER_MODE_SURFACES, shaders, attributes);
+            draw(RENDER_MODE_SURFACES, attributes);
         };
         
         this.drawPart = (x, y, left, top, w, h) => {
@@ -260,7 +260,7 @@ let Myr = function(canvasElement) {
             setAttributesUvPart(attributes, 0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
             setAttributesDraw(attributes, x, y, w, h);
             
-            draw(RENDER_MODE_SURFACES, shaders, attributes);
+            draw(RENDER_MODE_SURFACES, attributes);
         };
         
         this.drawPartTransformed = (transform, left, top, w, h) => {
@@ -272,7 +272,7 @@ let Myr = function(canvasElement) {
             setAttributesUvPart(attributes, 0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
             setAttributesDrawTransform(attributes, transform, w, h);
             
-            draw(RENDER_MODE_SURFACES, shaders, attributes);
+            draw(RENDER_MODE_SURFACES, attributes);
         };
         
         this.free = () => {
@@ -360,7 +360,7 @@ let Myr = function(canvasElement) {
             setAttributesUv(attributes, frames[frame].uvX, frames[frame].uvY, frames[frame].uvWidth, frames[frame].uvHeight);
             setAttributesDraw(attributes, x, y, frames[frame].width, frames[frame].height);
             
-            draw(RENDER_MODE_SPRITES, shadersDefault, attributes);
+            draw(RENDER_MODE_SPRITES, attributes);
         };
         
         const frames = sprites[name].frames;
@@ -547,7 +547,7 @@ let Myr = function(canvasElement) {
         transformDirty = false;
     };
     
-    const draw = (mode, shaderSet, data) => {
+    const draw = (mode, data) => {
         if(transformDirty) {
             flush();
             
@@ -559,12 +559,19 @@ let Myr = function(canvasElement) {
             
             renderMode = mode;
         
-            if(shader != shaderSet.get(mode))
-                (shader = shaderSet.get(mode)).bind();
+            if(shader != getCurrentShaders().get(mode))
+                (shader = getCurrentShaders().get(mode)).bind();
         }
         
         appendBuffer(data);
     };
+    
+    const getCurrentShaders = () => {
+        if(surface == null)
+            return shadersDefault;
+        else
+            return surface.getShaders();
+    }
     
     const pushIdentity = () => {
         if(++transformAt == transformStack.length)
