@@ -172,52 +172,52 @@ let Myr = function(canvasElement) {
     };
     
     const setAttributesUv= (uvLeft, uvTop, uvRight, uvBottom) => {
-        instanceBuffer[instanceBufferAt++] = uvLeft;
-        instanceBuffer[instanceBufferAt++] = uvTop;
-        instanceBuffer[instanceBufferAt++] = uvRight;
-        instanceBuffer[instanceBufferAt++] = uvBottom;
+        instanceBuffer[++instanceBufferAt] = uvLeft;
+        instanceBuffer[++instanceBufferAt] = uvTop;
+        instanceBuffer[++instanceBufferAt] = uvRight;
+        instanceBuffer[++instanceBufferAt] = uvBottom;
     };
     
     const setAttributesUvPart = (uvLeft, uvTop, uvRight, uvBottom, left, top, width, height) => {
         const uvWidth = uvRight - uvLeft;
         const uvHeight = uvBottom - uvTop;
         
-        instanceBuffer[instanceBufferAt++] = uvLeft + uvWidth * left;
-        instanceBuffer[instanceBufferAt++] = uvTop + uvHeight * top;
-        instanceBuffer[instanceBufferAt++] = uvLeft + uvWidth * width;
-        instanceBuffer[instanceBufferAt++] = uvTop + uvHeight * height;
+        instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * left;
+        instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * top;
+        instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * width;
+        instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * height;
     };
     
     const setAttributesDraw = (x, y, width, height) => {
-        instanceBuffer[instanceBufferAt++] = width;
-        instanceBuffer[instanceBufferAt++] = 0;
-        instanceBuffer[instanceBufferAt++] = 0;
-        instanceBuffer[instanceBufferAt++] = height;
-        instanceBuffer[instanceBufferAt++] = x;
-        instanceBuffer[instanceBufferAt++] = y;
+        instanceBuffer[++instanceBufferAt] = width;
+        instanceBuffer[++instanceBufferAt] = 0;
+        instanceBuffer[++instanceBufferAt] = 0;
+        instanceBuffer[++instanceBufferAt] = height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
     };
     
     const setAttributesDrawSheared = (x, y, width, height, xShear, yShear) => {
-        instanceBuffer[instanceBufferAt++] = width;
-        instanceBuffer[instanceBufferAt++] = width * xShear;
-        instanceBuffer[instanceBufferAt++] = height * yShear;
-        instanceBuffer[instanceBufferAt++] = height;
-        instanceBuffer[instanceBufferAt++] = x;
-        instanceBuffer[instanceBufferAt++] = y;
+        instanceBuffer[++instanceBufferAt] = width;
+        instanceBuffer[++instanceBufferAt] = width * xShear;
+        instanceBuffer[++instanceBufferAt] = height * yShear;
+        instanceBuffer[++instanceBufferAt] = height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
     };
     
     const setAttributesDrawTransform = (transform, width, height) => {
-        instanceBuffer[instanceBufferAt++] = transform._00 * width;
-        instanceBuffer[instanceBufferAt++] = transform._10 * height;
-        instanceBuffer[instanceBufferAt++] = transform._01 * width;
-        instanceBuffer[instanceBufferAt++] = transform._11 * height;
-        instanceBuffer[instanceBufferAt++] = transform._20;
-        instanceBuffer[instanceBufferAt++] = transform._21;
+        instanceBuffer[++instanceBufferAt] = transform._00 * width;
+        instanceBuffer[++instanceBufferAt] = transform._10 * height;
+        instanceBuffer[++instanceBufferAt] = transform._01 * width;
+        instanceBuffer[++instanceBufferAt] = transform._11 * height;
+        instanceBuffer[++instanceBufferAt] = transform._20;
+        instanceBuffer[++instanceBufferAt] = transform._21;
     };
     
     const setAttributesOrigin = (xOrigin, yOrigin) => {
-        instanceBuffer[instanceBufferAt++] = xOrigin;
-        instanceBuffer[instanceBufferAt++] = yOrigin;
+        instanceBuffer[++instanceBufferAt] = xOrigin;
+        instanceBuffer[++instanceBufferAt] = yOrigin;
     };
     
     this.Surface = function() {
@@ -495,7 +495,7 @@ let Myr = function(canvasElement) {
             return;
         
         gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, instanceBuffer, 0, instanceBufferAt);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, instanceBuffer, 0, instanceBufferAt + 1);
         
         switch(renderMode) {
             case RENDER_MODE_SURFACES:
@@ -511,7 +511,8 @@ let Myr = function(canvasElement) {
                 break;
         }
         
-        instanceBufferAt = instanceCount = 0;
+        instanceBufferAt = -1;
+        instanceCount = 0;
     };
     
     const sendTransform = () => {
@@ -552,7 +553,7 @@ let Myr = function(canvasElement) {
                 (shader = getCurrentShaders().get(mode)).bind();
         }
         
-        if(instanceBufferAt + size > instanceBufferCapacity) {
+        if(instanceBufferAt + size >= instanceBufferCapacity) {
             const oldBuffer = instanceBuffer;
             
             instanceBuffer = new Float32Array(instanceBufferCapacity *= 2);
@@ -717,7 +718,7 @@ let Myr = function(canvasElement) {
     let transformDirty = true;
     let renderMode = RENDER_MODE_NONE;
     let instanceBufferCapacity = 1024;
-    let instanceBufferAt = 0;
+    let instanceBufferAt = -1;
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
     let clearColor = new Color(0, 0, 0);
