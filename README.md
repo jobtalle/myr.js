@@ -58,9 +58,9 @@ Push the current [transformation](#transform) onto the stack, saving the current
 Pop the current [transformation](#transform) from the stack, restoring the last pushed transformation.
 
 ### `register(name, ...)`
-Registers a new sprite under a certain name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite).
+Registers a new sprite under a name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite).
 
-While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is described using the [`makeSpriteFrame`](#makespriteframesurface-x-y-width-height-xorigin-yorigin) function.
+While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is created using the [`makeSpriteFrame`](#makespriteframesurface-x-y-width-height-xorigin-yorigin) function.
 
 Parameter | Type | Description
 -|-|-
