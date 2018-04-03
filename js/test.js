@@ -49,6 +49,8 @@ MyrTest.prototype = {
     
     update(timeStep) {
         this.a += 0.01;
+        
+        this.sprite.animate(timeStep);
     },
     
     render() {

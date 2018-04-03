@@ -20,6 +20,7 @@ The **myr.js** object exposes several objects:
 Object | Description
 -|-
 [`Surface`](#surface)|A render target which can be rendered to, which may be initialized to an existing image
+[`Sprite`](#sprite)|A renderable sprite consisting of one or more frames
 [`Transform`](#transform)|A 2D transformation
 [`Color`](#color)|A color containing a red, green, blue and alpha channel
 [`Vector`](#vector)|A 2D vector
@@ -203,6 +204,35 @@ left|`Number`|The X position on the surface to render from
 top|`Number`|The Y position on the surface to render from
 width|`Number`|The width of the region to draw
 height|`Number`|The height of the region to draw
+
+# Sprite
+A sprite in **myr.js** is a renderable image consisting of one or more frames. Sprite sources must be registered before they can be instantiated. Sprites are constructed by referencing these sources.
+
+Typically, one big surface should contain all sprites (it will be a sprite atlas). In this way, sprite rendering is much more efficient than surface rendering.
+
+### `Sprite(name)`
+Constructs a sprite from a registered source.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The sprite source
+
+### `animate(timeStep)`
+Advances the animation frame of this sprite according to its own frame rate. When the maximum frame has been reached, the animation rewinds. If a sprite only has one frame, this method does nothing.
+
+Parameter | Type | Description
+-|-|-
+timeStep|`Number`|The current time step, which is the time the current animation frame takes
+
+### `setFrame(frame)`
+Sets the current frame index of this sprite.
+
+Parameter | Type | Description
+-|-|-
+frame|`Number`|The frame index this sprite should be at, starting at zero
+
+### `getFrame()`
+Returns the current frame index.
 
 # Transform
 The transform object wraps a homogeneous 2D transformation matrix. Several different transform functions are provided, but the matrix can also be filled by hand. Transform objects are used in the global transformation stack to transform everything that is being rendered.
