@@ -60,7 +60,7 @@ Pop the current [transformation](#transform) from the stack, restoring the last 
 ### `register(name, ...)`
 Registers a new sprite under a certain name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite).
 
-While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is described using the [`makeSpriteFrame`](#makespriteframe) function.
+While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is described using the [`makeSpriteFrame`](#makespriteframesurface-x-y-width-height-xorigin-yorigin) function.
 
 Parameter | Type | Description
 -|-|-
@@ -74,7 +74,7 @@ Parameter | Type | Description
 name|`String`|The name of the sprite to unregister
 
 ### `makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin)`
-Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#register) function.
+Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function.
 
 Parameter | Type | Description
 -|-|-
@@ -235,7 +235,7 @@ width|`Number`|The width of the region to draw
 height|`Number`|The height of the region to draw
 
 # Sprite
-A sprite in **myr.js** is a renderable image consisting of one or more frames. Sprite sources must be registered using [`register`](#register) before they can be instantiated. Sprites are constructed by referencing these sources.
+A sprite in **myr.js** is a renderable image consisting of one or more frames. Sprite sources must be registered using [`register`](#registername-) before they can be instantiated. Sprites are constructed by referencing these sources.
 
 Typically, one big surface should contain all sprites (it will be a sprite atlas). In this way, sprite rendering is much more efficient than surface rendering.
 
