@@ -378,7 +378,7 @@ let Myr = function(canvasElement) {
         this.animate = timeStep => {
             at += timeStep * fps;
             
-            if(at >= frames.length)
+            while(at >= frames.length)
                 at -= frames.length;
         };
         
