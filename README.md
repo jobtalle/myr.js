@@ -57,6 +57,35 @@ Push the current [transformation](#transform) onto the stack, saving the current
 ### `pop()`
 Pop the current [transformation](#transform) from the stack, restoring the last pushed transformation.
 
+### `register(name, ...)`
+Registers a new sprite under a certain name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite).
+
+While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is described using the [`makeSpriteFrame`](#makespriteframe) function.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The name of the sprite to register
+
+### `unregister(name)`
+Unregisters a previously registered sprite.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The name of the sprite to unregister
+
+### `makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin)`
+Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#register) function.
+
+Parameter | Type | Description
+-|-|-
+surface|[`Surface`](#surface)|A surface containing the frame
+x|`Number`|The x position of the frame on the surface in pixels
+y|`Number`|The y position of the frame on the surface in pixels
+width|`Number`|The width of the frame in pixels
+height|`Number`|The height of the frame in pixels
+xOrigin|`Number`|The frame x origin in pixels
+yOrigin|`Number`|The frame y origin in pixels
+
 ### `transform(transform)`
 Transform the current [transformation](#transform) by multiplying it with another transformation.
 
@@ -206,7 +235,7 @@ width|`Number`|The width of the region to draw
 height|`Number`|The height of the region to draw
 
 # Sprite
-A sprite in **myr.js** is a renderable image consisting of one or more frames. Sprite sources must be registered before they can be instantiated. Sprites are constructed by referencing these sources.
+A sprite in **myr.js** is a renderable image consisting of one or more frames. Sprite sources must be registered using [`register`](#register) before they can be instantiated. Sprites are constructed by referencing these sources.
 
 Typically, one big surface should contain all sprites (it will be a sprite atlas). In this way, sprite rendering is much more efficient than surface rendering.
 
