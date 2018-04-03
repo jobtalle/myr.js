@@ -14,9 +14,9 @@ MyrTest.prototype = {
             
             myr.register(
                 sprite.name,
-                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0),
-                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0),
-                60);
+                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3),
+                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3)
+            );
         }
         
         this.sprite = new myr.Sprite("biemer_green");

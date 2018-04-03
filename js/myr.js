@@ -364,7 +364,7 @@ let Myr = function(canvasElement) {
     
     this.Sprite = function(name) {
         this.draw = (x, y) => {
-            const frame = this.getFrame();
+            const frame = getFrame();
             
             bindTextureAtlas(frame[0]);
             
@@ -376,18 +376,27 @@ let Myr = function(canvasElement) {
         };
         
         this.animate = timeStep => {
-            at += timeStep * fps;
+            const currentFrame = getFrame();
             
-            while(at >= frames.length)
-                at -= frames.length;
+            frameCounter += timeStep;
+            
+            while(frameCounter > getFrame()[9]) {
+                frameCounter -= getFrame()[9];
+
+                if(++frame == frames.length)
+                    frame = 0;
+            }
         };
         
-        this.setFrame = frame => at = frame;
-        this.getFrame = () =>  frames[Math.floor(at)];
+        this.setFrame = index => frame = index;
+        this.getFrame = () => frame;
+               
+        const getFrame = () => frames[frame];
         
         const frames = sprites[name].getFrames();
         const fps = sprites[name].getFps();
-        let at = 0;
+        let frameCounter = 0;
+        let frame = 0;
     };
     
     const SpriteEntry = function(frames, fps) {
@@ -622,7 +631,7 @@ let Myr = function(canvasElement) {
         sprites[arguments[0]] = new SpriteEntry(frames, fps);
     };
         
-    this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin) => {
+    this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
         return [
             sheet.getTexture(),
             width,
@@ -632,7 +641,8 @@ let Myr = function(canvasElement) {
             x / sheet.getWidth(),
             y / sheet.getHeight(),
             width / sheet.getWidth(),
-            height / sheet.getHeight()
+            height / sheet.getHeight(),
+            time
         ];
     };
     

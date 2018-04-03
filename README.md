@@ -57,23 +57,7 @@ Push the current [transformation](#transform) onto the stack, saving the current
 ### `pop()`
 Pop the current [transformation](#transform) from the stack, restoring the last pushed transformation.
 
-### `register(name, ...)`
-Registers a new sprite under a name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite).
-
-While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is created using the [`makeSpriteFrame`](#makespriteframesurface-x-y-width-height-xorigin-yorigin) function.
-
-Parameter | Type | Description
--|-|-
-name|`String`|The name of the sprite to register
-
-### `unregister(name)`
-Unregisters a previously registered sprite.
-
-Parameter | Type | Description
--|-|-
-name|`String`|The name of the sprite to unregister
-
-### `makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin)`
+### `makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`
 Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function.
 
 Parameter | Type | Description
@@ -85,6 +69,23 @@ width|`Number`|The width of the frame in pixels
 height|`Number`|The height of the frame in pixels
 xOrigin|`Number`|The frame x origin in pixels
 yOrigin|`Number`|The frame y origin in pixels
+time|`Number`|The duration of this frame in seconds
+
+### `register(name, ...)`
+Registers a new sprite under a name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite).
+
+While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is created using the [`makeSpriteFrame`](#makespriteframesurface-x-y-width-height-xorigin-yorigin-time) function.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The name of the sprite to register
+
+### `unregister(name)`
+Unregisters a previously registered sprite.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The name of the sprite to unregister
 
 ### `transform(transform)`
 Transform the current [transformation](#transform) by multiplying it with another transformation.
