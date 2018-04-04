@@ -14,7 +14,7 @@ MyrTest.prototype = {
             
             myr.register(
                 sprite.name,
-                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3)
+                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 7, 5, 0.3)
             );
         }
         
@@ -92,10 +92,13 @@ MyrTest.prototype = {
                            this.fish.getWidth() / 2,
                            this.fish.getHeight() / 2);
         
-        this.sheet.draw(0, 0);
-        this.sprite.draw(10, 50);
-        this.sprite.draw(10, 70);
-        this.sprite.drawScaled(10, 90, 5, 5);
+        this.sprite.draw(20, 50);
+        this.sprite.draw(20, 70);
+        
+        myr.push();
+        myr.scale(5, 5);
+        this.sprite.drawRotated(22, 22, Math.cos(this.a) * 4);
+        myr.pop();
         
         t.identity();
         t.translate(10, 150);

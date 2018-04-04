@@ -203,6 +203,18 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = y;
     };
     
+    const setAttributesDrawRotated = (x, y, width, height, angle) => {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        
+        instanceBuffer[++instanceBufferAt] = cos * width;
+        instanceBuffer[++instanceBufferAt] = sin * height;
+        instanceBuffer[++instanceBufferAt] = -sin * width;
+        instanceBuffer[++instanceBufferAt] = cos * height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
+    
     const setAttributesDrawTransform = (transform, width, height) => {
         instanceBuffer[++instanceBufferAt] = transform._00 * width;
         instanceBuffer[++instanceBufferAt] = transform._10 * height;
@@ -392,7 +404,19 @@ let Myr = function(canvasElement) {
             prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDraw(x, y, frame[1], frame[2], xShear, yShear);
+            setAttributesDrawSheared(x, y, frame[1], frame[2], xShear, yShear);
+            setAttributesOrigin(frame[3], frame[4]);
+        };
+        
+        this.drawRotated = (x, y, angle) => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+            
+            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
+            setAttributesDrawRotated(x, y, frame[1], frame[2], angle);
             setAttributesOrigin(frame[3], frame[4]);
         };
         
@@ -689,8 +713,8 @@ let Myr = function(canvasElement) {
             sheet.getTexture(),
             width,
             height,
-            xOrigin,
-            yOrigin,
+            xOrigin / width,
+            yOrigin / height,
             x / sheet.getWidth(),
             y / sheet.getHeight(),
             width / sheet.getWidth(),
