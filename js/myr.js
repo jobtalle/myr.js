@@ -393,15 +393,9 @@ let Myr = function(canvasElement) {
                
         const getFrame = () => frames[frame];
         
-        const frames = sprites[name].getFrames();
-        const fps = sprites[name].getFps();
+        const frames = sprites[name];
         let frameCounter = 0;
         let frame = 0;
-    };
-    
-    const SpriteEntry = function(frames, fps) {
-        this.getFrames = () => frames;
-        this.getFps = () => fps;
     };
     
     const Shader = function(vertex, fragment, samplers) {
@@ -620,15 +614,11 @@ let Myr = function(canvasElement) {
     
     this.register = function() {
         const frames = [];
-        let fps = 0;
         
-        for(let i = 1; i < 2 || i < arguments.length - 1; ++i)
+        for(let i = 1; i < arguments.length; ++i)
             frames.push(arguments[i]);
         
-        if(frames.length > 1)
-            fps = arguments[arguments.length - 1];
-        
-        sprites[arguments[0]] = new SpriteEntry(frames, fps);
+        sprites[arguments[0]] = frames;
     };
         
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {

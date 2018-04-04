@@ -11,11 +11,14 @@ MyrTest.prototype = {
         
         for(let i = 0; i < sheet.length; ++i) {
             const sprite = sheet[i];
+            const frames = [
+                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3),
+                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3)
+            ];
             
             myr.register(
                 sprite.name,
-                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3),
-                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3)
+                ...frames
             );
         }
         
