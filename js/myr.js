@@ -171,21 +171,18 @@ let Myr = function(canvasElement) {
         this._11 *= y;
     };
     
-    const setAttributesUv= (uvLeft, uvTop, uvRight, uvBottom) => {
+    const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
         instanceBuffer[++instanceBufferAt] = uvLeft;
         instanceBuffer[++instanceBufferAt] = uvTop;
-        instanceBuffer[++instanceBufferAt] = uvRight;
-        instanceBuffer[++instanceBufferAt] = uvBottom;
+        instanceBuffer[++instanceBufferAt] = uvWidth;
+        instanceBuffer[++instanceBufferAt] = uvHeight;
     };
     
-    const setAttributesUvPart = (uvLeft, uvTop, uvRight, uvBottom, left, top, width, height) => {
-        const uvWidth = uvRight - uvLeft;
-        const uvHeight = uvBottom - uvTop;
-        
+    const setAttributesUvPart = (uvLeft, uvTop, uvWidth, uvHeight, left, top, width, height) => {
         instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * left;
         instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * top;
-        instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * width;
-        instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * height;
+        instanceBuffer[++instanceBufferAt] = uvWidth * width;
+        instanceBuffer[++instanceBufferAt] = uvHeight * height;
     };
     
     const setAttributesDraw = (x, y, width, height) => {
@@ -372,6 +369,72 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
             setAttributesDraw(x, y, frame[1], frame[2]);
+            setAttributesOrigin(frame[3], frame[4]);
+        };
+        
+        this.drawScaled = (x, y, xScale, yScale) => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+            
+            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
+            setAttributesDraw(x, y, frame[1] * xScale, frame[2] * yScale);
+            setAttributesOrigin(frame[3], frame[4]);
+        };
+        
+        this.drawSheared = (x, y, xShear, yShear) => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+            
+            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
+            setAttributesDraw(x, y, frame[1], frame[2], xShear, yShear);
+            setAttributesOrigin(frame[3], frame[4]);
+        };
+        
+        this.drawTransformed = transform => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+            
+            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
+            setAttributesDrawTransform(transform, frame[1], frame[2]);
+            setAttributesOrigin(frame[3], frame[4]);
+        };
+        
+        this.drawPart = (x, y, left, top, w, h) => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            
+            const wf = 1 / frame[1];
+            const hf = 1 / frame[2];
+            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+            
+            setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
+            setAttributesDraw(x, y, w, h);
+            setAttributesOrigin(frame[3], frame[4]);
+        };
+        
+        this.drawPartTransformed = (transform, left, top, w, h) => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            
+            const wf = 1 / frame[1];
+            const hf = 1 / frame[2];
+            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+            
+            setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
+            setAttributesDrawTransform(transform, w, h);
             setAttributesOrigin(frame[3], frame[4]);
         };
         
@@ -692,7 +755,7 @@ let Myr = function(canvasElement) {
             "};" +
             "out mediump vec2 uv;" +
             "void main() {" +
-                "uv=atlas.xy+vec2(vertex.x,vertex.y)*atlas.zw;" +
+                "uv=atlas.xy+vertex*atlas.zw;" +
                 "vec2 transformed=(((vertex-position.zw)*" + 
                     "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
                     "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
@@ -719,7 +782,7 @@ let Myr = function(canvasElement) {
             "};" +
             "out mediump vec2 uv;" +
             "void main() {" +
-                "uv=atlas.xy+vec2(vertex.x,vertex.y)*atlas.zw;" +
+                "uv=atlas.xy+vertex*atlas.zw;" +
                 "vec2 transformed=(((vertex-position.zw)*" + 
                     "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
                     "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +

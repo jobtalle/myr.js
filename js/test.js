@@ -5,24 +5,30 @@ function MyrTest() {
 MyrTest.prototype = {
     start() {
         myr = new Myr(document.getElementById("renderer"));
-        myr.setClearColor(new myr.Color(0.2, 0.5, 0.7));
+        myr.setClearColor(new myr.Color(0.2, 0.2, 0.5));
         
         this.sheet = new myr.Surface("sprites/spritesheet.png", 154, 17);
         
         for(let i = 0; i < sheet.length; ++i) {
             const sprite = sheet[i];
-            const frames = [
-                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3),
-                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3)
-            ];
             
             myr.register(
                 sprite.name,
-                ...frames
+                myr.makeSpriteFrame(this.sheet, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, 0.3)
             );
         }
         
+        let frames = [];
+        
+        for(let i = 0; i < 12; ++i)
+            frames.push(myr.makeSpriteFrame(this.sheet, i * 14, 0, 14, 7, 0, 0, 0.1));
+        
+        myr.register(
+            "sparky",
+            ...frames);
+        
         this.sprite = new myr.Sprite("biemer_green");
+        this.sparky = new myr.Sprite("sparky");
         this.surface = new myr.Surface(200, 200);
         
         this.fish = new myr.Surface("https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png");
@@ -53,7 +59,7 @@ MyrTest.prototype = {
     update(timeStep) {
         this.a += 0.01;
         
-        this.sprite.animate(timeStep);
+        this.sparky.animate(timeStep);
     },
     
     render() {
@@ -85,10 +91,19 @@ MyrTest.prototype = {
                            this.fish.getHeight() / 4,
                            this.fish.getWidth() / 2,
                            this.fish.getHeight() / 2);
+        
         this.sheet.draw(0, 0);
         this.sprite.draw(10, 50);
         this.sprite.draw(10, 70);
-        this.sprite.draw(10, 90);
+        this.sprite.drawScaled(10, 90, 5, 5);
+        
+        t.identity();
+        t.translate(10, 150);
+        t.scale(5, 5);
+        this.sparky.drawPartTransformed(t, 0, 0, 7, 7);
+        
+        t.translate(7, 0);
+        this.sparky.drawPartTransformed(t, 7, 0, 7, 7);
         
         myr.flush();
         
