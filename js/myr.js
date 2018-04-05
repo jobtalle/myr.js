@@ -495,7 +495,7 @@ let Myr = function(canvasElement) {
         let frame = 0;
     };
     
-    const Shader = function(vertex, fragment, samplers) {
+    const ShaderCore = function(vertex, fragment) {
         const createShader = (type, source) => {
             const shader = gl.createShader(type);
             
@@ -509,14 +509,15 @@ let Myr = function(canvasElement) {
         };
         
         this.bind = () => {
-            gl.useProgram(program);
+            if(currentShaderCore == this)
+                return;
             
-            for(let i = 0; i < samplerNames.length; ++i) {
-                const sampler = samplerNames[i];
-                
-                gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
-            }
+            currentShaderCore = this;
+            
+            gl.useProgram(program);
         };
+        
+        this.getProgram = () => program;
         
         this.free = () => {
             gl.detachShader(program, shaderVertex);
@@ -529,17 +530,37 @@ let Myr = function(canvasElement) {
         const program = gl.createProgram();
         const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
         const shaderFragment = createShader(gl.FRAGMENT_SHADER, fragment);
-        const samplerNames = Object.keys(samplers);
-        const samplerLocations = new Object();
         
         gl.attachShader(program, shaderVertex);
         gl.attachShader(program, shaderFragment);
         gl.linkProgram(program);
+    };
+    
+    const Shader = function(core, samplers) {
+        this.bind = () => {
+            if(currentShader == this)
+                return;
+            
+            currentShader = this;
+            
+            core.bind();
+            
+            for(let i = 0; i < samplerNames.length; ++i) {
+                const sampler = samplerNames[i];
+                
+                gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
+            }
+        };
+        
+        this.free = () => core.free();
+        
+        const samplerNames = Object.keys(samplers);
+        const samplerLocations = new Object();
         
         for(let i = 0; i < samplerNames.length; ++i) {
             const sampler = samplerNames[i];
             
-            samplerLocations.sampler = gl.getUniformLocation(program, sampler);
+            samplerLocations.sampler = gl.getUniformLocation(core.getProgram(), sampler);
         }
     };
     
@@ -656,8 +677,7 @@ let Myr = function(canvasElement) {
             
             renderMode = mode;
         
-            if(shader != getCurrentShaders().get(mode))
-                (shader = getCurrentShaders().get(mode)).bind();
+            (shader = getCurrentShaders().get(mode)).bind();
         }
         
         if(instanceBufferAt + size >= instanceBufferCapacity) {
@@ -779,58 +799,39 @@ let Myr = function(canvasElement) {
     const transform = new Float32Array(8);
     const sprites = [];
     const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
+    const shaderCoreSprites = new ShaderCore(
+        "layout(location=0) in vec2 vertex;" +
+        "layout(location=1) in vec4 atlas;" +
+        "layout(location=2) in vec4 matrix;" +
+        "layout(location=3) in vec4 position;" +
+        "layout(std140) uniform transform {" +
+            "vec4 tw;" +
+            "vec4 th;" +
+        "};" +
+        "out mediump vec2 uv;" +
+        "void main() {" +
+            "uv=atlas.xy+vertex*atlas.zw;" +
+            "vec2 transformed=(((vertex-position.zw)*" + 
+                "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
+                "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+                "vec2(tw.w,th.w)*2.0;" +
+            "gl_Position=vec4(transformed.x-1.0,transformed.y-1.0,0,1);" +
+        "}",
+        "uniform sampler2D source;" +
+        "in mediump vec2 uv;" +
+        "layout(location=0) out lowp vec4 color;" +
+        "void main() {" +
+            "color=texture(source,uv);" +
+        "}"
+    );
     const shadersDefault = new ShaderSet(
         new Shader(
-            "layout(location=0) in vec2 vertex;" +
-            "layout(location=1) in vec4 atlas;" +
-            "layout(location=2) in vec4 matrix;" +
-            "layout(location=3) in vec4 position;" +
-            "layout(std140) uniform transform {" +
-                "vec4 tw;" +
-                "vec4 th;" +
-            "};" +
-            "out mediump vec2 uv;" +
-            "void main() {" +
-                "uv=atlas.xy+vertex*atlas.zw;" +
-                "vec2 transformed=(((vertex-position.zw)*" + 
-                    "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
-                    "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
-                    "vec2(tw.w,th.w)*2.0;" +
-                "gl_Position=vec4(transformed.x-1.0,transformed.y-1.0,0,1);" +
-            "}",
-            "uniform sampler2D source;" +
-            "in mediump vec2 uv;" +
-            "layout(location=0) out lowp vec4 color;" +
-            "void main() {" +
-                "color=texture(source,uv);" +
-            "}",
+            shaderCoreSprites,
             {
                 source: 1
             }),
         new Shader(
-            "layout(location=0) in vec2 vertex;" +
-            "layout(location=1) in vec4 atlas;" +
-            "layout(location=2) in vec4 matrix;" +
-            "layout(location=3) in vec4 position;" +
-            "layout(std140) uniform transform {" +
-                "vec4 tw;" +
-                "vec4 th;" +
-            "};" +
-            "out mediump vec2 uv;" +
-            "void main() {" +
-                "uv=atlas.xy+vertex*atlas.zw;" +
-                "vec2 transformed=(((vertex-position.zw)*" + 
-                    "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
-                    "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
-                    "vec2(tw.w,th.w)*2.0;" +
-                "gl_Position=vec4(transformed.x-1.0,transformed.y-1.0,0,1);" +
-            "}",
-            "uniform sampler2D source;" +
-            "in mediump vec2 uv;" +
-            "layout(location=0) out lowp vec4 color;" +
-            "void main() {" +
-                "color=texture(source,uv);" +
-            "}",
+            shaderCoreSprites,
             {
                 source: 0
             }),
@@ -847,7 +848,8 @@ let Myr = function(canvasElement) {
     let clearColor = new Color(0, 0, 0);
     let width = canvasElement.width;
     let height = canvasElement.height;
-    let shader = null;
+    let currentShader = null;
+    let currentShaderCore = null;
     let surface = null;
     let currentTextureSurface = null;
     let currentTextureAtlas = null;
