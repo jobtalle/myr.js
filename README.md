@@ -511,6 +511,21 @@ Constructs a color object from red, green, blue and alpha. The values must lie i
 # Vector
 This object represents a vector in 2D space. Several useful vector operation functions are provided.
 
+## Functions
+Function | Description
+-|-
+[`Vector(x, y)`](#vectorx-y)|Construct from x and y
+[`copy()`](#copy-1)|Returns a copy
+[`add(vector)`](#addvector)|Add
+[`subtract(vector)`](#subtractvector)|Subtract
+[`negate()`](#negate)|Negate
+[`dot(vector)`](#dotvector)|Dot product
+[`length()`](#length)|Length
+[`multiply(scalar)`](#multiplyscalar)|Multiply
+[`divide(scalar)`](#dividescalar)|Divide
+[`normalize()`](#normalize)|Normalize
+[`angle()`](#angle)|Returns the angle
+
 ### `Vector(x, y)`
 Constructs a vector object.
 
