@@ -182,16 +182,16 @@ Draws this surface on the currently bound target.
 
 Parameter | Type | Description
 -|-|-
-x|`Number`|The X position to render to
-y|`Number`|The Y position to render to
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
 
 ### `drawScaled(x, y, xScale, yScale)`
 Draws this surface on the currently bound target after applying scaling.
 
 Parameter | Type | Description
 -|-|-
-x|`Number`|The X position to render to
-y|`Number`|The Y position to render to
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
 xScale|`Number`|The horizontal scale factor
 yScale|`Number`|The vertical scale factor
 
@@ -200,8 +200,8 @@ Draws this surface on the currently bound target after applying shearing.
 
 Parameter | Type | Description
 -|-|-
-x|`Number`|The X position to render to
-y|`Number`|The Y position to render to
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
 xShear|`Number`|Horizontal shearing
 yShear|`Number`|Vertical shearing
 
@@ -217,21 +217,21 @@ Draws a part of this surface on the currently bound render target. Make sure the
 
 Parameter | Type | Description
 -|-|-
-x|`Number`|The X position to render to
-y|`Number`|The Y position to render to
-left|`Number`|The X position on the surface to render from
-top|`Number`|The Y position on the surface to render from
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+left|`Number`|The X position on the surface to draw from
+top|`Number`|The Y position on the surface to draw from
 width|`Number`|The width of the region to draw
 height|`Number`|The height of the region to draw
 
 ### `drawPartTransformed(transform, left, top, width, height)`
-Draws a part of this surface on the currently bound render target. Make sure the specified region is part of the surface; rendering parts that fall outside this surface results in undefined behavior.
+Draws a part of this surface on the currently bound render target.
 
 Parameter | Type | Description
 -|-|-
 transform|[`Transform`](#transform)|A transformation to apply to this surface
-left|`Number`|The X position on the surface to render from
-top|`Number`|The Y position on the surface to render from
+left|`Number`|The X position on the surface to draw from
+top|`Number`|The Y position on the surface to draw from
 width|`Number`|The width of the region to draw
 height|`Number`|The height of the region to draw
 
@@ -263,6 +263,73 @@ frame|`Number`|The frame index this sprite should be at, starting at zero
 
 ### `getFrame()`
 Returns the current frame index.
+
+### `draw(x, y)`
+Draws this sprite on the currently bound target.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+
+### `drawScaled(x, y, xScale, yScale)`
+Draws this sprite on the currently bound target after applying scaling.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+xScale|`Number`|The horizontal scale factor
+yScale|`Number`|The vertical scale factor
+
+### `drawSheared(x, y, xShear, yShear)`
+Draws this sprite on the currently bound target after applying shearing.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+xShear|`Number`|Horizontal shearing
+yShear|`Number`|Vertical shearing
+
+### `drawRotated(x, y, angle)`
+Draws this sprite on the currently bound target after applying rotation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+angle|`Number`|The rotation in radians
+
+### `drawTransformed(transform)`
+Draws this sprite on the currently bound target after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this sprite
+
+### `drawPart(x, y, left, top, width, height)`
+Draws a part of this sprite on the currently bound render target. Make sure the specified region is part of the sprite; rendering parts that fall outside this sprite results in undefined behavior.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+left|`Number`|The X position on the sprite to draw from
+top|`Number`|The Y position on the sprite to draw from
+width|`Number`|The width of the region to draw
+height|`Number`|The height of the region to draw
+
+### `drawPartTransformed(transform, left, top, width, height)`
+Draws a part of this sprite on the currently bound render target.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this surface
+left|`Number`|The X position on the sprite to draw from
+top|`Number`|The Y position on the sprite to draw from
+width|`Number`|The width of the region to draw
+height|`Number`|The height of the region to draw
 
 # Transform
 The transform object wraps a homogeneous 2D transformation matrix. Several different transform functions are provided, but the matrix can also be filled by hand. Transform objects are used in the global transformation stack to transform everything that is being rendered.
