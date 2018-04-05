@@ -405,6 +405,21 @@ height|`Number`|The height of the region to draw
 # Transform
 The transform object wraps a homogeneous 2D transformation matrix. Several different transform functions are provided, but the matrix can also be filled by hand. Transform objects are used in the global transformation stack to transform everything that is being rendered.
 
+## Functions
+Function | Description
+-|-
+[`Transform()`](#transform-1)|Constructs as idenity transform
+[`Transform(_00, _10, _20, _01, _11, _21)`](#transform_00-_10-_20-_01-_11-_21)|Constructs from matrix values
+[`apply(vector)`](#applyvector)|Apply to a vector
+[`copy()`](#copy)|Returns a copy
+[`identity()`](#identity)|Set to identity
+[`set(transform)`](#settransform)|Make equal to another transform
+[`multiply(transform)`](#multiplytransform)|Multiply with another transform
+[`rotate(angle)`](#rotateangle-1)|Rotate
+[`shear(x, y)`](#shearx-y-1)|Shear
+[`translate(x, y)`](#translatex-y-1)|Translate
+[`scale(x, y)`](#scalex-y-1)|Scale
+
 ### `Transform()`
 Constructs a `Transform` object, which is initialized as the identity matrix (no transform).
 
