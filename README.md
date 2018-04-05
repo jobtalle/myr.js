@@ -284,6 +284,22 @@ A sprite in **myr.js** is a renderable image consisting of one or more frames. S
 
 Typically, one big surface should contain all sprites (it will be a sprite atlas). In this way, sprite rendering is much more efficient than surface rendering.
 
+## Functions
+Function | Description
+-|-
+[`Sprite(name)`](#spritename)|Constructs a sprite
+[`animate(timeStep)`](#animatetimestep)|Animates the sprite
+[`setFrame(frame)`](#setframeframe)|Set the current frame
+[`getFrame()`](#getframe)|Returns the current frame
+[`draw(x, y)`](#drawx-y-1)|Draws the sprite
+[`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-1)|Draws the sprite
+[`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-1)|Draws the sprite
+[`drawRotated(x, y, angle)`](#drawrotatedx-y-angle)|Draws the sprite
+[`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle)|Draws the sprite
+[`drawTransformed(transform)`](#drawtransformedtransform-1)|Draws the sprite
+[`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height-1)|Draws the sprite
+[`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height-1)|Draws the sprite
+
 ### `Sprite(name)`
 Constructs a sprite from a registered source.
 
