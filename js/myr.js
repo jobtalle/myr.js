@@ -567,25 +567,27 @@ let Myr = function(canvasElement) {
     };
     
     const bindTextureSurface = texture => {
-        if(currentTextureSurface != texture) {
-            flush();
-            
-            gl.activeTexture(TEXTURE_SURFACE);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            
-            currentTextureSurface = texture;
-        }
+        if(currentTextureSurface == texture)
+            return;
+        
+        flush();
+
+        gl.activeTexture(TEXTURE_SURFACE);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        currentTextureSurface = texture;
     };
     
     const bindTextureAtlas = texture => {
-        if(currentTextureAtlas != texture) {
-            flush();
-            
-            gl.activeTexture(TEXTURE_ATLAS);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            
-            currentTextureAtlas = texture;
-        }
+        if(currentTextureAtlas == texture)
+            return;
+        
+        flush();
+
+        gl.activeTexture(TEXTURE_ATLAS);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        currentTextureAtlas = texture;
     };
     
     const clear = color => {
