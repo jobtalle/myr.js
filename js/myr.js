@@ -139,14 +139,12 @@ let Myr = function(canvasElement) {
         const sin = Math.sin(angle);
         
         const _00 = this._00;
-        const _10 = this._10;
         const _01 = this._01;
-        const _11 = this._11;
         
-        this._00 = _00 * cos - _10 * sin;
-        this._10 = _00 * sin + _10 * cos;
-        this._01 = _01 * cos - _11 * sin;
-        this._11 = _01 * sin + _11 * cos;
+        this._00 = _00 * cos - this._10 * sin;
+        this._10 = _00 * sin + this._10 * cos;
+        this._01 = _01 * cos - this._11 * sin;
+        this._11 = _01 * sin + this._11 * cos;
     };
     
     Transform.prototype.shear = function(x, y) {
