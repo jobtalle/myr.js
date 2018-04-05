@@ -25,7 +25,6 @@ Object | Description
 [`Color`](#color)|A color containing a red, green, blue and alpha channel
 [`Vector`](#vector)|A 2D vector
 
-
 # Global functions
 Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
 
@@ -153,6 +152,25 @@ y|`Number`|Vertical scaling
 
 # Surface
 A surface in **myr.js** can be a render target. After binding it using its member function `bind()`, all render calls render to this surface. The surface itself can also be rendered. Additionally, the surface may be constructed from images, making surfaces useful for large image or background rendering since large images don't fit well on sprite sheets. Note that surfaces can only render to other targets, never to themselves.
+
+## Functions
+Function | Description
+-|-
+[`Surface(width, height)`](#surfacewidth-height)|Construct from size
+[`Surface(image)`](#surfaceimage)|Construct from image
+[`bind()`](#bind-1)|Bind the surface
+[`setClearColor(color)`](#setclearcolorcolor-1)|Set clear color
+[`clear()`](#clear-1)|Clear the surface
+[`ready()`](#ready)|Verify whether the surface is renderable
+[`getWidth()`](#getwidth)|Returns the surface width
+[`getHeight()`](#getheight)|Returns the surface height
+[`free()`](#free-1)|Frees all resources used by this surface
+[`draw(x, y)`](#drawx-y)|Draws the surface
+[`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale)|Draws the surface
+[`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear)|Draws the surface
+[`drawTransformed(transform)`](#drawtransformedtransform)|Draws the surface
+[`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height)|Draws the surface
+[`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height)|Draws the surface
 
 ### `Surface(width, height)`
 Constructs a surface of a specific size.
