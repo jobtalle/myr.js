@@ -28,6 +28,26 @@ Object | Description
 # Global functions
 Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
 
+## Functions
+Function | Description
+-|-
+[`setClearColor(color)`](#setclearcolor)|Sets the clear color
+[`clear()`](#clear)|Clears the current target
+[`bind()`](#bind)|Binds the default render target
+[`flush()`](#flush)|Flush the draw calls
+[`free()`](#free)|Frees *myr.js* object
+[`getTransform()`](#gettransform)|Get the current transformation
+[`push()`](#push)|Push the transform stack
+[`pop()`](#pop)|Pop the transform stack
+[`makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`](#makespriteframesurface-x-y-width-height-xorigin-yorigin-time)|Returns a sprite frame
+[`register(name, ...)`](#registername-)|Register a sprite
+[`unregister(name)`](#unregistername)|Unregister a sprite
+[`transform(transform)`](#transformtransform)|Transform
+[`translate(x, y)`](#translatex-y)|Translate
+[`rotate(angle)`](#rotateangle)|Rotate
+[`shear(x, y)`](#shearx-y)|Shear
+[`scale(x, y)`](#scalex-y)|Scale
+
 ### `setClearColor(color)`
 Set the clear color of the **myr.js** object. When `clear()` is called, the screen will be cleared using this color.
 
