@@ -80,6 +80,32 @@ Parameter | Type | Description
 -|-|-
 name|`String`|The name of the sprite to register
 
+Registering sprites usually happens when loading a sprite sheet. This sheet is first loaded onto a surface, after which all sprites on the sheet are registered to make them available for use. This will usually look like this:
+
+```javascript
+// Load a sprite sheet of 512x512 pixels
+sheet = new myr.Surface("source.png", 512, 512);
+
+// Load information about the sprites in this sheet
+// This could be loaded from JSon exported by a sprite sheet tool
+sprites = loadSprites();
+
+// Register every sprite
+for(let i = 0; i < sprites.length; ++i)
+    myr.register(
+        sprites[i].name,
+        myr.makeSpriteFrame(
+            sprites[i].x,
+            sprites[i].y,
+            sprites[i].width,
+            sprites[i].height,
+            sprites[i].xOrigin,
+            sprites[i].yOrigin,
+            sprites[i].frameTime));
+```
+
+Note that `sprites` can be any kind of data, the member names may differ for other formats; it is only necessary that all required information about a sprite is passed. If animated sprites exist, any number of sprite frames can be passed to the [`register`](#registername-) function.
+
 ### `unregister(name)`
 Unregisters a previously registered sprite.
 
