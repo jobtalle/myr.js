@@ -327,6 +327,17 @@ x|`Number`|The X position to draw to
 y|`Number`|The Y position to draw to
 angle|`Number`|The rotation in radians
 
+### `drawScaledRotated(x, y, xScale, yScale, angle)`
+Draws this sprite on the currently bound target after applying both scaling and rotation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+xScale|`Number`|The horizontal scale factor
+yScale|`Number`|The vertical scale factor
+angle|`Number`|The rotation in radians
+
 ### `drawTransformed(transform)`
 Draws this sprite on the currently bound target after applying a transformation to it.
 

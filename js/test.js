@@ -95,10 +95,7 @@ MyrTest.prototype = {
         this.sprite.draw(20, 50);
         this.sprite.draw(20, 70);
         
-        myr.push();
-        myr.scale(5, 5);
-        this.sprite.drawRotated(22, 22, Math.cos(this.a) * 4);
-        myr.pop();
+        this.sprite.drawScaledRotated(100, 100, 5, 5, Math.cos(this.a) * 4);
         
         t.identity();
         t.translate(10, 150);

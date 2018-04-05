@@ -420,6 +420,18 @@ let Myr = function(canvasElement) {
             setAttributesOrigin(frame[3], frame[4]);
         };
         
+        this.drawScaledRotated = (x, y, xScale, yScale, angle) => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+            
+            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
+            setAttributesDrawRotated(x, y, frame[1] * xScale, frame[2] * yScale, angle);
+            setAttributesOrigin(frame[3], frame[4]);
+        };
+        
         this.drawTransformed = transform => {
             const frame = getFrame();
             
