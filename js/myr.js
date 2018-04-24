@@ -15,6 +15,15 @@ let Myr = function(canvasElement) {
             this.a = a;
     };
     
+    this.Color.BLACK = new Color(0, 0, 0);
+    this.Color.BLUE = new Color(0, 0, 1);
+    this.Color.GREEN = new Color(0, 1, 0);
+    this.Color.CYAN = new Color(0, 1, 1);
+    this.Color.RED = new Color(1, 0, 0);
+    this.Color.MAGENTA = new Color(1, 0, 1);
+    this.Color.YELLOW = new Color(1, 1, 0);
+    this.Color.WHITE = new Color(1, 1, 1);
+    
     const Vector = this.Vector = function(x, y) {
         this.x = x;
         this.y = y;
@@ -493,6 +502,12 @@ let Myr = function(canvasElement) {
         const frames = sprites[name];
         let frameCounter = 0;
         let frame = 0;
+    };
+    
+    this.primitives = {
+        drawLine: () => {
+            
+        }
     };
     
     const ShaderCore = function(vertex, fragment) {

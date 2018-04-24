@@ -110,6 +110,8 @@ MyrTest.prototype = {
         this.surface.bind();
         this.surface.clear();
         this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
+        
+        myr.primitives.drawLine(0, 0, 200, 200, myr.Color.RED);
     }
 }
 
