@@ -639,6 +639,7 @@ The _primitives_ namespace exposes several functions which can be used for primi
 Function | Description
 -|-
 [`drawLine(color, x1, y1, x2, y2)`](#drawlinecolor-x1-y1-x2-y2)|Draws a line segment
+[`drawLineGradient(color1, x1, y1, color2, x2, y2)`](#drawlinegradientcolor1-x1-y1-color2-x2-y2)|Draws a gradient line segment
 [`drawRectangle(color, x, y, width, height)`](#drawrectanglecolor-x-y-width-height)|Draws a rectangle
 [`drawCircle(color, x, y, radius)`](#drawcirclecolor-x-y-radius)|Draws a circle
 
@@ -650,6 +651,18 @@ Parameter | Type | Description
 color|[`Color`](#color)|The line color
 x1|`Number`|The start point x coordinate
 y1|`Number`|The start point y coordinate
+x2|`Number`|The end point x coordinate
+y2|`Number`|The end point y coordinate
+
+### `drawLineGradient(color1, x1, y1, color2, x2, y2)`
+Draws a single line segment with a color gradient.
+
+Parameter | Type | Description
+-|-|-
+color1|[`Color`](#color)|The line color at the start point
+x1|`Number`|The start point x coordinate
+y1|`Number`|The start point y coordinate
+color2|[`Color`](#color)|The line color at the end point
 x2|`Number`|The end point x coordinate
 y2|`Number`|The end point y coordinate
 

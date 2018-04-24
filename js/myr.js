@@ -534,6 +534,26 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = y2;
     };
     
+    this.primitives.drawLineGradient = (color1, x1, y1, color2, x2, y2) => {
+        prepareDraw(RENDER_MODE_LINES, 6);
+        
+        instanceBuffer[++instanceBufferAt] = color1.r;
+        instanceBuffer[++instanceBufferAt] = color1.g;
+        instanceBuffer[++instanceBufferAt] = color1.b;
+        instanceBuffer[++instanceBufferAt] = color1.a;
+        instanceBuffer[++instanceBufferAt] = x1;
+        instanceBuffer[++instanceBufferAt] = y1;
+        
+        prepareDraw(RENDER_MODE_LINES, 6);
+        
+        instanceBuffer[++instanceBufferAt] = color2.r;
+        instanceBuffer[++instanceBufferAt] = color2.g;
+        instanceBuffer[++instanceBufferAt] = color2.b;
+        instanceBuffer[++instanceBufferAt] = color2.a;
+        instanceBuffer[++instanceBufferAt] = x2;
+        instanceBuffer[++instanceBufferAt] = y2;
+    };
+    
     this.primitives.drawRectangle = (color, x, y, width, height) => {
         this.primitives.drawLine(color, x, y, x + width, y);
         this.primitives.drawLine(color, x + width, y, x + width, y + height);

@@ -95,10 +95,17 @@ MyrTest.prototype = {
         
         this.sprite.draw(20, 50);
         this.sprite.draw(20, 70);
-        myr.primitives.drawLine(myr.Color.WHITE, 0, 0, myr.getWidth(), myr.getHeight());
+        myr.primitives.drawLineGradient(myr.Color.WHITE, 0, 0, myr.Color.BLUE, myr.getWidth(), myr.getHeight());
+        
+        myr.push();
+        myr.translate(myr.getWidth() / 2, myr.getHeight() / 2);
+        myr.rotate(this.a);
+        myr.shear(Math.cos(this.a) * 0.5, 0);
         
         for(let i = 50; i < myr.getHeight(); i += 100)
-            myr.primitives.drawCircle(myr.Color.RED, myr.getWidth() / 2, myr.getHeight() / 2, i);
+            myr.primitives.drawCircle(myr.Color.RED, 0, 0, i);
+        
+        myr.pop();
         
         myr.push();
         myr.translate(300, 300);
