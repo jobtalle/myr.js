@@ -522,6 +522,18 @@ Function | Description
 [`Color(r, g, b)`](#colorr-g-b)|Construct from RGB
 [`Color(r, g, b, a)`](#colorr-g-b-a)|Construct from RGBA
 
+## Constants
+Constant | Description
+-|-
+`BLACK`|Black
+`BLUE`|Blue
+`GREEN`|Green
+`CYAN`|Cyan
+`RED`|Red
+`MAGENTA`|Magenta
+`YELLOW`|Yellow
+`WHITE`|White
+
 ### `Color(r, g, b)`
 Constructs a color object from red, green and blue. The values must lie in the range [0, 1]. The color will have an alpha value of `1.0`.
 
