@@ -638,9 +638,9 @@ The _primitives_ namespace exposes several functions which can be used for primi
 
 Function | Description
 -|-
-[`drawLine(color, x1, y1, x2, y2)`](#drawline)|Draws a line segment
-[`drawRectangle(color, x, y, width, height)`](#drawrectangle)|Draws a rectangle
-[`drawCircle(color, x, y, radius)`](#drawcircle)|Draws a circle
+[`drawLine(color, x1, y1, x2, y2)`](#drawlinecolor-x1-y1-x2-y2)|Draws a line segment
+[`drawRectangle(color, x, y, width, height)`](#drawrectanglecolor-x-y-width-height)|Draws a rectangle
+[`drawCircle(color, x, y, radius)`](#drawcirclecolor-x-y-radius)|Draws a circle
 
 ### `drawLine(color, x1, y1, x2, y2)`
 Draws a single line segment with a color.
