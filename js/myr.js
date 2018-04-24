@@ -504,10 +504,61 @@ let Myr = function(canvasElement) {
         let frame = 0;
     };
     
-    this.primitives = {
-        drawLine: () => {
-            
-        }
+    this.primitives = {};
+    this.primitives.circlePoints = new Array(1024);
+    
+    for(let i = 0; i < 1024; i += 2) {
+        const radians = i * Math.PI * 2 / 1024;
+        
+        this.primitives.circlePoints[i] = Math.cos(radians);
+        this.primitives.circlePoints[i + 1] = Math.sin(radians);
+    }
+    
+    this.primitives.drawLine = (color, x1, y1, x2, y2) => {
+        prepareDraw(RENDER_MODE_LINES, 6);
+        
+        instanceBuffer[++instanceBufferAt] = color.r;
+        instanceBuffer[++instanceBufferAt] = color.g;
+        instanceBuffer[++instanceBufferAt] = color.b;
+        instanceBuffer[++instanceBufferAt] = color.a;
+        instanceBuffer[++instanceBufferAt] = x1;
+        instanceBuffer[++instanceBufferAt] = y1;
+        
+        prepareDraw(RENDER_MODE_LINES, 6);
+        
+        instanceBuffer[++instanceBufferAt] = color.r;
+        instanceBuffer[++instanceBufferAt] = color.g;
+        instanceBuffer[++instanceBufferAt] = color.b;
+        instanceBuffer[++instanceBufferAt] = color.a;
+        instanceBuffer[++instanceBufferAt] = x2;
+        instanceBuffer[++instanceBufferAt] = y2;
+    };
+    
+    this.primitives.drawRectangle = (color, x, y, width, height) => {
+        this.primitives.drawLine(color, x, y, x + width, y);
+        this.primitives.drawLine(color, x + width, y, x + width, y + height);
+        this.primitives.drawLine(color, x + width, y + height, x, y + height);
+        this.primitives.drawLine(color, x, y + height, x, y);
+    };
+    
+    this.primitives.drawCircle = (color, x, y, radius) => {
+        const step = Math.max(2, 32 >> Math.floor(radius / 128));
+        let i = 0;
+        
+        for(; i < 1024 - step; i += step)
+            this.primitives.drawLine(
+                color,
+                x + this.primitives.circlePoints[i] * radius,
+                y + this.primitives.circlePoints[i + 1] * radius,
+                x + this.primitives.circlePoints[i + step] * radius,
+                y + this.primitives.circlePoints[i + 1 + step] * radius);
+        
+        this.primitives.drawLine(
+            color,
+            x + this.primitives.circlePoints[i] * radius,
+            y + this.primitives.circlePoints[i + 1] * radius,
+            x + this.primitives.circlePoints[0] * radius,
+            y + this.primitives.circlePoints[1] * radius);
     };
     
     const ShaderCore = function(vertex, fragment) {
@@ -566,8 +617,6 @@ let Myr = function(canvasElement) {
                 gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
             }
         };
-        
-        this.free = () => core.free();
         
         const samplerNames = Object.keys(samplers);
         const samplerLocations = new Object();
@@ -647,7 +696,8 @@ let Myr = function(canvasElement) {
                 gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, instanceCount);
                 break;
             case RENDER_MODE_LINES:
-                
+                gl.bindVertexArray(vaoLines);
+                gl.drawArrays(gl.LINES, 0, instanceCount);
                 break;
             case RENDER_MODE_POINTS:
                 
@@ -775,9 +825,11 @@ let Myr = function(canvasElement) {
     };
     
     this.free = () => {
-        shaderSprites.free();
+        shaderCoreSprites.free();
+        shaderCoreLines.free();
         
-        gl.deleteVertexArray(vao);
+        gl.deleteVertexArray(vaoSprites);
+        gl.deleteVertexArray(vaoLines);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
         gl.deleteBuffer(transformBuffer);
@@ -797,6 +849,8 @@ let Myr = function(canvasElement) {
     this.scale = (x, y) => touchTransform().scale(x, y);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
+    this.getWidth = () => width;
+    this.getHeight = () => height;
     
     const RENDER_MODE_NONE = -1;
     const RENDER_MODE_SURFACES = 0;
@@ -810,19 +864,18 @@ let Myr = function(canvasElement) {
     const quad = gl.createBuffer();
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
+    const vaoLines = gl.createVertexArray();
     const transformBuffer = gl.createBuffer();
     const transform = new Float32Array(8);
     const sprites = [];
     const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
+    const uniformBlock = "layout(std140) uniform transform {vec4 tw;vec4 th;};";
     const shaderCoreSprites = new ShaderCore(
         "layout(location=0) in vec2 vertex;" +
         "layout(location=1) in vec4 atlas;" +
         "layout(location=2) in vec4 matrix;" +
         "layout(location=3) in vec4 position;" +
-        "layout(std140) uniform transform {" +
-            "vec4 tw;" +
-            "vec4 th;" +
-        "};" +
+        uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
             "uv=atlas.xy+vertex*atlas.zw;" +
@@ -830,13 +883,31 @@ let Myr = function(canvasElement) {
                 "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
-            "gl_Position=vec4(transformed.x-1.0,transformed.y-1.0,0,1);" +
+            "gl_Position=vec4(transformed-vec2(1),0,1);" +
         "}",
         "uniform sampler2D source;" +
         "in mediump vec2 uv;" +
         "layout(location=0) out lowp vec4 color;" +
         "void main() {" +
             "color=texture(source,uv);" +
+        "}"
+    );
+    const shaderCoreLines = new ShaderCore(
+        "layout(location=0) in vec4 color;" +
+        "layout(location=1) in vec2 vertex;" +
+        uniformBlock +
+        "out lowp vec4 colori;" +
+        "void main() {" +
+            "vec2 transformed=(vertex*" +
+                "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+                "vec2(tw.w,th.w)*2.0;" +
+            "gl_Position=vec4(transformed-vec2(1),0,1);" +
+            "colori = color;" +
+        "}",
+        "in lowp vec4 colori;" +
+        "layout(location=0) out lowp vec4 color;" +
+        "void main() {" +
+            "color=colori;" +
         "}"
     );
     const shadersDefault = new ShaderSet(
@@ -850,7 +921,11 @@ let Myr = function(canvasElement) {
             {
                 source: 0
             }),
-        null,
+        new Shader(
+            shaderCoreLines,
+            {
+                
+            }),
         null);
     
     let transformAt = 0;
@@ -897,6 +972,13 @@ let Myr = function(canvasElement) {
     gl.enableVertexAttribArray(3);
     gl.vertexAttribDivisor(3, 1);
     gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 48, 32);
+    
+    gl.bindVertexArray(vaoLines);
+    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
     
     gl.bindVertexArray(null);
     

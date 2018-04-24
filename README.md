@@ -25,6 +25,13 @@ Object | Description
 [`Color`](#color)|A color containing a red, green, blue and alpha channel
 [`Vector`](#vector)|A 2D vector
 
+# Namespaces
+The **myr.js** object exposes several namespaces which provide access to specific functions:
+
+Namespace | Description
+-|-
+[`primitives`](#primitives)|Exposes primitive rendering functions
+
 # Global functions
 Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
 
@@ -39,6 +46,8 @@ Function | Description
 [`getTransform()`](#gettransform)|Get the current transformation
 [`push()`](#push)|Push the transform stack
 [`pop()`](#pop)|Pop the transform stack
+[`getWidth()`](#getwidth)|Returns the width of the default render target
+[`getHeight()`](#getheight)|Returns the height of the default render target
 [`makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`](#makespriteframesurface-x-y-width-height-xorigin-yorigin-time)|Returns a sprite frame
 [`register(name, ...)`](#registername-)|Register a sprite
 [`unregister(name)`](#unregistername)|Unregister a sprite
@@ -75,6 +84,12 @@ Push the current [transformation](#transform) onto the stack, saving the current
 
 ### `pop()`
 Pop the current [transformation](#transform) from the stack, restoring the last pushed transformation.
+
+### `getWidth()`
+Returns the width of the default render target
+
+### `getHeight()`
+Returns the height of the default render target
 
 ### `makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`
 Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function.
@@ -182,8 +197,8 @@ Function | Description
 [`setClearColor(color)`](#setclearcolorcolor-1)|Set clear color
 [`clear()`](#clear-1)|Clear the surface
 [`ready()`](#ready)|Verify whether the surface is renderable
-[`getWidth()`](#getwidth)|Returns the surface width
-[`getHeight()`](#getheight)|Returns the surface height
+[`getWidth()`](#getwidth-1)|Returns the surface width
+[`getHeight()`](#getheight-1)|Returns the surface height
 [`free()`](#free-1)|Frees all resources used by this surface
 [`draw(x, y)`](#drawx-y)|Draws the surface
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale)|Draws the surface
@@ -615,3 +630,46 @@ Normalizes the vector.
 
 ### `angle()`
 Returns the angle this vector is pointing towards.
+
+# Primitives
+The _primitives_ namespace exposes several functions which can be used for primitive rendering.
+
+## Functions
+
+Function | Description
+-|-
+[`drawLine(color, x1, y1, x2, y2)`](#drawline)|Draws a line segment
+[`drawRectangle(color, x, y, width, height)`](#drawrectangle)|Draws a rectangle
+[`drawCircle(color, x, y, radius)`](#drawcircle)|Draws a circle
+
+### `drawLine(color, x1, y1, x2, y2)`
+Draws a single line segment with a color.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|The line color
+x1|`Number`|The start point x coordinate
+y1|`Number`|The start point y coordinate
+x2|`Number`|The end point x coordinate
+y2|`Number`|The end point y coordinate
+
+### `drawRectangle(color, x, y, width, height)`
+Draws a rectangle.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|The line color
+x|`Number`|The left top x coordinate
+y|`Number`|The left top y coordinate
+width|`Number`|The rectangle width
+height|`Number`|The rectangle height
+
+### `drawCircle(color, x, y, radius)`
+Draws a circle with a radius around an origin.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|The line color
+x|`Number`|The center's x coordinate
+y|`Number`|The center's y coordinate
+radius|`Number`|The circle radius

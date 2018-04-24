@@ -64,6 +64,7 @@ MyrTest.prototype = {
     
     render() {
         myr.bind();
+        
         myr.push();
         myr.rotate(0.1);
         myr.clear();
@@ -94,6 +95,17 @@ MyrTest.prototype = {
         
         this.sprite.draw(20, 50);
         this.sprite.draw(20, 70);
+        myr.primitives.drawLine(myr.Color.WHITE, 0, 0, myr.getWidth(), myr.getHeight());
+        
+        for(let i = 50; i < myr.getHeight(); i += 100)
+            myr.primitives.drawCircle(myr.Color.RED, myr.getWidth() / 2, myr.getHeight() / 2, i);
+        
+        myr.push();
+        myr.translate(300, 300);
+        myr.rotate(this.a);
+        myr.translate(-150, -100);
+        myr.primitives.drawRectangle(myr.Color.CYAN, 0, 0, 300, 200);
+        myr.pop();
         
         this.sprite.drawScaledRotated(100, 100, 5, 5, Math.cos(this.a) * 4);
         
@@ -110,8 +122,6 @@ MyrTest.prototype = {
         this.surface.bind();
         this.surface.clear();
         this.fish.draw((this.surface.getWidth() -this.fish.getWidth()) / 2, (this.surface.getHeight() -this.fish.getHeight()) / 2);
-        
-        myr.primitives.drawLine(0, 0, 200, 200, myr.Color.RED);
     }
 }
 
