@@ -329,7 +329,6 @@ let Myr = function(canvasElement) {
         let ready = false;
         let width = 0;
         let height = 0;
-        let shaders = shadersDefault.copy();
         let clearColor = new Color(0, 0, 0, 0);
         
         gl.activeTexture(TEXTURE_EDITING);
@@ -648,14 +647,6 @@ let Myr = function(canvasElement) {
         }
     };
     
-    const ShaderSet = function(surfaces, sprites, lines, points) {
-        const shaders = [surfaces, sprites, lines, points];
-        
-        this.get = mode => shaders[mode];
-        this.set = (mode, shader) => shaders[mode] = shader;
-        this.copy = () => new ShaderSet(surfaces, sprites, lines, points);
-    };
-    
     const bind = target => {
         if(surface == target)
             return;
@@ -762,7 +753,7 @@ let Myr = function(canvasElement) {
             
             renderMode = mode;
         
-            (shader = getCurrentShaders().get(mode)).bind();
+            (shader = shaders[mode]).bind();
         }
         
         if(instanceBufferAt + size >= instanceBufferCapacity) {
@@ -778,13 +769,6 @@ let Myr = function(canvasElement) {
         }
         
         ++instanceCount;
-    };
-    
-    const getCurrentShaders = () => {
-        if(surface == null)
-            return shadersDefault;
-        else
-            return surface.getShaders();
     };
     
     const pushIdentity = () => {
@@ -930,7 +914,7 @@ let Myr = function(canvasElement) {
             "color=colori;" +
         "}"
     );
-    const shadersDefault = new ShaderSet(
+    const shaders = [
         new Shader(
             shaderCoreSprites,
             {
@@ -946,7 +930,7 @@ let Myr = function(canvasElement) {
             {
                 
             }),
-        null);
+        null];
     
     let transformAt = 0;
     let transformDirty = true;
