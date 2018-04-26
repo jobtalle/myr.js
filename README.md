@@ -637,10 +637,20 @@ The _primitives_ namespace exposes several functions which can be used for primi
 
 Function | Description
 -|-
+[`drawPoint(color, x, y)`](#drawpointcolor-x-y)|Draws a colored point
 [`drawLine(color, x1, y1, x2, y2)`](#drawlinecolor-x1-y1-x2-y2)|Draws a line segment
 [`drawLineGradient(color1, x1, y1, color2, x2, y2)`](#drawlinegradientcolor1-x1-y1-color2-x2-y2)|Draws a gradient line segment
 [`drawRectangle(color, x, y, width, height)`](#drawrectanglecolor-x-y-width-height)|Draws a rectangle
 [`drawCircle(color, x, y, radius)`](#drawcirclecolor-x-y-radius)|Draws a circle
+
+### `drawPoint(color, x, y)`
+Draws a colored pixel at the specified coordinates.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|The point color
+x|`Number`|The x coordinate
+y|`Number`|The y coordinate
 
 ### `drawLine(color, x1, y1, x2, y2)`
 Draws a single line segment with a color.
