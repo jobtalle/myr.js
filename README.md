@@ -35,7 +35,6 @@ Namespace | Description
 # Global functions
 Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
 
-## Functions
 Function | Description
 -|-
 [`setClearColor(color)`](#setclearcolor)|Sets the clear color
