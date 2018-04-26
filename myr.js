@@ -505,6 +505,7 @@ let Myr = function(canvasElement) {
     
     this.primitives = {};
     this.primitives.circlePoints = new Array(1024);
+    this.primitives.getCircleStep = radius => Math.max(2, 32 >> Math.floor(radius / 128));
     
     for(let i = 0; i < 1024; i += 2) {
         const radians = i * Math.PI * 2 / 1024;
@@ -512,6 +513,17 @@ let Myr = function(canvasElement) {
         this.primitives.circlePoints[i] = Math.cos(radians);
         this.primitives.circlePoints[i + 1] = Math.sin(radians);
     }
+    
+    this.primitives.drawPoint = (color, x, y) => {
+        prepareDraw(RENDER_MODE_POINTS, 6);
+        
+        instanceBuffer[++instanceBufferAt] = color.r;
+        instanceBuffer[++instanceBufferAt] = color.g;
+        instanceBuffer[++instanceBufferAt] = color.b;
+        instanceBuffer[++instanceBufferAt] = color.a;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
     
     this.primitives.drawLine = (color, x1, y1, x2, y2) => {
         prepareDraw(RENDER_MODE_LINES, 6);
@@ -561,7 +573,7 @@ let Myr = function(canvasElement) {
     };
     
     this.primitives.drawCircle = (color, x, y, radius) => {
-        const step = Math.max(2, 32 >> Math.floor(radius / 128));
+        const step = this.primitives.getCircleStep(radius);
         let i = 0;
         
         for(; i < 1024 - step; i += step)
@@ -637,6 +649,8 @@ let Myr = function(canvasElement) {
             }
         };
         
+        this.free = () => core.free();
+        
         const samplerNames = Object.keys(samplers);
         const samplerLocations = new Object();
         
@@ -711,7 +725,8 @@ let Myr = function(canvasElement) {
                 gl.drawArrays(gl.LINES, 0, instanceCount);
                 break;
             case RENDER_MODE_POINTS:
-                
+                gl.bindVertexArray(vaoPoints);
+                gl.drawArrays(gl.POINTS, 0, instanceCount);
                 break;
         }
         
@@ -829,11 +844,12 @@ let Myr = function(canvasElement) {
     };
     
     this.free = () => {
-        shaderCoreSprites.free();
-        shaderCoreLines.free();
+        for(let i = 0; i < shaders.length; ++i)
+            shaders[i].free();
         
         gl.deleteVertexArray(vaoSprites);
         gl.deleteVertexArray(vaoLines);
+        gl.deleteVertexArray(vaoPoints);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
         gl.deleteBuffer(transformBuffer);
@@ -869,6 +885,7 @@ let Myr = function(canvasElement) {
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
     const vaoLines = gl.createVertexArray();
+    const vaoPoints = gl.createVertexArray();
     const transformBuffer = gl.createBuffer();
     const transform = new Float32Array(8);
     const sprites = [];
@@ -914,6 +931,25 @@ let Myr = function(canvasElement) {
             "color=colori;" +
         "}"
     );
+    const shaderCorePoints = new ShaderCore(
+        "layout(location=0) in vec4 color;" +
+        "layout(location=1) in vec2 vertex;" +
+        uniformBlock +
+        "flat out lowp vec4 colorf;" +
+        "void main() {" +
+            "vec2 transformed=(vertex*" +
+                "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+                "vec2(tw.w,th.w)*2.0;" +
+            "gl_Position=vec4(transformed-vec2(1),0,1);" +
+            "gl_PointSize=1.0;" +
+            "colorf = color;" +
+        "}",
+        "flat in lowp vec4 colorf;" +
+        "layout(location=0) out lowp vec4 color;" +
+        "void main() {" +
+            "color=colorf;" +
+        "}"
+    );
     const shaders = [
         new Shader(
             shaderCoreSprites,
@@ -930,7 +966,12 @@ let Myr = function(canvasElement) {
             {
                 
             }),
-        null];
+        new Shader(
+            shaderCorePoints,
+            {
+                
+            })
+    ];
     
     let transformAt = 0;
     let transformDirty = true;
@@ -978,6 +1019,13 @@ let Myr = function(canvasElement) {
     gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 48, 32);
     
     gl.bindVertexArray(vaoLines);
+    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
+    
+    gl.bindVertexArray(vaoPoints);
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
