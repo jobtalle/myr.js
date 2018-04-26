@@ -6,6 +6,7 @@ const Waves = function(myr) {
     const DAMPING = 0.98;
     const SPRING = 0.8;
     const SPREAD = 0.7;
+    const SPREAD_DISTANCE = 128;
     const HEIGHT = 200;
     const TIME_STEP_MAX = 0.5;
     
@@ -85,8 +86,17 @@ const Waves = function(myr) {
         
         for(let i = 0; i < displacements.length; ++i) {
             momenta[i] = (momenta[i] - displacements[i] * SPRING) * DAMPING;
-            momenta[i - 1] += (displacements[i] - displacements[i - 1]) * SPREAD;
-            momenta[i + 1] += (displacements[i] - displacements[i + 1]) * SPREAD;
+            
+            const x = SLICE_WIDTH * i;
+            const displacement = displacements[i];
+            
+            for(let j = 0; j < SPREAD_DISTANCE / SLICE_WIDTH; ++j) {
+                const intensity = ((SPREAD_DISTANCE - (j * SLICE_WIDTH)) / SPREAD_DISTANCE) * SPREAD;
+                
+                momenta[i - j] += (displacements[i] - displacements[i - j]) * intensity;
+                momenta[i + j] += (displacements[i] - displacements[i + j]) * intensity;
+            }
+            
             displacements[i] += momenta[i] * timeStep;
         }
     };
@@ -136,7 +146,9 @@ const renderer = document.getElementById("renderer");
 const waves = new Waves(new Myr(renderer));
 
 renderer.addEventListener("click", function(event) {
-    waves.drop(event.clientX, event.clientY);
+    const rect = renderer.getBoundingClientRect();
+    
+    waves.drop(event.clientX - rect.left, event.clientY - rect.top);
 });
 
 waves.start();
