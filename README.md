@@ -786,7 +786,7 @@ Function | Description
 -|-
 [`drawTriangle(source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3)`](#drawtrianglesource-x1-y1-u1-v1-x2-y2-u2-v2-x3-y3-u3-v3)|Draws a textured triangle
 
-# `drawTriangle(source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3)`
+### `drawTriangle(source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3)`
 Draws a textured triangle. The source can be either a [surface](#surface) or a [sprite](#sprite). If a sprite is used as the source, the current frame of the sprite is used. Note that texture coordinates range from 0 to 1.
 
 Parameter | Type | Description
