@@ -87,9 +87,6 @@ const Waves = function(myr) {
         for(let i = 0; i < displacements.length; ++i) {
             momenta[i] = (momenta[i] - displacements[i] * SPRING) * DAMPING;
             
-            const x = SLICE_WIDTH * i;
-            const displacement = displacements[i];
-            
             for(let j = 0; j < SPREAD_DISTANCE / SLICE_WIDTH; ++j) {
                 const intensity = ((SPREAD_DISTANCE - (j * SLICE_WIDTH)) / SPREAD_DISTANCE) * SPREAD;
                 
