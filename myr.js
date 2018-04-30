@@ -503,6 +503,17 @@ let Myr = function(canvasElement) {
         let frame = 0;
     };
     
+    const pushVertex = (mode, color, x, y) => {
+        prepareDraw(mode, 6);
+        
+        instanceBuffer[++instanceBufferAt] = color.r;
+        instanceBuffer[++instanceBufferAt] = color.g;
+        instanceBuffer[++instanceBufferAt] = color.b;
+        instanceBuffer[++instanceBufferAt] = color.a;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
+    
     this.primitives = {};
     this.primitives.circlePoints = new Array(1024);
     this.primitives.getCircleStep = radius => Math.max(2, 32 >> Math.floor(radius / 128));
@@ -515,54 +526,17 @@ let Myr = function(canvasElement) {
     }
     
     this.primitives.drawPoint = (color, x, y) => {
-        prepareDraw(RENDER_MODE_POINTS, 6);
-        
-        instanceBuffer[++instanceBufferAt] = color.r;
-        instanceBuffer[++instanceBufferAt] = color.g;
-        instanceBuffer[++instanceBufferAt] = color.b;
-        instanceBuffer[++instanceBufferAt] = color.a;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
+        pushVertex(RENDER_MODE_POINTS, color, x, y);
     };
     
     this.primitives.drawLine = (color, x1, y1, x2, y2) => {
-        prepareDraw(RENDER_MODE_LINES, 6);
-        
-        instanceBuffer[++instanceBufferAt] = color.r;
-        instanceBuffer[++instanceBufferAt] = color.g;
-        instanceBuffer[++instanceBufferAt] = color.b;
-        instanceBuffer[++instanceBufferAt] = color.a;
-        instanceBuffer[++instanceBufferAt] = x1;
-        instanceBuffer[++instanceBufferAt] = y1;
-        
-        prepareDraw(RENDER_MODE_LINES, 6);
-        
-        instanceBuffer[++instanceBufferAt] = color.r;
-        instanceBuffer[++instanceBufferAt] = color.g;
-        instanceBuffer[++instanceBufferAt] = color.b;
-        instanceBuffer[++instanceBufferAt] = color.a;
-        instanceBuffer[++instanceBufferAt] = x2;
-        instanceBuffer[++instanceBufferAt] = y2;
+        pushVertex(RENDER_MODE_LINES, color, x1, y1);
+        pushVertex(RENDER_MODE_LINES, color, x2, y2);
     };
     
     this.primitives.drawLineGradient = (color1, x1, y1, color2, x2, y2) => {
-        prepareDraw(RENDER_MODE_LINES, 6);
-        
-        instanceBuffer[++instanceBufferAt] = color1.r;
-        instanceBuffer[++instanceBufferAt] = color1.g;
-        instanceBuffer[++instanceBufferAt] = color1.b;
-        instanceBuffer[++instanceBufferAt] = color1.a;
-        instanceBuffer[++instanceBufferAt] = x1;
-        instanceBuffer[++instanceBufferAt] = y1;
-        
-        prepareDraw(RENDER_MODE_LINES, 6);
-        
-        instanceBuffer[++instanceBufferAt] = color2.r;
-        instanceBuffer[++instanceBufferAt] = color2.g;
-        instanceBuffer[++instanceBufferAt] = color2.b;
-        instanceBuffer[++instanceBufferAt] = color2.a;
-        instanceBuffer[++instanceBufferAt] = x2;
-        instanceBuffer[++instanceBufferAt] = y2;
+        pushVertex(RENDER_MODE_LINES, color1, x1, y1);
+        pushVertex(RENDER_MODE_LINES, color2, x2, y2);
     };
     
     this.primitives.drawRectangle = (color, x, y, width, height) => {
@@ -590,6 +564,18 @@ let Myr = function(canvasElement) {
             y + this.primitives.circlePoints[i + 1] * radius,
             x + this.primitives.circlePoints[0] * radius,
             y + this.primitives.circlePoints[1] * radius);
+    };
+    
+    this.primitives.drawTriangle = (color, x1, y1, x2, y2, x3, y3) => {
+        pushVertex(RENDER_MODE_TRIANGLES, color, x1, y1);
+        pushVertex(RENDER_MODE_TRIANGLES, color, x2, y2);
+        pushVertex(RENDER_MODE_TRIANGLES, color, x3, y3);
+    };
+    
+    this.primitives.drawTriangleGradient = (color1, x1, y1, color2, x2, y2, color3, x3, y3) => {
+        pushVertex(RENDER_MODE_TRIANGLES, color1, x1, y1);
+        pushVertex(RENDER_MODE_TRIANGLES, color2, x2, y2);
+        pushVertex(RENDER_MODE_TRIANGLES, color3, x3, y3);
     };
     
     const ShaderCore = function(vertex, fragment) {
@@ -728,6 +714,10 @@ let Myr = function(canvasElement) {
                 gl.bindVertexArray(vaoPoints);
                 gl.drawArrays(gl.POINTS, 0, instanceCount);
                 break;
+            case RENDER_MODE_TRIANGLES:
+                gl.bindVertexArray(vaoLines);
+                gl.drawArrays(gl.TRIANGLES, 0, instanceCount);
+                break;
         }
         
         instanceBufferAt = -1;
@@ -850,6 +840,7 @@ let Myr = function(canvasElement) {
         gl.deleteVertexArray(vaoSprites);
         gl.deleteVertexArray(vaoLines);
         gl.deleteVertexArray(vaoPoints);
+        gl.deleteVertexArray(vaoPolygons);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
         gl.deleteBuffer(transformBuffer);
@@ -877,6 +868,8 @@ let Myr = function(canvasElement) {
     const RENDER_MODE_SPRITES = 1;
     const RENDER_MODE_LINES = 2;
     const RENDER_MODE_POINTS = 3;
+    const RENDER_MODE_TRIANGLES = 4;
+    const RENDER_MODE_POLYGONS = 5;
     const TEXTURE_ATLAS = gl.TEXTURE0;
     const TEXTURE_SURFACE = gl.TEXTURE1;
     const TEXTURE_EDITING = gl.TEXTURE2;
@@ -886,6 +879,7 @@ let Myr = function(canvasElement) {
     const vaoSprites = gl.createVertexArray();
     const vaoLines = gl.createVertexArray();
     const vaoPoints = gl.createVertexArray();
+    const vaoPolygons = gl.createVertexArray();
     const transformBuffer = gl.createBuffer();
     const transform = new Float32Array(8);
     const sprites = [];
@@ -968,6 +962,11 @@ let Myr = function(canvasElement) {
             }),
         new Shader(
             shaderCorePoints,
+            {
+                
+            }),
+        new Shader(
+            shaderCoreLines,
             {
                 
             })

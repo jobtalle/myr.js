@@ -90,8 +90,11 @@ const Waves = function(myr) {
             for(let j = 0; j < SPREAD_DISTANCE / SLICE_WIDTH; ++j) {
                 const intensity = ((SPREAD_DISTANCE - (j * SLICE_WIDTH)) / SPREAD_DISTANCE) * SPREAD;
                 
-                momenta[i - j] += (displacements[i] - displacements[i - j]) * intensity;
-                momenta[i + j] += (displacements[i] - displacements[i + j]) * intensity;
+                if(i - j >= 0 && i - j < displacements.length)
+                    momenta[i - j] += (displacements[i] - displacements[i - j]) * intensity;
+                
+                if(i + j >= 0 && i + j < displacements.length)
+                    momenta[i + j] += (displacements[i] - displacements[i + j]) * intensity;
             }
             
             displacements[i] += momenta[i] * timeStep;
