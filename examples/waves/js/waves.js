@@ -12,7 +12,6 @@ const Waves = function(myr) {
     
     const drops = [];
     const y = myr.getHeight() - HEIGHT;
-    let lastDate = null;
     let displacements = new Array(Math.ceil(myr.getWidth() / SLICE_WIDTH) + 2);
     let momenta = new Array(displacements.length);
     
@@ -55,20 +54,6 @@ const Waves = function(myr) {
     const splash = (x, force) => {
         for(let i = 0; i < momenta.length - 1; ++i)
             momenta[i] += force * Math.pow(20, -Math.pow(((SLICE_WIDTH * i) - x) / (force * 0.2), 2));
-    };
-    
-    const getTimeStep = () => {
-        const date = new Date();
-        let timeStep = (date - lastDate) / 1000;
-        
-        if(timeStep < 0)
-            timeStep += 1.0;
-        else if(timeStep > TIME_STEP_MAX)
-            timeStep = TIME_STEP_MAX;
-        
-        lastDate = date;
-        
-        return timeStep;
     };
     
     const update = timeStep => {
@@ -122,21 +107,17 @@ const Waves = function(myr) {
         myr.flush();
     };
     
-    const animate = () => {
-        requestAnimationFrame(animate.bind());
-        
-        update(getTimeStep());
-        render();
-    };
-    
     this.drop = (x, y) => {
         drops.push(new Drop(x, y));
     };
     
     this.start = () => {
-        lastDate = new Date();
-        
-        animate();
+        myr.utils.loop(function(timeStep) {
+            update(timeStep);
+            render();
+            
+            return true;
+        });
     };
 }
 
