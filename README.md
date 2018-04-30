@@ -32,6 +32,7 @@ Namespace | Description
 -|-
 [`primitives`](#primitives)|Exposes primitive rendering functions
 [`mesh`](#mesh)|Exposes mesh rendering functions
+[`utils`](#utils)|Exposes utility functions
 
 # Global functions
 Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
@@ -804,3 +805,20 @@ x3|`Number`|The third point's x coordinate
 y3|`Number`|The third point's y coordinate
 u3|`Number`|The third point's texture x coordinate
 v3|`Number`|The third point's texture y coordinate
+
+# Utils
+
+## Functions
+
+Function | Description
+-|-
+[`loop(update)`](#loopupdate)|Calls the function _update_ on every vertical sync
+
+### `loop(update)`
+After calling this function, the provided _update_ function is called for every vertical synchronization. This usually means the function is called sixty frames per second. The argument _timeStep_ is passed to the function, which is the portion of a second the current frame takes; this will be 1/60 when the browser updates at 60 frames per second. When rendering at this frequency, screen tearing is usually prevented.
+
+The _update_ function should return a boolean. As long as `true` is returned, the function keeps being called; when `false` is returned, the loop stops.
+
+Parameter | Type | Description
+-|-|-
+update|`Function`|A function that is called for every update
