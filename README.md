@@ -642,6 +642,12 @@ Function | Description
 [`drawLineGradient(color1, x1, y1, color2, x2, y2)`](#drawlinegradientcolor1-x1-y1-color2-x2-y2)|Draws a gradient line segment
 [`drawRectangle(color, x, y, width, height)`](#drawrectanglecolor-x-y-width-height)|Draws a rectangle
 [`drawCircle(color, x, y, radius)`](#drawcirclecolor-x-y-radius)|Draws a circle
+[`drawTriangle(color, x1, y1, x2, y2, x3, y3)`](#drawtrianglecolor-x1-y1-x2-y2-x3-y3)|Draws a colored triangle
+[`drawTriangleGradient(color1, x1, y1, color2, x2, y2, color3, x3, y3)`](#drawtrianglegradientcolor1-x1-y1-color2-x2-y2-color3-x3-y3)|Draws a gradient triangle
+[`fillRectangle(color, x, y, width, height)`](#fillrectanglecolor-x-y-width-height)|Draws a colored rectangle
+[`fillRectangleGradient(color1, color2, color3, color4, x, y, width, height)`](#fillrectanglegradientcolor1-color2-color3-color4-x-y-width-height)|Draws a gradient rectangle
+[`fillCircle(color, x, y, radius)`](#fillcirclecolor-x-y-radius)|Draws a colored circle
+[`fillCircleGradient(colorStart, colorEnd, x, y, radius)`](#fillcirclegradientcolorstart-colorend-x-y-radius)|Draws a gradient circle
 
 ### `drawPoint(color, x, y)`
 Draws a colored pixel at the specified coordinates.
@@ -692,6 +698,80 @@ Draws a circle with a radius around an origin.
 Parameter | Type | Description
 -|-|-
 color|[`Color`](#color)|The line color
+x|`Number`|The center's x coordinate
+y|`Number`|The center's y coordinate
+radius|`Number`|The circle radius
+
+### `drawTriangle(color, x1, y1, x2, y2, x3, y3)`
+Draws a colored triangle.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|The fill color
+x1|`Number`|The first point's x coordinate
+y1|`Number`|The first point's y coordinate
+x2|`Number`|The second point's x coordinate
+y2|`Number`|The second point's y coordinate
+x3|`Number`|The third point's x coordinate
+y3|`Number`|The third point's y coordinate
+
+### `drawTriangleGradient(color1, x1, y1, color2, x2, y2, color3, x3, y3)`
+Draws a triangle with a gradient fill. Each point has a color, and the colors are interpolated along the triangle.
+
+Parameter | Type | Description
+-|-|-
+color1|[`Color`](#color)|The first point's color
+x1|`Number`|The first point's x coordinate
+y1|`Number`|The first point's y coordinate
+color2|[`Color`](#color)|The second point's color
+x2|`Number`|The second point's x coordinate
+y2|`Number`|The second point's y coordinate
+color3|[`Color`](#color)|The third point's color
+x3|`Number`|The third point's x coordinate
+y3|`Number`|The third point's y coordinate
+
+### `fillRectangle(color, x, y, width, height)`
+Draws a colored rectangle.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|The fill color
+x|`Number`|The left top x coordinate
+y|`Number`|The left top y coordinate
+width|`Number`|The rectangle width
+height|`Number`|The rectangle height
+
+### `fillRectangleGradient(color1, color2, color3, color4, x, y, width, height)`
+Draws a rectangle with a gradient fill. Each point has a color, and the colors are interpolated along the rectangle. 
+
+Parameter | Type | Description
+-|-|-
+color1|[`Color`](#color)|The left top color
+color2|[`Color`](#color)|The right top color
+color3|[`Color`](#color)|The left bottom color
+color4|[`Color`](#color)|The right bottom color
+x|`Number`|The left top x coordinate
+y|`Number`|The left top y coordinate
+width|`Number`|The rectangle width
+height|`Number`|The rectangle height
+
+### `fillCircle(color, x, y, radius)`
+Draws a colored circle with a radius around an origin.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|The fill color
+x|`Number`|The center's x coordinate
+y|`Number`|The center's y coordinate
+radius|`Number`|The circle radius
+
+### `fillCircleGradient(colorStart, colorEnd, x, y, radius)`
+Draws a gradient circle with a radius around an origin.
+
+Parameter | Type | Description
+-|-|-
+colorStart|[`Color`](#color)|The color at the center
+colorEnd|[`Color`](#color)|The color at the edge
 x|`Number`|The center's x coordinate
 y|`Number`|The center's y coordinate
 radius|`Number`|The circle radius
