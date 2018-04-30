@@ -578,6 +578,64 @@ let Myr = function(canvasElement) {
         pushVertex(RENDER_MODE_TRIANGLES, color3, x3, y3);
     };
     
+    this.primitives.fillRectangle = (color, x, y, width, height) => {
+        this.primitives.drawTriangle(color, x, y, x, y + height, x + width, y + height);
+        this.primitives.drawTriangle(color, x + width, y + height, x + width, y, x, y);
+    };
+    
+    this.primitives.fillRectangleGradient = (color1, color2, color3, color4, x, y, width, height) => {
+        this.primitives.drawTriangleGradient(color1, x, y, color3, x, y + height, color4, x + width, y + height);
+        this.primitives.drawTriangleGradient(color4, x + width, y + height, color2, x + width, y, color1, x, y);
+    };
+    
+    this.primitives.fillCircle = (color, x, y, radius) => {
+        const step = this.primitives.getCircleStep(radius);
+        let i = 0;
+        
+        for(; i < 1024 - step; i+= step)
+            this.primitives.drawTriangle(
+                color,
+                x, y,
+                x + this.primitives.circlePoints[i] * radius,
+                y + this.primitives.circlePoints[i + 1] * radius,
+                x + this.primitives.circlePoints[i + step] * radius,
+                y + this.primitives.circlePoints[i + 1 + step] * radius);
+        
+        this.primitives.drawTriangle(
+            color,
+            x, y,
+            x + this.primitives.circlePoints[i] * radius,
+            y + this.primitives.circlePoints[i + 1] * radius,
+            x + this.primitives.circlePoints[0] * radius,
+            y + this.primitives.circlePoints[1] * radius);
+    };
+    
+    this.primitives.fillCircleGradient = (colorStart, colorEnd, x, y, radius) => {
+        const step = this.primitives.getCircleStep(radius);
+        let i = 0;
+        
+        for(; i < 1024 - step; i+= step)
+            this.primitives.drawTriangleGradient(
+                colorStart,
+                x, y,
+                colorEnd,
+                x + this.primitives.circlePoints[i] * radius,
+                y + this.primitives.circlePoints[i + 1] * radius,
+                colorEnd,
+                x + this.primitives.circlePoints[i + step] * radius,
+                y + this.primitives.circlePoints[i + 1 + step] * radius);
+        
+        this.primitives.drawTriangleGradient(
+            colorStart,
+            x, y,
+            colorEnd,
+            x + this.primitives.circlePoints[i] * radius,
+            y + this.primitives.circlePoints[i + 1] * radius,
+            colorEnd,
+            x + this.primitives.circlePoints[0] * radius,
+            y + this.primitives.circlePoints[1] * radius);
+    };
+    
     const ShaderCore = function(vertex, fragment) {
         const createShader = (type, source) => {
             const shader = gl.createShader(type);

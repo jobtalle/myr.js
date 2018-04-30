@@ -1,8 +1,9 @@
 const Waves = function(myr) {
-    const CLEAR_COLOR = new myr.Color(0.2, 0.3, 0.8);
+    const COLOR_CLEAR = new myr.Color(0.2, 0.3, 0.8);
+    const COLOR_WATER = new myr.Color(0.6, 0.7, 1);
+    const COLOR_DROPS = myr.Color.WHITE;
     const SLICE_WIDTH = 32;
     const SLICE_HEIGHT = 64;
-    const CURRENT = 48;
     const DAMPING = 0.98;
     const SPRING = 0.8;
     const SPREAD = 0.7;
@@ -10,11 +11,8 @@ const Waves = function(myr) {
     const HEIGHT = 200;
     const TIME_STEP_MAX = 0.5;
     
-    const slice = new myr.Surface("img/slice.png", SLICE_WIDTH, SLICE_HEIGHT);
-    const sliceAnimated = new myr.Surface(SLICE_WIDTH, SLICE_HEIGHT);
     const drops = [];
     const y = myr.getHeight() - HEIGHT;
-    let sliceX = 0;
     let lastDate = null;
     let displacements = new Array(Math.ceil(myr.getWidth() / SLICE_WIDTH) + 2);
     let momenta = new Array(displacements.length);
@@ -22,13 +20,12 @@ const Waves = function(myr) {
     for(let i = 0; i < displacements.length; ++i)
         displacements[i] = momenta[i] = 0;
     
-    myr.setClearColor(CLEAR_COLOR);
+    myr.setClearColor(COLOR_CLEAR);
     
     const Drop = function(x, y) {
         const GRAVITY = 0.35;
-        const COLOR = myr.Color.WHITE;
         const RADIUS = 10;
-        const SPLASH_FORCE = 45;
+        const SPLASH_FORCE = 55;
         
         let ySpeed = 0;
         
@@ -44,7 +41,7 @@ const Waves = function(myr) {
         };
         
         this.render = () => {
-            myr.primitives.drawCircle(COLOR, x, y, RADIUS);
+            myr.primitives.fillCircle(COLOR_DROPS, x, y, RADIUS);
         };
     }
     
@@ -76,11 +73,6 @@ const Waves = function(myr) {
     };
     
     const update = timeStep => {
-        sliceX += timeStep * CURRENT;
-        
-        if(sliceX > SLICE_WIDTH)
-            sliceX -= SLICE_WIDTH;
-        
         for(let i = 0; i < drops.length; ++i)
             drops[i].update(timeStep);
         
@@ -102,24 +94,31 @@ const Waves = function(myr) {
     };
     
     const render = () => {
-        sliceAnimated.bind();
-        sliceAnimated.clear();
-        
-        slice.draw(sliceX - SLICE_WIDTH, 0);
-        slice.draw(sliceX, 0);
-        
         myr.bind();
         myr.clear();
         
         for(let i = 0; i < drops.length; ++i)
             drops[i].render();
-        
-        for(let i = 0; i < displacements.length - 1; ++i)
-            sliceAnimated.drawSheared(
-                i * SLICE_WIDTH,
-                y + displacements[i],
-                0,
-                (displacements[i + 1] - displacements[i]) / SLICE_HEIGHT);
+
+        for(let i = 0; i < displacements.length - 1; ++i) {
+            const x1 = i * SLICE_WIDTH;
+            const x2 = x1 + SLICE_WIDTH;
+            
+            myr.primitives.drawTriangle(
+                COLOR_WATER,
+                x1, y + displacements[i],
+                x1, myr.getHeight(),
+                x2, myr.getHeight());
+            myr.primitives.drawTriangle(
+                COLOR_WATER,
+                x2, myr.getHeight(),
+                x2, y + displacements[i + 1],
+                x1, y + displacements[i]);
+            myr.primitives.drawLine(
+                COLOR_DROPS,
+                x1, y + displacements[i],
+                x2, y + displacements[i + 1]);
+        }
         
         myr.flush();
     };
