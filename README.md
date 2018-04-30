@@ -31,6 +31,7 @@ The **myr.js** object exposes several namespaces which provide access to specifi
 Namespace | Description
 -|-
 [`primitives`](#primitives)|Exposes primitive rendering functions
+[`mesh`](#mesh)|Exposes mesh rendering functions
 
 # Global functions
 Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
@@ -775,3 +776,31 @@ colorEnd|[`Color`](#color)|The color at the edge
 x|`Number`|The center's x coordinate
 y|`Number`|The center's y coordinate
 radius|`Number`|The circle radius
+
+# Mesh
+The _mesh_ namespace exposes several functions which can be used for mesh rendering. Meshes consist of textured triangles; both [surfaces](#surface) and [sprites](#sprite) can be used as a source texture.
+
+## Functions
+
+Function | Description
+-|-
+[`drawTriangle(source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3)`](#drawtrianglesource-x1-y1-u1-v1-x2-y2-u2-v2-x3-y3-u3-v3)|Draws a textured triangle
+
+# `drawTriangle(source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3)`
+Draws a textured triangle. The source can be either a [surface](#surface) or a [sprite](#sprite). If a sprite is used as the source, the current frame of the sprite is used. Note that texture coordinates range from 0 to 1.
+
+Parameter | Type | Description
+-|-|-
+source|[`Surface`](#surface) or [`Sprite`](#sprite)|The image to draw a part of
+x1|`Number`|The first point's x coordinate
+y1|`Number`|The first point's y coordinate
+u1|`Number`|The first point's texture x coordinate
+v1|`Number`|The first point's texture y coordinate
+x2|`Number`|The second point's x coordinate
+y2|`Number`|The second point's y coordinate
+u2|`Number`|The second point's texture x coordinate
+v2|`Number`|The second point's texture y coordinate
+x3|`Number`|The third point's x coordinate
+y3|`Number`|The third point's y coordinate
+u3|`Number`|The third point's texture x coordinate
+v3|`Number`|The third point's texture y coordinate
