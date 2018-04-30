@@ -1,9 +1,8 @@
 const Waves = function(myr) {
-    const COLOR_CLEAR = new myr.Color(0.2, 0.3, 0.8);
-    const COLOR_WATER = new myr.Color(0.6, 0.7, 1);
+    const COLOR_WATER = new myr.Color(0.2, 0.3, 0.8);
+    const COLOR_CLEAR = new myr.Color(0.6, 0.7, 1);
     const COLOR_DROPS = myr.Color.WHITE;
     const SLICE_WIDTH = 32;
-    const SLICE_HEIGHT = 64;
     const DAMPING = 0.98;
     const SPRING = 0.8;
     const SPREAD = 0.7;
@@ -11,11 +10,17 @@ const Waves = function(myr) {
     const HEIGHT = 200;
     const TIME_STEP_MAX = 0.5;
     
+    const surface = new myr.Surface(100, 100);
     const drops = [];
     const y = myr.getHeight() - HEIGHT;
     let lastDate = null;
     let displacements = new Array(Math.ceil(myr.getWidth() / SLICE_WIDTH) + 2);
     let momenta = new Array(displacements.length);
+    
+    surface.bind();
+    surface.clear();
+    
+    myr.primitives.fillCircle(myr.Color.RED, 50, 50, 50);
     
     for(let i = 0; i < displacements.length; ++i)
         displacements[i] = momenta[i] = 0;
@@ -119,6 +124,13 @@ const Waves = function(myr) {
                 x1, y + displacements[i],
                 x2, y + displacements[i + 1]);
         }
+        
+        surface.draw(0, 0);
+        myr.mesh.drawTriangle(
+            surface,
+            0, 0, 0, 0,
+            300, 0, 1, 0,
+            0, 300, 0, 1);
         
         myr.flush();
     };

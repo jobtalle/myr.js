@@ -495,6 +495,7 @@ let Myr = function(canvasElement) {
         
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
+        this.getTexture = () => frames[0];
                
         const getFrame = () => frames[frame];
         
@@ -503,7 +504,7 @@ let Myr = function(canvasElement) {
         let frame = 0;
     };
     
-    const pushVertex = (mode, color, x, y) => {
+    const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
         
         instanceBuffer[++instanceBufferAt] = color.r;
@@ -514,29 +515,39 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = y;
     };
     
-    this.primitives = {};
-    this.primitives.circlePoints = new Array(1024);
-    this.primitives.getCircleStep = radius => Math.max(2, 32 >> Math.floor(radius / 128));
+    const pushVertexUV = (mode, x, y, u, v) => {
+        prepareDraw(mode, 4);
+        
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+        instanceBuffer[++instanceBufferAt] = u;
+        instanceBuffer[++instanceBufferAt] = v;
+    };
+    
+    const primitivesCirclePoints = new Array(1024);
+    const primitivesGetCircleStep = radius => Math.max(2, 32 >> Math.floor(radius / 128));
     
     for(let i = 0; i < 1024; i += 2) {
         const radians = i * Math.PI * 2 / 1024;
         
-        this.primitives.circlePoints[i] = Math.cos(radians);
-        this.primitives.circlePoints[i + 1] = Math.sin(radians);
+        primitivesCirclePoints[i] = Math.cos(radians);
+        primitivesCirclePoints[i + 1] = Math.sin(radians);
     }
     
+    this.primitives = {};
+    
     this.primitives.drawPoint = (color, x, y) => {
-        pushVertex(RENDER_MODE_POINTS, color, x, y);
+        pushVertexColor(RENDER_MODE_POINTS, color, x, y);
     };
     
     this.primitives.drawLine = (color, x1, y1, x2, y2) => {
-        pushVertex(RENDER_MODE_LINES, color, x1, y1);
-        pushVertex(RENDER_MODE_LINES, color, x2, y2);
+        pushVertexColor(RENDER_MODE_LINES, color, x1, y1);
+        pushVertexColor(RENDER_MODE_LINES, color, x2, y2);
     };
     
     this.primitives.drawLineGradient = (color1, x1, y1, color2, x2, y2) => {
-        pushVertex(RENDER_MODE_LINES, color1, x1, y1);
-        pushVertex(RENDER_MODE_LINES, color2, x2, y2);
+        pushVertexColor(RENDER_MODE_LINES, color1, x1, y1);
+        pushVertexColor(RENDER_MODE_LINES, color2, x2, y2);
     };
     
     this.primitives.drawRectangle = (color, x, y, width, height) => {
@@ -547,35 +558,35 @@ let Myr = function(canvasElement) {
     };
     
     this.primitives.drawCircle = (color, x, y, radius) => {
-        const step = this.primitives.getCircleStep(radius);
+        const step = primitivesGetCircleStep(radius);
         let i = 0;
         
         for(; i < 1024 - step; i += step)
             this.primitives.drawLine(
                 color,
-                x + this.primitives.circlePoints[i] * radius,
-                y + this.primitives.circlePoints[i + 1] * radius,
-                x + this.primitives.circlePoints[i + step] * radius,
-                y + this.primitives.circlePoints[i + 1 + step] * radius);
+                x + primitivesCirclePoints[i] * radius,
+                y + primitivesCirclePoints[i + 1] * radius,
+                x + primitivesCirclePoints[i + step] * radius,
+                y + primitivesCirclePoints[i + 1 + step] * radius);
         
         this.primitives.drawLine(
             color,
-            x + this.primitives.circlePoints[i] * radius,
-            y + this.primitives.circlePoints[i + 1] * radius,
-            x + this.primitives.circlePoints[0] * radius,
-            y + this.primitives.circlePoints[1] * radius);
+            x + primitivesCirclePoints[i] * radius,
+            y + primitivesCirclePoints[i + 1] * radius,
+            x + primitivesCirclePoints[0] * radius,
+            y + primitivesCirclePoints[1] * radius);
     };
     
     this.primitives.drawTriangle = (color, x1, y1, x2, y2, x3, y3) => {
-        pushVertex(RENDER_MODE_TRIANGLES, color, x1, y1);
-        pushVertex(RENDER_MODE_TRIANGLES, color, x2, y2);
-        pushVertex(RENDER_MODE_TRIANGLES, color, x3, y3);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color, x1, y1);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color, x2, y2);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color, x3, y3);
     };
     
     this.primitives.drawTriangleGradient = (color1, x1, y1, color2, x2, y2, color3, x3, y3) => {
-        pushVertex(RENDER_MODE_TRIANGLES, color1, x1, y1);
-        pushVertex(RENDER_MODE_TRIANGLES, color2, x2, y2);
-        pushVertex(RENDER_MODE_TRIANGLES, color3, x3, y3);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color1, x1, y1);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color2, x2, y2);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color3, x3, y3);
     };
     
     this.primitives.fillRectangle = (color, x, y, width, height) => {
@@ -589,25 +600,25 @@ let Myr = function(canvasElement) {
     };
     
     this.primitives.fillCircle = (color, x, y, radius) => {
-        const step = this.primitives.getCircleStep(radius);
+        const step = primitivesGetCircleStep(radius);
         let i = 0;
         
         for(; i < 1024 - step; i+= step)
             this.primitives.drawTriangle(
                 color,
                 x, y,
-                x + this.primitives.circlePoints[i] * radius,
-                y + this.primitives.circlePoints[i + 1] * radius,
-                x + this.primitives.circlePoints[i + step] * radius,
-                y + this.primitives.circlePoints[i + 1 + step] * radius);
+                x + primitivesCirclePoints[i] * radius,
+                y + primitivesCirclePoints[i + 1] * radius,
+                x + primitivesCirclePoints[i + step] * radius,
+                y + primitivesCirclePoints[i + 1 + step] * radius);
         
         this.primitives.drawTriangle(
             color,
             x, y,
-            x + this.primitives.circlePoints[i] * radius,
-            y + this.primitives.circlePoints[i + 1] * radius,
-            x + this.primitives.circlePoints[0] * radius,
-            y + this.primitives.circlePoints[1] * radius);
+            x + primitivesCirclePoints[i] * radius,
+            y + primitivesCirclePoints[i + 1] * radius,
+            x + primitivesCirclePoints[0] * radius,
+            y + primitivesCirclePoints[1] * radius);
     };
     
     this.primitives.fillCircleGradient = (colorStart, colorEnd, x, y, radius) => {
@@ -634,6 +645,28 @@ let Myr = function(canvasElement) {
             colorEnd,
             x + this.primitives.circlePoints[0] * radius,
             y + this.primitives.circlePoints[1] * radius);
+    };
+    
+    const meshBindSource = source => {
+        if(currentTextureMesh == source.getTexture())
+            return;
+        
+        flush();
+        
+        gl.activeTexture(TEXTURE_MESH);
+        gl.bindTexture(gl.TEXTURE_2D, source.getTexture());
+        
+        currentTextureMesh = source.getTexture();
+    };
+    
+    this.mesh = {};
+    
+    this.mesh.drawTriangle = (source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3) => {
+        meshBindSource(source);
+        
+        pushVertexUV(RENDER_MODE_MESH, x1, y1, u1, v1);
+        pushVertexUV(RENDER_MODE_MESH, x2, y2, u2, v2);
+        pushVertexUV(RENDER_MODE_MESH, x3, y3, u3, v3);
     };
     
     const ShaderCore = function(vertex, fragment) {
@@ -776,6 +809,10 @@ let Myr = function(canvasElement) {
                 gl.bindVertexArray(vaoLines);
                 gl.drawArrays(gl.TRIANGLES, 0, instanceCount);
                 break;
+            case RENDER_MODE_MESH:
+                gl.bindVertexArray(vaoMesh);
+                gl.drawArrays(gl.TRIANGLES, 0, instanceCount);
+                break;
         }
         
         instanceBufferAt = -1;
@@ -898,7 +935,7 @@ let Myr = function(canvasElement) {
         gl.deleteVertexArray(vaoSprites);
         gl.deleteVertexArray(vaoLines);
         gl.deleteVertexArray(vaoPoints);
-        gl.deleteVertexArray(vaoPolygons);
+        gl.deleteVertexArray(vaoMesh);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
         gl.deleteBuffer(transformBuffer);
@@ -927,17 +964,18 @@ let Myr = function(canvasElement) {
     const RENDER_MODE_LINES = 2;
     const RENDER_MODE_POINTS = 3;
     const RENDER_MODE_TRIANGLES = 4;
-    const RENDER_MODE_POLYGONS = 5;
+    const RENDER_MODE_MESH = 5;
     const TEXTURE_ATLAS = gl.TEXTURE0;
     const TEXTURE_SURFACE = gl.TEXTURE1;
-    const TEXTURE_EDITING = gl.TEXTURE2;
+    const TEXTURE_MESH = gl.TEXTURE2;
+    const TEXTURE_EDITING = gl.TEXTURE3;
     
     const quad = gl.createBuffer();
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
     const vaoLines = gl.createVertexArray();
     const vaoPoints = gl.createVertexArray();
-    const vaoPolygons = gl.createVertexArray();
+    const vaoMesh = gl.createVertexArray();
     const transformBuffer = gl.createBuffer();
     const transform = new Float32Array(8);
     const sprites = [];
@@ -1002,6 +1040,24 @@ let Myr = function(canvasElement) {
             "color=colorf;" +
         "}"
     );
+    const shaderCoreMesh = new ShaderCore(
+        "layout(location=0) in vec4 vertex;" +
+        uniformBlock +
+        "out mediump vec2 uv;" +
+        "void main() {" +
+            "vec2 transformed=(vertex.xy*" +
+                "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+                "vec2(tw.w,th.w)*2.0;" +
+            "gl_Position=vec4(transformed-vec2(1),0,1);" +
+            "uv = vertex.zw;" +
+        "}",
+        "uniform sampler2D source;" +
+        "in mediump vec2 uv;" +
+        "layout(location=0) out lowp vec4 color;" +
+        "void main() {" +
+            "color=texture(source,uv);" +
+        "}"
+    );
     const shaders = [
         new Shader(
             shaderCoreSprites,
@@ -1027,6 +1083,11 @@ let Myr = function(canvasElement) {
             shaderCoreLines,
             {
                 
+            }),
+        new Shader(
+            shaderCoreMesh,
+            {
+                source: 2
             })
     ];
     
@@ -1045,6 +1106,7 @@ let Myr = function(canvasElement) {
     let surface = null;
     let currentTextureSurface = null;
     let currentTextureAtlas = null;
+    let currentTextureMesh = null;
     
     gl.enable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
@@ -1088,6 +1150,11 @@ let Myr = function(canvasElement) {
     gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
     gl.enableVertexAttribArray(1);
     gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
+    
+    gl.bindVertexArray(vaoMesh);
+    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 16, 0);
     
     gl.bindVertexArray(null);
     
