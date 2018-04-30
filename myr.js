@@ -315,7 +315,7 @@ let Myr = function(canvasElement) {
             gl.viewport(0, 0, width, height);
         };
         
-        this.getTexture = () => texture;
+        this._getTexture = () => texture;
         this.getShaders = () => shaders;
         this.getWidth = () => width;
         this.getHeight = () => height;
@@ -493,9 +493,13 @@ let Myr = function(canvasElement) {
             }
         };
         
+        this._getTexture = () => getFrame()[0];
+        this._getUvLeft = () => getFrame()[5];
+        this._getUvTop = () => getFrame()[6];
+        this._getUvWidth = () => getFrame()[7];
+        this._getUvHeight = () => getFrame()[8];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
-        this.getTexture = () => frames[0];
                
         const getFrame = () => frames[frame];
         
@@ -513,15 +517,6 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = color.a;
         instanceBuffer[++instanceBufferAt] = x;
         instanceBuffer[++instanceBufferAt] = y;
-    };
-    
-    const pushVertexUV = (mode, x, y, u, v) => {
-        prepareDraw(mode, 4);
-        
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
-        instanceBuffer[++instanceBufferAt] = u;
-        instanceBuffer[++instanceBufferAt] = v;
     };
     
     const primitivesCirclePoints = new Array(1024);
@@ -622,7 +617,7 @@ let Myr = function(canvasElement) {
     };
     
     this.primitives.fillCircleGradient = (colorStart, colorEnd, x, y, radius) => {
-        const step = this.primitives.getCircleStep(radius);
+        const step = primitivesGetCircleStep(radius);
         let i = 0;
         
         for(; i < 1024 - step; i+= step)
@@ -630,33 +625,58 @@ let Myr = function(canvasElement) {
                 colorStart,
                 x, y,
                 colorEnd,
-                x + this.primitives.circlePoints[i] * radius,
-                y + this.primitives.circlePoints[i + 1] * radius,
+                x + primitivesCirclePoints[i] * radius,
+                y + primitivesCirclePoints[i + 1] * radius,
                 colorEnd,
-                x + this.primitives.circlePoints[i + step] * radius,
-                y + this.primitives.circlePoints[i + 1 + step] * radius);
+                x + primitivesCirclePoints[i + step] * radius,
+                y + primitivesCirclePoints[i + 1 + step] * radius);
         
         this.primitives.drawTriangleGradient(
             colorStart,
             x, y,
             colorEnd,
-            x + this.primitives.circlePoints[i] * radius,
-            y + this.primitives.circlePoints[i + 1] * radius,
+            x + primitivesCirclePoints[i] * radius,
+            y + primitivesCirclePoints[i + 1] * radius,
             colorEnd,
-            x + this.primitives.circlePoints[0] * radius,
-            y + this.primitives.circlePoints[1] * radius);
+            x + primitivesCirclePoints[0] * radius,
+            y + primitivesCirclePoints[1] * radius);
     };
     
+    let meshUvLeft = undefined;
+    let meshUvTop = undefined;
+    let meshUvWidth = undefined;
+    let meshUvHeight = undefined;
+    
     const meshBindSource = source => {
-        if(currentTextureMesh == source.getTexture())
+        if(source instanceof this.Surface) {
+            meshUvLeft = meshUvTop = 0;
+            meshUvWidth = meshUvHeight = 1;
+        }
+        else {
+            meshUvLeft = source._getUvLeft();
+            meshUvTop = source._getUvTop();
+            meshUvWidth = source._getUvWidth();
+            meshUvHeight = source._getUvHeight();
+        }
+        
+        if(currentTextureMesh == source._getTexture())
             return;
         
         flush();
         
         gl.activeTexture(TEXTURE_MESH);
-        gl.bindTexture(gl.TEXTURE_2D, source.getTexture());
+        gl.bindTexture(gl.TEXTURE_2D, source._getTexture());
         
-        currentTextureMesh = source.getTexture();
+        currentTextureMesh = source._getTexture();
+    };
+    
+    const pushVertexMesh = (mode, x, y, u, v) => {
+        prepareDraw(mode, 4);
+        
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+        instanceBuffer[++instanceBufferAt] = u * meshUvWidth + meshUvLeft;
+        instanceBuffer[++instanceBufferAt] = v * meshUvHeight + meshUvTop;
     };
     
     this.mesh = {};
@@ -664,9 +684,9 @@ let Myr = function(canvasElement) {
     this.mesh.drawTriangle = (source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3) => {
         meshBindSource(source);
         
-        pushVertexUV(RENDER_MODE_MESH, x1, y1, u1, v1);
-        pushVertexUV(RENDER_MODE_MESH, x2, y2, u2, v2);
-        pushVertexUV(RENDER_MODE_MESH, x3, y3, u3, v3);
+        pushVertexMesh(RENDER_MODE_MESH, x1, y1, u1, v1);
+        pushVertexMesh(RENDER_MODE_MESH, x2, y2, u2, v2);
+        pushVertexMesh(RENDER_MODE_MESH, x3, y3, u3, v3);
     };
     
     const ShaderCore = function(vertex, fragment) {
@@ -911,7 +931,7 @@ let Myr = function(canvasElement) {
         
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
         return [
-            sheet.getTexture(),
+            sheet._getTexture(),
             width,
             height,
             xOrigin / width,
