@@ -1,26 +1,32 @@
 const Snake = function(myr) {
     const COLOR_CLEAR = new myr.Color(0.3, 0.9, 0.5);
     const SEGMENT_LENGTH = 64;
-    const SEGMENTS = 16;
+    const SEGMENTS = 18;
     const SEGMENT_DIVISIONS = 4;
+    const LAG_MAX = 512;
+    const LAG_APPROACH = 14;
     const ANCHOR_SPACING = 16;
-    const ANCHOR_COUNT = (SEGMENT_LENGTH * SEGMENTS) / ANCHOR_SPACING + 4 + 2;
+    const ANCHOR_COUNT = (SEGMENT_LENGTH * SEGMENTS + LAG_MAX) / ANCHOR_SPACING + 4 + 2;
           
     const sheet = new myr.Surface("img/snake.png", 128, 128);
     const anchors = [];
     const mesh = [];
     let anchorDistance = 0;
+    let lag = 0;
     
     myr.register("body", myr.makeSpriteFrame(sheet, 0, 0, 64, 64, 0, 0, 0));
-    myr.register("head", myr.makeSpriteFrame(sheet, 64, 0, 64, 64, 0, 32, 0));
     myr.register("tail", myr.makeSpriteFrame(sheet, 0, 64, 64, 64, 64, 32, 0));
+    myr.register(
+        "head",
+        myr.makeSpriteFrame(sheet, 64, 0, 64, 64, 0, 32, 3),
+        myr.makeSpriteFrame(sheet, 64, 64, 64, 64, 0, 32, 0.1));
     
     const body = new myr.Sprite("body");
     const head = new myr.Sprite("head");
     const tail = new myr.Sprite("tail");
     
     for(let i = 0; i < ANCHOR_COUNT; ++i)
-        anchors.push(new myr.Vector(myr.getWidth() / 2, myr.getHeight() / 2));
+        anchors.push(new myr.Vector(myr.getWidth() / 2, -SEGMENT_LENGTH));
     
     myr.setClearColor(COLOR_CLEAR);
     
@@ -51,7 +57,9 @@ const Snake = function(myr) {
     };
     
     const update = timeStep => {
+        lag -= lag * LAG_APPROACH * timeStep;
         
+        head.animate(timeStep);
     };
     
     const render = () => {
@@ -66,24 +74,18 @@ const Snake = function(myr) {
     const addAnchor = vector => {
         anchors.push(vector);
         anchors.shift();
-        
-        anchorDistance = 0;
-    };
-    
-    const moveSnake = () => {
-        
     };
     
     const drawSnake = () => {
         const radius = SEGMENT_LENGTH * 0.5;
-        let distance = ANCHOR_SPACING * 2 - anchorDistance;
+        let distance = ANCHOR_SPACING * 2 + lag + SEGMENTS * SEGMENT_LENGTH;
         let sampleCurrent = sample(distance);
         
-        head.drawRotated(sampleCurrent.position.x, sampleCurrent.position.y, sampleCurrent.angle);
+        tail.drawRotated(sampleCurrent.position.x, sampleCurrent.position.y, sampleCurrent.angle);
         
         for(let i = 0; i < SEGMENTS; ++i) {
             for(let j = 0; j < SEGMENT_DIVISIONS; ++j) {
-                distance += SEGMENT_LENGTH / SEGMENT_DIVISIONS;
+                distance -= SEGMENT_LENGTH / SEGMENT_DIVISIONS;
                 
                 const sampleNew = sample(distance);
                 
@@ -115,7 +117,7 @@ const Snake = function(myr) {
             }
         }
         
-        tail.drawRotated(sampleCurrent.position.x, sampleCurrent.position.y, sampleCurrent.angle);
+        head.drawRotated(sampleCurrent.position.x, sampleCurrent.position.y, sampleCurrent.angle);
     };
     
     this.move = (x, y) => {
@@ -123,11 +125,18 @@ const Snake = function(myr) {
         const delta = mouse.copy().subtract(anchors[anchors.length - 1]);
         
         anchorDistance = delta.length();
+        delta.normalize();
         
-        if(anchorDistance > ANCHOR_SPACING)
-            addAnchor(mouse);
+        let i = 0;
+        while(anchorDistance > ANCHOR_SPACING) {
+            addAnchor(anchors[anchors.length - 1].copy().add(delta.copy().multiply(ANCHOR_SPACING)));
+            
+            lag = Math.min(LAG_MAX, lag + ANCHOR_SPACING);
+            
+            anchorDistance -= ANCHOR_SPACING;
+        }
         
-        moveSnake();
+        anchorDistance = mouse.copy().subtract(anchors[anchors.length - 1]).length();
     };
     
     this.start = () => {
