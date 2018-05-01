@@ -500,6 +500,8 @@ let Myr = function(canvasElement) {
         this._getUvHeight = () => getFrame()[8];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
+        this.getWidth = () => getFrame()[1];
+        this.getHeight = () => getFrame()[2];
                
         const getFrame = () => frames[frame];
         

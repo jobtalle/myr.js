@@ -19,7 +19,7 @@ const Snake = function(myr) {
     myr.register(
         "head",
         myr.makeSpriteFrame(sheet, 64, 0, 64, 64, 0, 32, 3),
-        myr.makeSpriteFrame(sheet, 64, 64, 64, 64, 0, 32, 0.1));
+        myr.makeSpriteFrame(sheet, 64, 64, 64, 64, 0, 32, 0.2));
     
     const body = new myr.Sprite("body");
     const head = new myr.Sprite("head");
@@ -52,12 +52,12 @@ const Snake = function(myr) {
         
         return {
             position: position,
-            angle: -(angle + delta * (lerp - 0.5))
+            angle: delta * (0.5 - lerp) - angle
         }
     };
     
     const update = timeStep => {
-        lag -= lag * LAG_APPROACH * timeStep;
+        lag = Math.max(0, lag - lag * LAG_APPROACH * timeStep);
         
         head.animate(timeStep);
     };
@@ -76,67 +76,64 @@ const Snake = function(myr) {
         anchors.shift();
     };
     
+    const getSides = (sample, radius) => {
+        const x = -Math.sin(-sample.angle) * body.getHeight() * 0.5;
+        const y = Math.cos(-sample.angle) * body.getHeight() * 0.5;
+        
+        return {
+            sample: sample,
+            leftX: sample.position.x - x,
+            leftY: sample.position.y - y,
+            rightX: sample.position.x + x,
+            rightY: sample.position.y + y,
+        }
+    };
+    
     const drawSnake = () => {
         const radius = SEGMENT_LENGTH * 0.5;
-        let distance = ANCHOR_SPACING * 2 + lag + SEGMENTS * SEGMENT_LENGTH;
-        let sampleCurrent = sample(distance);
+        let distance = ANCHOR_SPACING * 2 + SEGMENTS * SEGMENT_LENGTH - anchorDistance + lag;
+        let sides = getSides(sample(distance), radius);
         
-        tail.drawRotated(sampleCurrent.position.x, sampleCurrent.position.y, sampleCurrent.angle);
+        tail.drawRotated(sides.sample.position.x, sides.sample.position.y, sides.sample.angle);
         
         for(let i = 0; i < SEGMENTS; ++i) {
             for(let j = 0; j < SEGMENT_DIVISIONS; ++j) {
                 distance -= SEGMENT_LENGTH / SEGMENT_DIVISIONS;
                 
-                const sampleNew = sample(distance);
+                const previousSides = sides;
+                sides = getSides(sample(distance), radius);
                 
                 myr.mesh.drawTriangle(
                     body,
-                    sampleCurrent.position.x + Math.cos(-sampleCurrent.angle - Math.PI * 0.5) * radius,
-                    sampleCurrent.position.y + Math.sin(-sampleCurrent.angle - Math.PI * 0.5) * radius,
-                    j / SEGMENT_DIVISIONS, 0,
-                    sampleCurrent.position.x + Math.cos(-sampleCurrent.angle + Math.PI * 0.5) * radius,
-                    sampleCurrent.position.y + Math.sin(-sampleCurrent.angle + Math.PI * 0.5) * radius,
-                    j / SEGMENT_DIVISIONS, 1,
-                    sampleNew.position.x + Math.cos(-sampleNew.angle + Math.PI * 0.5) * radius,
-                    sampleNew.position.y + Math.sin(-sampleNew.angle + Math.PI * 0.5) * radius,
-                    (j + 1) / SEGMENT_DIVISIONS, 1);
+                    previousSides.leftX, previousSides.leftY, j / SEGMENT_DIVISIONS, 0,
+                    previousSides.rightX, previousSides.rightY, j / SEGMENT_DIVISIONS, 1,
+                    sides.rightX, sides.rightY, (j + 1) / SEGMENT_DIVISIONS, 1);
                 
                 myr.mesh.drawTriangle(
                     body,
-                    sampleNew.position.x + Math.cos(-sampleNew.angle + Math.PI * 0.5) * radius,
-                    sampleNew.position.y + Math.sin(-sampleNew.angle + Math.PI * 0.5) * radius,
-                    (j + 1) / SEGMENT_DIVISIONS, 1,
-                    sampleNew.position.x + Math.cos(-sampleNew.angle - Math.PI * 0.5) * radius,
-                    sampleNew.position.y + Math.sin(-sampleNew.angle - Math.PI * 0.5) * radius,
-                    (j + 1) / SEGMENT_DIVISIONS, 0,
-                    sampleCurrent.position.x + Math.cos(-sampleCurrent.angle - Math.PI * 0.5) * radius,
-                    sampleCurrent.position.y + Math.sin(-sampleCurrent.angle - Math.PI * 0.5) * radius,
-                    j / SEGMENT_DIVISIONS, 0);
-                    
-                sampleCurrent = sampleNew;
+                    sides.rightX, sides.rightY, (j + 1) / SEGMENT_DIVISIONS, 1,
+                    sides.leftX, sides.leftY, (j + 1) / SEGMENT_DIVISIONS, 0,
+                    previousSides.leftX, previousSides.leftY, j / SEGMENT_DIVISIONS, 0);
             }
         }
         
-        head.drawRotated(sampleCurrent.position.x, sampleCurrent.position.y, sampleCurrent.angle);
+        head.drawRotated(sides.sample.position.x, sides.sample.position.y, sides.sample.angle);
     };
     
     this.move = (x, y) => {
-        const mouse = new myr.Vector(x, y);
-        const delta = mouse.copy().subtract(anchors[anchors.length - 1]);
+        const delta = new myr.Vector(x, y).subtract(anchors[anchors.length - 1]);
         
         anchorDistance = delta.length();
         delta.normalize();
         
-        let i = 0;
         while(anchorDistance > ANCHOR_SPACING) {
             addAnchor(anchors[anchors.length - 1].copy().add(delta.copy().multiply(ANCHOR_SPACING)));
             
-            lag = Math.min(LAG_MAX, lag + ANCHOR_SPACING);
-            
             anchorDistance -= ANCHOR_SPACING;
+            
+            if(anchorDistance > ANCHOR_SPACING)
+                lag = Math.min(LAG_MAX, lag + ANCHOR_SPACING);
         }
-        
-        anchorDistance = mouse.copy().subtract(anchors[anchors.length - 1]).length();
     };
     
     this.start = () => {
