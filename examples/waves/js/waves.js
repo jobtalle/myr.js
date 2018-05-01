@@ -57,6 +57,9 @@ const Waves = function(myr) {
     };
     
     const update = timeStep => {
+        if(timeStep > TIME_STEP_MAX)
+            timeStep = TIME_STEP_MAX;
+        
         for(let i = 0; i < drops.length; ++i)
             drops[i].update(timeStep);
         
