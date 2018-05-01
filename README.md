@@ -249,10 +249,10 @@ Clears the surface to the currently set clear color.
 Returns a `Boolean` indicating whether the surface is ready for use. Surfaces constructed from an image will be ready once the image is loaded. Surfaces that don't require an image are always immediately ready.
 
 ### `getWidth()`
-Returns the width of the surface.
+Returns the width of the surface in pixels.
 
 ### `getHeight()`
-Returns the height of the surface.
+Returns the height of the surface in pixels.
 
 ### `free()`
 Frees the surface and all memory allocated by it.
@@ -327,6 +327,8 @@ Function | Description
 [`animate(timeStep)`](#animatetimestep)|Animates the sprite
 [`setFrame(frame)`](#setframeframe)|Set the current frame
 [`getFrame()`](#getframe)|Returns the current frame
+[`getWidth()`](#getwidth-2)|Returns the sprite width
+[`getHeight()`](#getheight-2)|Returns the sprite height
 [`draw(x, y)`](#drawx-y-1)|Draws the sprite
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-1)|Draws the sprite
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-1)|Draws the sprite
@@ -359,6 +361,12 @@ frame|`Number`|The frame index this sprite should be at, starting at zero
 
 ### `getFrame()`
 Returns the current frame index.
+
+### `getWidth()`
+Returns the width of the sprite in pixels.
+
+### `getHeight()`
+Returns the height of the sprite in pixels.
 
 ### `draw(x, y)`
 Draws this sprite on the currently bound target.
