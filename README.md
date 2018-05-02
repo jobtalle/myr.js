@@ -40,8 +40,8 @@ Global functions are members of the object returned by the `Myr` function. One o
 Function | Description
 -|-
 [`setClearColor(color)`](#setclearcolor)|Sets the clear color
-[`setColor(color)`](#setcolor)|Sets the global color filter
-[`setAlpha(alpha)`](#setalpha)|Sets the global transparency
+[`setColor(color)`](#setcolorcolor)|Sets the global color filter
+[`setAlpha(alpha)`](#setalphaalpha)|Sets the global transparency
 [`clear()`](#clear)|Clears the current target
 [`bind()`](#bind)|Binds the default render target
 [`flush()`](#flush)|Flush the draw calls
