@@ -561,6 +561,12 @@ Function | Description
 -|-
 [`Color(r, g, b)`](#colorr-g-b)|Construct from RGB
 [`Color(r, g, b, a)`](#colorr-g-b-a)|Construct from RGBA
+[`toHSV()`](#tohsv)|Convert to HSV values
+
+## Global functions
+Function | Description
+-|-
+[`fromHSV(h, s, v)`](#fromhsvh-s-v)|Constructs a color from hue, saturation and value
 
 ## Constants
 Constant | Description
@@ -577,8 +583,33 @@ Constant | Description
 ### `Color(r, g, b)`
 Constructs a color object from red, green and blue. The values must lie in the range [0, 1]. The color will have an alpha value of `1.0`.
 
+Parameter | Type | Description
+-|-|-
+r|`Number`|Red value in the range [0, 1]
+g|`Number`|Green value in the range [0, 1]
+b|`Number`|Blue value in the range [0, 1]
+
 ### `Color(r, g, b, a)`
 Constructs a color object from red, green, blue and alpha. The values must lie in the range [0, 1].
+
+Parameter | Type | Description
+-|-|-
+r|`Number`|Red value in the range [0, 1]
+g|`Number`|Green value in the range [0, 1]
+b|`Number`|Blue value in the range [0, 1]
+a|`Number`|Alpha value in the range [0, 1]
+
+### `toHSV()`
+Returns an object with the members `h`, `s` and `v`, representing this color's hue, saturation and value.
+
+### `fromHSV(h, s, v)`
+Constructs a color from hue, saturation and value.
+
+Parameter | Type | Description
+-|-|-
+h|`Number`|Hue value in the range [0, 1]
+s|`Number`|Saturation value in the range [0, 1]
+v|`Number`|Value value in the range [0, 1]
 
 # Vector
 This object represents a vector in 2D space. Several useful vector operation functions are provided.
