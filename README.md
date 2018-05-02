@@ -75,7 +75,7 @@ Parameter | Type | Description
 color|[`Color`](#color)|A color
 
 ### `setAlpha(alpha)`
-Sets the global alpha (transparency). Every drawn color will be multiplied by this transparency before rendering. Note that this function sets the alpha component of the current clear color set by [`setColor`](#setcolor).
+Sets the global alpha (transparency). Every drawn color will be multiplied by this transparency before rendering. Note that this function sets the alpha component of the current clear color set by [`setColor`](#setcolorcolor).
 
 Parameter | Type | Description
 -|-|-
