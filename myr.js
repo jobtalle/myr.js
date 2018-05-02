@@ -15,14 +15,65 @@ let Myr = function(canvasElement) {
             this.a = a;
     };
     
-    this.Color.BLACK = new Color(0, 0, 0);
-    this.Color.BLUE = new Color(0, 0, 1);
-    this.Color.GREEN = new Color(0, 1, 0);
-    this.Color.CYAN = new Color(0, 1, 1);
-    this.Color.RED = new Color(1, 0, 0);
-    this.Color.MAGENTA = new Color(1, 0, 1);
-    this.Color.YELLOW = new Color(1, 1, 0);
-    this.Color.WHITE = new Color(1, 1, 1);
+    Color.BLACK = new Color(0, 0, 0);
+    Color.BLUE = new Color(0, 0, 1);
+    Color.GREEN = new Color(0, 1, 0);
+    Color.CYAN = new Color(0, 1, 1);
+    Color.RED = new Color(1, 0, 0);
+    Color.MAGENTA = new Color(1, 0, 1);
+    Color.YELLOW = new Color(1, 1, 0);
+    Color.WHITE = new Color(1, 1, 1);
+
+    Color.fromHSV = (h, s, v) => {
+        const c = v * s;
+        const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+        const m = v - c;
+
+        switch(Math.floor(h * 6)) {
+            case 1:
+                return new Color(x + m, c + m, m);
+            case 2:
+                return new Color(m, c + m, x + m);
+            case 3:
+                return new Color(m, x + m, c + m);
+            case 4:
+                return new Color(x + m, m, c + m);
+            case 5:
+                return new Color(c + m, m, x + m);
+            default:
+                return new Color(c + m, x + m, m);
+        }
+    };
+
+    Color.prototype.toHSV = function() {
+        const cMax = Math.max(this.r, this.g, this.b);
+        const cMin = Math.min(this.r, this.g, this.b);
+        let h, s, l = (cMax + cMin) / 2;
+
+        if (cMax == cMin) {
+            h = s = 0;
+        } else {
+            let delta = cMax - cMin;
+            s = l > 0.5 ? delta / (2 - delta) : delta / (cMax + cMin);
+            
+            switch(cMax) {
+                case this.r:
+                    h = (this.g - this.b) / delta + (this.g < this.b ? 6 : 0);
+                    break;
+                case this.g:
+                    h = (this.b - this.r) / delta + 2;
+                    break;
+                case this.b:
+                    h = (this.r - this.g) / delta + 4;
+            }
+        }
+
+        return {
+            h: h / 6,
+            s: s,
+            v: cMax
+        };
+    };
     
     const Vector = this.Vector = function(x, y) {
         this.x = x;
