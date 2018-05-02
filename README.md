@@ -597,6 +597,7 @@ Function | Description
 [`divide(scalar)`](#dividescalar)|Divide
 [`normalize()`](#normalize)|Normalize
 [`angle()`](#angle)|Returns the angle
+[`equals(vector)`](#equalsvector)|Checks for equality
 
 ### `Vector(x, y)`
 Constructs a vector object.
@@ -655,6 +656,13 @@ Normalizes the vector.
 
 ### `angle()`
 Returns the angle this vector is pointing towards.
+
+### `equals(vector)`
+Returns a boolean indicating whether the vector is equal to another vector.
+
+Parameter | Type | Description
+-|-|-
+vector|[`Vector`](#vector)|A vector object
 
 # Primitives
 The _primitives_ namespace exposes several functions which can be used for primitive rendering.

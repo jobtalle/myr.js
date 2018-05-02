@@ -86,6 +86,10 @@ let Myr = function(canvasElement) {
         return Math.atan2(this.y, this.x);
     };
     
+    Vector.prototype.equals = function(vector) {
+        return this.x === vector.x && this.y === vector.y;
+    };
+
     const Transform = this.Transform = function(_00, _10, _20, _01, _11, _21) {
         if(_00 == undefined)
             this.identity();
