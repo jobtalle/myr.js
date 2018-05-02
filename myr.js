@@ -818,7 +818,11 @@ let Myr = function(canvasElement) {
     const clear = color => {
         flush();
         
-        gl.clearColor(color.r, color.g, color.b, color.a);
+        gl.clearColor(
+            color.r * uboContents[8],
+            color.g * uboContents[9],
+            color.b * uboContents[10],
+            color.a * uboContents[11]);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
@@ -857,24 +861,24 @@ let Myr = function(canvasElement) {
         instanceCount = 0;
     };
     
-    const sendTransform = () => {
+    const sendUniformBuffer = () => {
         if(surface == null) {
-            transform[3] = width;
-            transform[7] = height;
+            uboContents[3] = width;
+            uboContents[7] = height;
         }
         else {
-            transform[3] = surface.getWidth();
-            transform[7] = surface.getHeight();
+            uboContents[3] = surface.getWidth();
+            uboContents[7] = surface.getHeight();
         }
         
-        transform[0] = transformStack[transformAt]._00;
-        transform[1] = transformStack[transformAt]._10;
-        transform[2] = transformStack[transformAt]._20;
-        transform[4] = transformStack[transformAt]._01;
-        transform[5] = transformStack[transformAt]._11;
-        transform[6] = transformStack[transformAt]._21;
+        uboContents[0] = transformStack[transformAt]._00;
+        uboContents[1] = transformStack[transformAt]._10;
+        uboContents[2] = transformStack[transformAt]._20;
+        uboContents[4] = transformStack[transformAt]._01;
+        uboContents[5] = transformStack[transformAt]._11;
+        uboContents[6] = transformStack[transformAt]._21;
         
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, transform);
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
         
         transformDirty = false;
     };
@@ -883,7 +887,7 @@ let Myr = function(canvasElement) {
         if(transformDirty) {
             flush();
             
-            sendTransform();
+            sendUniformBuffer();
         }
         
         if(renderMode != mode) {
@@ -976,7 +980,36 @@ let Myr = function(canvasElement) {
         gl.deleteVertexArray(vaoMesh);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
-        gl.deleteBuffer(transformBuffer);
+        gl.deleteBuffer(ubo);
+    };
+    
+    this.setColor = color => {
+        if(
+            uboContents[8] == color.r &&
+            uboContents[9] == color.g &&
+            uboContents[10] == color.b &&
+            uboContents[11] == color.a)
+            return;
+        
+        flush();
+        
+        uboContents[8] = color.r;
+        uboContents[9] = color.g;
+        uboContents[10] = color.b;
+        uboContents[11] = color.a;
+        
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
+    };
+    
+    this.setAlpha = alpha => {
+        if(uboContents[11] == alpha)
+            return;
+        
+        flush();
+        
+        uboContents[11] = alpha;
+        
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
     };
     
     const touchTransform = () => {
@@ -1014,11 +1047,11 @@ let Myr = function(canvasElement) {
     const vaoLines = gl.createVertexArray();
     const vaoPoints = gl.createVertexArray();
     const vaoMesh = gl.createVertexArray();
-    const transformBuffer = gl.createBuffer();
-    const transform = new Float32Array(8);
+    const ubo = gl.createBuffer();
+    const uboContents = new Float32Array(12);
     const sprites = [];
     const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
-    const uniformBlock = "layout(std140) uniform transform {vec4 tw;vec4 th;};";
+    const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
     const shaderCoreSprites = new ShaderCore(
         "layout(location=0) in vec2 vertex;" +
         "layout(location=1) in vec4 atlas;" +
@@ -1035,10 +1068,11 @@ let Myr = function(canvasElement) {
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
         "}",
         "uniform sampler2D source;" +
+        uniformBlock +
         "in mediump vec2 uv;" +
         "layout(location=0) out lowp vec4 color;" +
         "void main() {" +
-            "color=texture(source,uv);" +
+            "color=texture(source,uv)*c;" +
         "}"
     );
     const shaderCoreLines = new ShaderCore(
@@ -1051,7 +1085,7 @@ let Myr = function(canvasElement) {
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
-            "colori = color;" +
+            "colori = color*c;" +
         "}",
         "in lowp vec4 colori;" +
         "layout(location=0) out lowp vec4 color;" +
@@ -1070,7 +1104,7 @@ let Myr = function(canvasElement) {
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
             "gl_PointSize=1.0;" +
-            "colorf = color;" +
+            "colorf = color*c;" +
         "}",
         "flat in lowp vec4 colorf;" +
         "layout(location=0) out lowp vec4 color;" +
@@ -1090,10 +1124,11 @@ let Myr = function(canvasElement) {
             "uv = vertex.zw;" +
         "}",
         "uniform sampler2D source;" +
+        uniformBlock +
         "in mediump vec2 uv;" +
         "layout(location=0) out lowp vec4 color;" +
         "void main() {" +
-            "color=texture(source,uv);" +
+            "color=texture(source,uv)*c;" +
         "}"
     );
     const shaders = [
@@ -1145,6 +1180,8 @@ let Myr = function(canvasElement) {
     let currentTextureSurface = null;
     let currentTextureAtlas = null;
     let currentTextureMesh = null;
+
+    uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
     
     gl.enable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
@@ -1156,9 +1193,9 @@ let Myr = function(canvasElement) {
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 1, 1, 0]), gl.STATIC_DRAW);
     
-    gl.bindBuffer(gl.UNIFORM_BUFFER, transformBuffer);
-    gl.bufferData(gl.UNIFORM_BUFFER, 32, gl.DYNAMIC_DRAW);
-    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, transformBuffer);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, ubo);
+    gl.bufferData(gl.UNIFORM_BUFFER, 48, gl.DYNAMIC_DRAW);
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, ubo);
     
     gl.bindVertexArray(vaoSprites);
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
