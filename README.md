@@ -40,6 +40,8 @@ Global functions are members of the object returned by the `Myr` function. One o
 Function | Description
 -|-
 [`setClearColor(color)`](#setclearcolor)|Sets the clear color
+[`setColor(color)`](#setcolor)|Sets the global color filter
+[`setAlpha(alpha)`](#setalpha)|Sets the global transparency
 [`clear()`](#clear)|Clears the current target
 [`bind()`](#bind)|Binds the default render target
 [`flush()`](#flush)|Flush the draw calls
@@ -59,11 +61,25 @@ Function | Description
 [`scale(x, y)`](#scalex-y)|Scale
 
 ### `setClearColor(color)`
-Set the clear color of the **myr.js** object. When `clear()` is called, the screen will be cleared using this color.
+Sets the clear color of the **myr.js** object. When `clear()` is called, the screen will be cleared using this color.
 
 Parameter | Type | Description
 -|-|-
-color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called.
+color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called
+
+### `setColor(color)`
+Sets the global color filter. Every drawn color will be multiplied by this color before rendering.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|A color
+
+### `setAlpha(alpha)`
+Sets the global alpha (transparency). Every drawn color will be multiplied by this transparency before rendering. Note that this function sets the alpha component of the current clear color set by [`setColor`](#setcolor).
+
+Parameter | Type | Description
+-|-|-
+alpha|`Number`|A transparency ranging from 0 to 1.
 
 ### `clear()`
 Clears the canvas to the currently set clear color.
