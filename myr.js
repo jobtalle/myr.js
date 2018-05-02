@@ -683,28 +683,12 @@ let Myr = function(canvasElement) {
     
     this.mesh = {};
     
-    this.mesh.Vertex = function(x, y, u, v) {
-        this.x = x;
-        this.y = y;
-        this.u = u;
-        this.v = v;
-        
-        this._push = () => pushVertexMesh(RENDER_MODE_MESH, this.x, this.y, this.u, this.v);
-    };
-    
     this.mesh.drawTriangle = (source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3) => {
         meshBindSource(source);
         
         pushVertexMesh(RENDER_MODE_MESH, x1, y1, u1, v1);
         pushVertexMesh(RENDER_MODE_MESH, x2, y2, u2, v2);
         pushVertexMesh(RENDER_MODE_MESH, x3, y3, u3, v3);
-    };
-    
-    this.mesh.drawMesh = (source, vertices) => {
-        meshBindSource(source);
-        
-        for(let i = 0; i < vertices.length; ++i)
-            vertices[i]._push();
     };
     
     this.utils = {};
