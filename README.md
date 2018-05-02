@@ -79,7 +79,7 @@ Sets the global alpha (transparency). Every drawn color will be multiplied by th
 
 Parameter | Type | Description
 -|-|-
-alpha|`Number`|A transparency ranging from 0 to 1.
+alpha|`Number`|A transparency in the range [0, 1]
 
 ### `clear()`
 Clears the canvas to the currently set clear color.
