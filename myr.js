@@ -1053,15 +1053,15 @@ let Myr = function(canvasElement) {
     const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
     const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
     const shaderCoreSprites = new ShaderCore(
-        "layout(location=0) in vec2 vertex;" +
-        "layout(location=1) in vec4 atlas;" +
-        "layout(location=2) in vec4 matrix;" +
-        "layout(location=3) in vec4 position;" +
+        "layout(location=0) in mediump vec2 vertex;" +
+        "layout(location=1) in mediump vec4 atlas;" +
+        "layout(location=2) in mediump vec4 matrix;" +
+        "layout(location=3) in mediump vec4 position;" +
         uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
             "uv=atlas.xy+vertex*atlas.zw;" +
-            "vec2 transformed=(((vertex-position.zw)*" + 
+            "mediump vec2 transformed=(((vertex-position.zw)*" + 
                 "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
@@ -1076,12 +1076,12 @@ let Myr = function(canvasElement) {
         "}"
     );
     const shaderCoreLines = new ShaderCore(
-        "layout(location=0) in vec4 color;" +
-        "layout(location=1) in vec2 vertex;" +
+        "layout(location=0) in mediump vec4 color;" +
+        "layout(location=1) in mediump vec2 vertex;" +
         uniformBlock +
         "out lowp vec4 colori;" +
         "void main() {" +
-            "vec2 transformed=(vertex*" +
+            "mediump vec2 transformed=(vertex*" +
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
@@ -1094,12 +1094,12 @@ let Myr = function(canvasElement) {
         "}"
     );
     const shaderCorePoints = new ShaderCore(
-        "layout(location=0) in vec4 color;" +
-        "layout(location=1) in vec2 vertex;" +
+        "layout(location=0) in mediump vec4 color;" +
+        "layout(location=1) in mediump vec2 vertex;" +
         uniformBlock +
         "flat out lowp vec4 colorf;" +
         "void main() {" +
-            "vec2 transformed=(vertex*" +
+            "mediump vec2 transformed=(vertex*" +
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
@@ -1113,11 +1113,11 @@ let Myr = function(canvasElement) {
         "}"
     );
     const shaderCoreMesh = new ShaderCore(
-        "layout(location=0) in vec4 vertex;" +
+        "layout(location=0) in mediump vec4 vertex;" +
         uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
-            "vec2 transformed=(vertex.xy*" +
+            "mediump vec2 transformed=(vertex.xy*" +
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
