@@ -610,9 +610,9 @@ let Myr = function(canvasElement) {
     
     this.primitives.drawCircle = (color, x, y, radius) => {
         const step = primitivesGetCircleStep(radius);
-        let i = 0;
+        let i;
         
-        for(; i < 1024 - step; i += step)
+        for(i = 0; i < 1024 - step; i += step)
             this.primitives.drawLine(
                 color,
                 x + primitivesCirclePoints[i] * radius,
@@ -674,9 +674,9 @@ let Myr = function(canvasElement) {
     
     this.primitives.fillCircleGradient = (colorStart, colorEnd, x, y, radius) => {
         const step = primitivesGetCircleStep(radius);
-        let i = 0;
+        let i;
         
-        for(; i < 1024 - step; i+= step)
+        for(i = 0; i < 1024 - step; i+= step)
             this.primitives.drawTriangleGradient(
                 colorStart,
                 x, y,
@@ -697,11 +697,6 @@ let Myr = function(canvasElement) {
             x + primitivesCirclePoints[0] * radius,
             y + primitivesCirclePoints[1] * radius);
     };
-    
-    let meshUvLeft = undefined;
-    let meshUvTop = undefined;
-    let meshUvWidth = undefined;
-    let meshUvHeight = undefined;
     
     const meshBindSource = source => {
         if(source instanceof this.Surface) {
@@ -1015,10 +1010,6 @@ let Myr = function(canvasElement) {
         ];
     };
     
-    this.unregister = name => {
-        delete sprites[name];
-    };
-    
     this.free = () => {
         for(let i = 0; i < shaders.length; ++i)
             shaders[i].free();
@@ -1076,6 +1067,7 @@ let Myr = function(canvasElement) {
     this.clear = () => clear(clearColor);
     this.getWidth = () => width;
     this.getHeight = () => height;
+    this.unregister = name => delete sprites[name];
     
     const RENDER_MODE_NONE = -1;
     const RENDER_MODE_SURFACES = 0;
@@ -1214,6 +1206,8 @@ let Myr = function(canvasElement) {
             })
     ];
     
+    let currentShader, currentShaderCore, surface, currentTextureSurface, currentTextureAtlas, currentTextureMesh;
+    let meshUvLeft,  meshUvTop, meshUvWidth, meshUvHeight;
     let transformAt = 0;
     let transformDirty = true;
     let renderMode = RENDER_MODE_NONE;
@@ -1224,12 +1218,6 @@ let Myr = function(canvasElement) {
     let clearColor = new Color(0, 0, 0);
     let width = canvasElement.width;
     let height = canvasElement.height;
-    let currentShader = null;
-    let currentShaderCore = null;
-    let surface = null;
-    let currentTextureSurface = null;
-    let currentTextureAtlas = null;
-    let currentTextureMesh = null;
 
     uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
     
