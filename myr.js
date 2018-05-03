@@ -808,7 +808,7 @@ let Myr = function(canvasElement) {
             core.bind();
             
             for(let i = 0; i < samplerCalls.length; ++i)
-                samplerCalls[i][0](samplerCalls[i][1], samplerCalls[i][2]);
+                samplerCalls[i][0](samplerCalls[i][1], samplerCalls[i][2].value);
         };
         
         this.setUniform = (name, value) => samplers[name].value = value;
@@ -845,7 +845,7 @@ let Myr = function(canvasElement) {
             return;
         
         flush();
-
+        
         gl.activeTexture(TEXTURE_SURFACE);
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
