@@ -615,11 +615,15 @@ v|`Number`|Value value in the range [0, 1]
 
 ### `add(color)`
 Adds another color to itself.
+
+Parameter | Type | Description
 -|-|-
 color|[`Color`](#Color)|A color object
 
 ### `multiply(color)`
 Multiplies another color with itself.
+
+Parameter | Type | Description
 -|-|-
 color|[`Color`](#Color)|A color object
 
