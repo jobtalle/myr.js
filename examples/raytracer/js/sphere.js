@@ -1,13 +1,16 @@
-const Sphere = function(position, radius) {
-    const MOVE_RANGE = 300,
-          MOVE_SPEED = 2;
+const Sphere = function(position, phase, radius) {
+    const MOVE_RANGE_X = 2, MOVE_RANGE_Y = 2, MOVE_RANGE_Z = 10,
+          MOVE_SPEED = 1;
 
-    let timePassed = 0;
+    let timePassed = phase;
     let _originalPosition = position;
 
     this.update = timeStep => {
         timePassed += MOVE_SPEED * timeStep;
-        position = _originalPosition.add(new Vector3(0, 0, MOVE_RANGE * Math.sin(timePassed)));
+        let dX = MOVE_RANGE_X * Math.cos(timePassed) * radius;
+        let dY = MOVE_RANGE_Y * Math.sin(timePassed) * radius;
+        let dZ = MOVE_RANGE_Z * Math.cos(timePassed) * radius;
+        position = _originalPosition.add(new Vector3(dX, dY, dZ));
     };
 
     this.intersect = ray => {

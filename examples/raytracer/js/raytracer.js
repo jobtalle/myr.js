@@ -1,7 +1,7 @@
 const Raytracer = function(myr) {
-    const UP_SCALING = 5;
+    const UP_SCALING = 8;
     const NUM_REFLECTIONS = 4;
-    const COLOR_CLEAR = new myr.Color(0.2, 0.3, 0.8);
+    const COLOR_CLEAR = new myr.Color(0.7, 0.7, 1);
     const TIME_STEP_MAX = 0.5;
 
     let lastDate = null;
@@ -10,11 +10,13 @@ const Raytracer = function(myr) {
     const height = myr.getHeight() / UP_SCALING;
     const renderSurface = new myr.Surface(width, height);
 
-    let spheres = [new Sphere(new Vector3(0.2 * width, 0.5 * height, 0), 0.1 * width),
-                   new Sphere(new Vector3(width - 0.2 * width, 0.5 * height, 0), 0.1 * width)];
+    let spheres = [new Sphere(new Vector3(0.5 * width, 0.5 * height, 0), 1, 0.1  * width),
+                   new Sphere(new Vector3(0.5 * width, 0.5 * height, 0), 2, 0.05 * width),
+                   new Sphere(new Vector3(0.5 * width, 0.5 * height, 0), 3, 0.1  * width),
+                   new Sphere(new Vector3(0.5 * width, 0.5 * height, 0), 4, 0.05 * width)];
 
-    const eye   = new Vector3(width/2, height/2, 1000);
-    const light = new Vector3(width/2, height/2, 0);
+    const eye   = new Vector3(width / 2, height / 2, 1000);
+    const light = new Vector3(width / 2, height / 2, 100);
 
     const getTimeStep = () => {
         const date = new Date();
@@ -36,10 +38,10 @@ const Raytracer = function(myr) {
     };
 
     const shade = (ray, hit, recursionDepth) => {
-        const MATERIAL_AMBIENT    = 0.3,
-              MATERIAL_DIFFUSE    = 0.5,
-              MATERIAL_SPECULAR   = 0.2,
-              MATERIAL_SPECULAR_N = 6;
+        const MATERIAL_AMBIENT    = 0.2,
+              MATERIAL_DIFFUSE    = 0.3,
+              MATERIAL_SPECULAR   = 0.5,
+              MATERIAL_SPECULAR_N = 8;
 
         let position = ray.at(hit.getDistance());
         let normal = hit.getNormal();
@@ -87,7 +89,7 @@ const Raytracer = function(myr) {
                 let ray = new Ray(eye, pixel.subtract(eye).normalize());
                 let intensity = trace(ray, NUM_REFLECTIONS);
                 if (intensity > 0)
-                    myr.primitives.drawPoint(new myr.Color(intensity, intensity, intensity, 1), x, y);
+                    myr.primitives.drawPoint(new myr.Color(0, 0, intensity, 1), x, y);
             }
         }
 
