@@ -1,5 +1,6 @@
 const Raytracer = function(myr) {
-    const UP_SCALING = 7;
+    const UP_SCALING = 5;
+    const NUM_REFLECTIONS = 4;
     const COLOR_CLEAR = new myr.Color(0.2, 0.3, 0.8);
     const TIME_STEP_MAX = 0.5;
 
@@ -34,25 +35,32 @@ const Raytracer = function(myr) {
             spheres[i].update(timeStep);
     };
 
-    const shade = (viewDir, point, normal) => {
+    const shade = (ray, hit, recursionDepth) => {
         const MATERIAL_AMBIENT    = 0.3,
               MATERIAL_DIFFUSE    = 0.5,
-              MATERIAL_SPECULAR   = 0.3,
+              MATERIAL_SPECULAR   = 0.2,
               MATERIAL_SPECULAR_N = 6;
 
-        let lightDir = light.subtract(point).normalize();
-        let diffuse = Math.max(normal.dot(lightDir), 0);
+        let position = ray.at(hit.getDistance());
+        let normal = hit.getNormal();
+        let lightDir = light.subtract(position).normalize();
+        let intensity = MATERIAL_AMBIENT + MATERIAL_DIFFUSE * Math.max(normal.dot(lightDir), 0);
 
-        let reflectDir = normal.multiply(normal.dot(lightDir)).multiply(2).subtract(lightDir);
-        let specAngle = Math.max(reflectDir.dot(viewDir), 0);
-        let specular = Math.pow(specAngle, MATERIAL_SPECULAR_N);
+        let reflectedLightDir = reflect(lightDir.multiply(-1), normal);
+        let viewDir = ray.getDirection().multiply(-1);
+        let specAngle = Math.max(reflectedLightDir.dot(viewDir), 0);
+        intensity += MATERIAL_SPECULAR * Math.pow(specAngle, MATERIAL_SPECULAR_N);
 
-        return MATERIAL_AMBIENT +
-               MATERIAL_DIFFUSE * diffuse +
-               MATERIAL_SPECULAR * specular;
+        if (recursionDepth > 0) {
+            let reflectedRayDir = reflect(ray.getDirection(), normal).normalize();
+            let reflectedRay = new Ray(position.add(normal), reflectedRayDir);
+            intensity += MATERIAL_SPECULAR * trace(reflectedRay, recursionDepth - 1);
+        }
+
+        return intensity;
     };
 
-    const trace = ray => {
+    const trace = (ray, recursionDepth) => {
         let closestHit = new Hit(Infinity);
         let sphere;
 
@@ -64,14 +72,10 @@ const Raytracer = function(myr) {
             }
         }
 
-        if (!sphere) return;
+        if (sphere)
+            return shade(ray, closestHit, recursionDepth);
 
-        let viewDir = ray.getDirection().multiply(-1);
-        let hitPoint = ray.at(closestHit.getDistance());
-        let normal = closestHit.getNormal();
-        let intensity = shade(viewDir, hitPoint, normal);
-
-        return new myr.Color(intensity, intensity, intensity, 1);
+        return 0;
     };
 
     const render = () => {
@@ -81,9 +85,9 @@ const Raytracer = function(myr) {
             for (let x = 0; x < width; x++) {
                 let pixel = new Vector3(x + 0.5, height - 1 - y + 0.5, 0);
                 let ray = new Ray(eye, pixel.subtract(eye).normalize());
-                let color = trace(ray);
-                if (color)
-                    myr.primitives.drawPoint(trace(ray), x, y);
+                let intensity = trace(ray, NUM_REFLECTIONS);
+                if (intensity > 0)
+                    myr.primitives.drawPoint(new myr.Color(intensity, intensity, intensity, 1), x, y);
             }
         }
 

@@ -69,6 +69,10 @@ const Ray = function (origin, direction) {
     };
 };
 
+const reflect = (vector, normal) => {
+    return vector.subtract(normal.multiply(vector.dot(normal)).multiply(2));
+};
+
 const solveQuadratic = (a, b, c) => {
     let discriminant = b * b - 4 * a * c;
 
