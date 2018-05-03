@@ -1,5 +1,5 @@
 const Raytracer = function(myr) {
-    const UP_SCALING = 8;
+    const UP_SCALING = 6;
     const NUM_REFLECTIONS = 4;
     const COLOR_CLEAR = new myr.Color(0.7, 0.7, 1);
     const TIME_STEP_MAX = 0.5;
@@ -53,7 +53,7 @@ const Raytracer = function(myr) {
         let specAngle = Math.max(reflectedLightDir.dot(viewDir), 0);
         intensity += MATERIAL_SPECULAR * Math.pow(specAngle, MATERIAL_SPECULAR_N);
 
-        if (recursionDepth > 0) {
+        if (recursionDepth > 0 && specAngle > 0) {
             let reflectedRayDir = reflect(ray.getDirection(), normal).normalize();
             let reflectedRay = new Ray(position.add(normal), reflectedRayDir);
             intensity += MATERIAL_SPECULAR * trace(reflectedRay, recursionDepth - 1);
@@ -83,6 +83,7 @@ const Raytracer = function(myr) {
     const render = () => {
         renderSurface.bind();
         renderSurface.clear();
+
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 let pixel = new Vector3(x + 0.5, height - 1 - y + 0.5, 0);
