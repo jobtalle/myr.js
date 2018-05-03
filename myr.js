@@ -8,11 +8,7 @@ let Myr = function(canvasElement) {
         this.r = r;
         this.g = g;
         this.b = b;
-
-        if(a === undefined)
-            this.a = 1;
-        else
-            this.a = a;
+        this.a = a === undefined?1:a;
     };
     
     Color.BLACK = new Color(0, 0, 0);
@@ -48,11 +44,11 @@ let Myr = function(canvasElement) {
     Color.prototype.toHSV = function() {
         const cMax = Math.max(this.r, this.g, this.b);
         const cMin = Math.min(this.r, this.g, this.b);
-        let h, s, l = (cMax + cMin) / 2;
+        let h, s, l = (cMax + cMin) * 0.5;
 
-        if (cMax == cMin) {
+        if (cMax == cMin)
             h = s = 0;
-        } else {
+        else {
             let delta = cMax - cMin;
             s = l > 0.5 ? delta / (2 - delta) : delta / (cMax + cMin);
             
@@ -398,7 +394,7 @@ let Myr = function(canvasElement) {
             height = arguments[1];
             ready = true;
             
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
         }
         else {
             const image = document.createElement("img");
@@ -425,7 +421,7 @@ let Myr = function(canvasElement) {
             image.crossOrigin = "Anonymous";
             image.src = arguments[0];
             
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
         }
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -548,11 +544,14 @@ let Myr = function(canvasElement) {
             }
         };
         
+        this._setMeshBounds = () => {
+            meshUvLeft = getFrame()[5];
+            meshUvTop = getFrame()[6];
+            meshUvWidth = getFrame()[7];
+            meshUvHeight = getFrame()[8];
+        };
+
         this._getTexture = () => getFrame()[0];
-        this._getUvLeft = () => getFrame()[5];
-        this._getUvTop = () => getFrame()[6];
-        this._getUvWidth = () => getFrame()[7];
-        this._getUvHeight = () => getFrame()[8];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
         this.getWidth = () => getFrame()[1];
@@ -709,12 +708,8 @@ let Myr = function(canvasElement) {
             meshUvLeft = meshUvTop = 0;
             meshUvWidth = meshUvHeight = 1;
         }
-        else {
-            meshUvLeft = source._getUvLeft();
-            meshUvTop = source._getUvTop();
-            meshUvWidth = source._getUvWidth();
-            meshUvHeight = source._getUvHeight();
-        }
+        else
+            source._setMeshBounds();
         
         if(currentTextureMesh == source._getTexture())
             return;
@@ -899,7 +894,7 @@ let Myr = function(canvasElement) {
                 gl.drawArrays(gl.LINES, 0, instanceCount);
                 break;
             case RENDER_MODE_POINTS:
-                gl.bindVertexArray(vaoPoints);
+                gl.bindVertexArray(vaoLines);
                 gl.drawArrays(gl.POINTS, 0, instanceCount);
                 break;
             case RENDER_MODE_TRIANGLES:
@@ -1031,7 +1026,6 @@ let Myr = function(canvasElement) {
         
         gl.deleteVertexArray(vaoSprites);
         gl.deleteVertexArray(vaoLines);
-        gl.deleteVertexArray(vaoPoints);
         gl.deleteVertexArray(vaoMesh);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
@@ -1100,7 +1094,6 @@ let Myr = function(canvasElement) {
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
     const vaoLines = gl.createVertexArray();
-    const vaoPoints = gl.createVertexArray();
     const vaoMesh = gl.createVertexArray();
     const ubo = gl.createBuffer();
     const uboContents = new Float32Array(12);
@@ -1268,13 +1261,6 @@ let Myr = function(canvasElement) {
     gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 48, 32);
     
     gl.bindVertexArray(vaoLines);
-    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
-    
-    gl.bindVertexArray(vaoPoints);
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
