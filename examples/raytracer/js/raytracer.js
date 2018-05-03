@@ -36,6 +36,19 @@ const Raytracer = function(myr) {
             spheres[i].update(timeStep);
     };
 
+    const shade = (viewDir, point, normal) => {
+        let lightDir = LIGHT.subtract(point).normalize();
+        let diffuse = Math.max(normal.dot(lightDir), 0);
+
+        let reflectDir = normal.multiply(normal.dot(lightDir)).multiply(2).subtract(lightDir);
+        let specAngle = Math.max(reflectDir.dot(viewDir), 0);
+        let specular = Math.pow(specAngle, MATERIAL_SPECULAR_N);
+
+        return MATERIAL_AMBIENT +
+               MATERIAL_DIFFUSE * diffuse +
+               MATERIAL_SPECULAR * specular;
+    };
+
     const trace = ray => {
         let closestHit = new Hit(Infinity);
         let sphere;
@@ -50,17 +63,10 @@ const Raytracer = function(myr) {
 
         if (!sphere) return;
 
+        let viewDir = ray.getDirection().multiply(-1);
         let hitPoint = ray.at(closestHit.getDistance());
         let normal = closestHit.getNormal();
-        let viewDir = ray.getDirection().multiply(-1);
-        let lightDir = LIGHT.subtract(hitPoint).normalize();
-        let diffuse = Math.max(normal.dot(lightDir), 0);
-
-        let reflectDir = normal.multiply(normal.dot(lightDir)).multiply(2).subtract(lightDir);
-        let specAngle = Math.max(reflectDir.dot(viewDir), 0);
-        let specular = Math.pow(specAngle, MATERIAL_SPECULAR_N);
-
-        let intensity = MATERIAL_AMBIENT + MATERIAL_DIFFUSE * diffuse + MATERIAL_SPECULAR * specular;
+        let intensity = shade(viewDir, hitPoint, normal);
 
         return new myr.Color(intensity, intensity, intensity, 1);
     };

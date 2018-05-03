@@ -68,3 +68,23 @@ const Ray = function (origin, direction) {
         return origin.add(direction.multiply(distance));
     };
 };
+
+const solveQuadratic = (a, b, c) => {
+    let discriminant = b * b - 4 * a * c;
+
+    let firstSolution = NaN, secondSolution = NaN;
+    if (discriminant === 0)
+        firstSolution = secondSolution = b / (2 * a);
+    else if (discriminant > 0) {
+        firstSolution  = (-b + Math.sqrt(discriminant)) / (2 * a);
+        secondSolution = (-b - Math.sqrt(discriminant)) / (2 * a);
+    }
+
+    if (firstSolution > secondSolution) {
+        let temp = firstSolution;
+        firstSolution = secondSolution;
+        secondSolution = temp;
+    }
+
+    return {firstSolution, secondSolution};
+};
