@@ -70,6 +70,18 @@ let Myr = function(canvasElement) {
             v: cMax
         };
     };
+
+    Color.prototype.add = function(color) {
+        this.r += color.r;
+        this.g += color.g;
+        this.b += color.b;
+    };
+
+    Color.prototype.multiply = function(color) {
+        this.r *= color.r;
+        this.g *= color.g;
+        this.b *= color.b;
+    };
     
     const Vector = this.Vector = function(x, y) {
         this.x = x;
