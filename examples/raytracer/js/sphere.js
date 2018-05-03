@@ -1,3 +1,23 @@
+const solveQuadratic = (a, b, c) => {
+  let discriminant = b * b - 4 * a * c;
+
+  let firstSolution = NaN, secondSolution = NaN;
+  if (discriminant === 0)
+      firstSolution = secondSolution = b / (2 * a);
+  else if (discriminant > 0) {
+      firstSolution  = (-b + Math.sqrt(discriminant)) / (2 * a);
+      secondSolution = (-b - Math.sqrt(discriminant)) / (2 * a);
+  }
+
+  if (firstSolution > secondSolution) {
+      let temp = firstSolution;
+      firstSolution = secondSolution;
+      secondSolution = temp;
+  }
+
+  return {firstSolution, secondSolution};
+};
+
 const Sphere = function(position, radius) {
     const MOVE_SPEED = 200;
 
@@ -10,20 +30,15 @@ const Sphere = function(position, radius) {
     };
 
     this.intersect = ray => {
-        let L = ray.getOrigin().subtract(position);
+        let distanceToOrigin = ray.getOrigin().subtract(position);
         let a = ray.getDirection().dot(ray.getDirection());
-        let b = 2 * ray.getDirection().dot(L);
-        let c = L.dot(L) - radius * radius;
+        let b = 2 * ray.getDirection().dot(distanceToOrigin);
+        let c = distanceToOrigin.dot(distanceToOrigin) - radius * radius;
 
-        let distance = 0;
-
-        let d = b * b - 4 * a * c;
-        if (d === 0)
-            distance = -0.5 * b / a;
-        else if (d > 0) {
-            let q = (b > 0) ? -0.5 * (b + Math.sqrt(d)) : -0.5 * (b - Math.sqrt(d));
-            distance = Math.min(q / a, c / q);
-        }
+        let solutions = solveQuadratic(a, b, c);
+        let distance = solutions.firstSolution;
+        if (distance < 0)
+            distance = solutions.secondSolution;
 
         if (distance > 0) {
             let normal = ray.at(distance).subtract(position).normalize();
