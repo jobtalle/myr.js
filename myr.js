@@ -807,23 +807,22 @@ let Myr = function(canvasElement) {
             
             core.bind();
             
-            for(let i = 0; i < samplerNames.length; ++i) {
-                const sampler = samplerNames[i];
-                
-                gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
-            }
+            for(let i = 0; i < samplerCalls.length; ++i)
+                samplerCalls[i][0](samplerCalls[i][1], samplerCalls[i][2]);
         };
         
+        this.setUniform = (name, value) => samplers[name].value = value;
         this.free = () => core.free();
         
+        const samplerCalls = [];
         const samplerNames = Object.keys(samplers);
-        const samplerLocations = new Object();
         
-        for(let i = 0; i < samplerNames.length; ++i) {
-            const sampler = samplerNames[i];
-            
-            samplerLocations.sampler = gl.getUniformLocation(core.getProgram(), sampler);
-        }
+        for(let i = 0; i < samplerNames.length; ++i)
+            samplerCalls.push([
+                gl["uniform" + samplers[samplerNames[i]].type].bind(gl),
+                gl.getUniformLocation(core.getProgram(), samplerNames[i]),
+                samplers[samplerNames[i]]
+            ]);
     };
     
     const bind = target => {
@@ -1183,32 +1182,35 @@ let Myr = function(canvasElement) {
         new Shader(
             shaderCoreSprites,
             {
-                source: 1
+                source: {
+                    type: "1i",
+                    value: 1
+                }
             }),
         new Shader(
             shaderCoreSprites,
             {
-                source: 0
+                source: {
+                    type: "1i",
+                    value: 0
+                }
             }),
         new Shader(
             shaderCoreLines,
-            {
-                
-            }),
+            {}),
         new Shader(
             shaderCorePoints,
-            {
-                
-            }),
+            {}),
         new Shader(
             shaderCoreLines,
-            {
-                
-            }),
+            {}),
         new Shader(
             shaderCoreMesh,
             {
-                source: 2
+                source: {
+                    type: "1i",
+                    value: 2
+                }
             })
     ];
     
