@@ -245,8 +245,7 @@ let Myr = function(canvasElement) {
     
     const setAttributesDraw = (x, y, width, height) => {
         instanceBuffer[++instanceBufferAt] = width;
-        instanceBuffer[++instanceBufferAt] = 0;
-        instanceBuffer[++instanceBufferAt] = 0;
+        instanceBuffer[++instanceBufferAt] = instanceBuffer[++instanceBufferAt] = 0;
         instanceBuffer[++instanceBufferAt] = height;
         instanceBuffer[++instanceBufferAt] = x;
         instanceBuffer[++instanceBufferAt] = y;
@@ -290,7 +289,6 @@ let Myr = function(canvasElement) {
     this.Surface = function() {
         this.draw = (x, y) => {
             bindTextureSurface(texture);
-            
             prepareDraw(RENDER_MODE_SURFACES, 12);
             
             setAttributesUv(0, 0, 1, 1);
@@ -300,7 +298,6 @@ let Myr = function(canvasElement) {
         
         this.drawScaled = (x, y, xScale, yScale) => {
             bindTextureSurface(texture);
-            
             prepareDraw(RENDER_MODE_SURFACES, 12);
             
             setAttributesUv(0, 0, 1, 1);
@@ -310,7 +307,6 @@ let Myr = function(canvasElement) {
         
         this.drawSheared = (x, y, xShear, yShear) => {
             bindTextureSurface(texture);
-            
             prepareDraw(RENDER_MODE_SURFACES, 12);
             
             setAttributesUv(0, 0, 1, 1);
@@ -320,7 +316,6 @@ let Myr = function(canvasElement) {
         
         this.drawTransformed = transform => {
             bindTextureSurface(texture);
-            
             prepareDraw(RENDER_MODE_SURFACES, 12);
             
             setAttributesUv(0, 0, 1, 1);
@@ -330,11 +325,10 @@ let Myr = function(canvasElement) {
         
         this.drawPart = (x, y, left, top, w, h) => {
             bindTextureSurface(texture);
-            
+            prepareDraw(RENDER_MODE_SURFACES, 12);
+
             const wf = 1 / width;
             const hf = 1 / height;
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
             
             setAttributesUvPart(0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
             setAttributesDraw(x, y, w, h);
@@ -343,11 +337,10 @@ let Myr = function(canvasElement) {
         
         this.drawPartTransformed = (transform, left, top, w, h) => {
             bindTextureSurface(texture);
-            
+            prepareDraw(RENDER_MODE_SURFACES, 12);
+
             const wf = 1 / width;
             const hf = 1 / height;
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
             
             setAttributesUvPart(0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
             setAttributesDrawTransform(transform, w, h);
@@ -433,7 +426,6 @@ let Myr = function(canvasElement) {
             const frame = getFrame();
             
             bindTextureAtlas(frame[0]);
-            
             prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
@@ -445,7 +437,6 @@ let Myr = function(canvasElement) {
             const frame = getFrame();
             
             bindTextureAtlas(frame[0]);
-            
             prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
@@ -457,7 +448,6 @@ let Myr = function(canvasElement) {
             const frame = getFrame();
             
             bindTextureAtlas(frame[0]);
-            
             prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
@@ -469,7 +459,6 @@ let Myr = function(canvasElement) {
             const frame = getFrame();
             
             bindTextureAtlas(frame[0]);
-            
             prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
@@ -481,7 +470,6 @@ let Myr = function(canvasElement) {
             const frame = getFrame();
             
             bindTextureAtlas(frame[0]);
-            
             prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
@@ -493,7 +481,6 @@ let Myr = function(canvasElement) {
             const frame = getFrame();
             
             bindTextureAtlas(frame[0]);
-            
             prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
@@ -504,12 +491,11 @@ let Myr = function(canvasElement) {
         this.drawPart = (x, y, left, top, w, h) => {
             const frame = getFrame();
             
-            bindTextureAtlas(frame[0]);
-            
+            bindTextureAtlas(frame[0]);            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+
             const wf = 1 / frame[1];
             const hf = 1 / frame[2];
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
             setAttributesDraw(x, y, w, h);
@@ -520,11 +506,10 @@ let Myr = function(canvasElement) {
             const frame = getFrame();
             
             bindTextureAtlas(frame[0]);
-            
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+
             const wf = 1 / frame[1];
             const hf = 1 / frame[2];
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
             
             setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
             setAttributesDrawTransform(transform, w, h);
@@ -862,11 +847,7 @@ let Myr = function(canvasElement) {
     const clear = color => {
         flush();
         
-        gl.clearColor(
-            color.r * uboContents[8],
-            color.g * uboContents[9],
-            color.b * uboContents[10],
-            color.a * uboContents[11]);
+        gl.clearColor(color.r * uboContents[8], color.g * uboContents[9], color.b * uboContents[10], color.a * uboContents[11]);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
@@ -1218,7 +1199,7 @@ let Myr = function(canvasElement) {
     let clearColor = new Color(0, 0, 0);
     let width = canvasElement.width;
     let height = canvasElement.height;
-
+    
     uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
     
     gl.enable(gl.BLEND);
@@ -1263,6 +1244,4 @@ let Myr = function(canvasElement) {
     gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 16, 0);
     
     gl.bindVertexArray(null);
-    
-    this.bind();
 };
