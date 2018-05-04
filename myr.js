@@ -280,6 +280,15 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = transform._20;
         instanceBuffer[++instanceBufferAt] = transform._21;
     };
+
+    const setAttributesDrawTransformAt = (x, y, transform, width, height) => {
+        instanceBuffer[++instanceBufferAt] = transform._00 * width;
+        instanceBuffer[++instanceBufferAt] = transform._10 * height;
+        instanceBuffer[++instanceBufferAt] = transform._01 * width;
+        instanceBuffer[++instanceBufferAt] = transform._11 * height;
+        instanceBuffer[++instanceBufferAt] = transform._20 + x;
+        instanceBuffer[++instanceBufferAt] = transform._21 + y;
+    };
     
     const setAttributesOrigin = (xOrigin, yOrigin) => {
         instanceBuffer[++instanceBufferAt] = xOrigin;
@@ -320,6 +329,15 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(0, 0, 1, 1);
             setAttributesDrawTransform(transform, width, height);
+            setAttributesOrigin(0, 0);
+        };
+
+        this.drawTransformedAt = (x, y, transform) => {
+            bindTextureSurface(texture);
+            prepareDraw(RENDER_MODE_SURFACES, 12);
+            
+            setAttributesUv(0, 0, 1, 1);
+            setAttributesDrawTransformAt(x, y, transform, width, height);
             setAttributesOrigin(0, 0);
         };
         
@@ -488,6 +506,17 @@ let Myr = function(canvasElement) {
             setAttributesOrigin(frame[3], frame[4]);
         };
         
+        this.drawTransformedAt = (x, y, transform) => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+            
+            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
+            setAttributesDrawTransformAt(x, y, transform, frame[1], frame[2]);
+            setAttributesOrigin(frame[3], frame[4]);
+        };
+
         this.drawPart = (x, y, left, top, w, h) => {
             const frame = getFrame();
             

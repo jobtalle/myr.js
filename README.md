@@ -221,6 +221,7 @@ Function | Description
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale)|Draws the surface
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear)|Draws the surface
 [`drawTransformed(transform)`](#drawtransformedtransform)|Draws the surface
+[`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform)|Draws the surface
 [`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height)|Draws the surface
 [`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height)|Draws the surface
 
@@ -308,6 +309,15 @@ Parameter | Type | Description
 -|-|-
 transform|[`Transform`](#transform)|A transformation to apply to this surface
 
+### `drawTransformedAt(x, y, transform)`
+Draws this surface on the currently bound target at a certain position after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+transform|[`Transform`](#transform)|A transformation to apply to this surface
+
 ### `drawPart(x, y, left, top, width, height)`
 Draws a part of this surface on the currently bound render target. Make sure the specified region is part of the surface; rendering parts that fall outside this surface results in undefined behavior.
 
@@ -351,6 +361,7 @@ Function | Description
 [`drawRotated(x, y, angle)`](#drawrotatedx-y-angle)|Draws the sprite
 [`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle)|Draws the sprite
 [`drawTransformed(transform)`](#drawtransformedtransform-1)|Draws the sprite
+[`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform-1)|Draws the sprite
 [`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height-1)|Draws the sprite
 [`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height-1)|Draws the sprite
 
@@ -437,6 +448,15 @@ Draws this sprite on the currently bound target after applying a transformation 
 
 Parameter | Type | Description
 -|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this sprite
+
+### `drawTransformedAt(x, y, transform)`
+Draws this sprite on the currently bound target at a certain position after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
 transform|[`Transform`](#transform)|A transformation to apply to this sprite
 
 ### `drawPart(x, y, left, top, width, height)`

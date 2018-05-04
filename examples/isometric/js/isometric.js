@@ -8,12 +8,8 @@ const Isometric = function(myr) {
         const texture = textures[Math.floor(Math.random() * textures.length)];
 
         this.render = () => {
-            const t = new myr.Transform();
-
-            t.translate(0, 0);
-            t.multiply(tRoof);
-
-            texture.getRoof().drawTransformed(t);
+            texture.getRoof().drawTransformedAt(0, 0, tRoof);
+            texture.getRoof().drawTransformedAt(0, -16, tRoof);
         };
     };
     
