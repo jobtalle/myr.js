@@ -86,7 +86,7 @@ const Isometric = function(myr) {
         });
     };
 
-    const sprites = new myr.Surface("img/blocks.png", 128, 32);
+    const sprites = new myr.Surface("img/blocks.png");
     myr.register("roof", myr.makeSpriteFrame(sprites, 0, 0, 32, 32, 16, 16, 0));
     myr.register("wall1", myr.makeSpriteFrame(sprites, 32, 0, 32, 32, 0, 32, 0));
     myr.register("wall2", myr.makeSpriteFrame(sprites, 64, 0, 32, 32, 0, 32, 0));

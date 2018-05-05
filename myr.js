@@ -250,6 +250,17 @@ let Myr = function(canvasElement) {
             instanceBuffer[++instanceBufferAt] = 0;
         };
         
+        this._addFrame = frame => {
+            if(ready) {
+                frame[5] /= width;
+                frame[6] /= height;
+                frame[7] /= width;
+                frame[8] /= height;
+            }
+            else
+                frames.push(frame);
+        };
+
         this._getTexture = () => texture;
         this._getUvLeft = () => 0;
         this._getUvTop = () => 0;
@@ -264,6 +275,7 @@ let Myr = function(canvasElement) {
         
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
+        const frames = [];
         
         let ready = false;
         let width = 0;
@@ -300,8 +312,14 @@ let Myr = function(canvasElement) {
                 
                 gl.activeTexture(TEXTURE_EDITING);
                 gl.bindTexture(gl.TEXTURE_2D, texture);
-                
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+                for(let frame = frames.pop(); frame != undefined; frame = frames.pop()) {
+                    frame[5] /= width;
+                    frame[6] /= height;
+                    frame[7] /= width;
+                    frame[8] /= height;
+                }
                 
                 ready = true;
             };
@@ -929,18 +947,22 @@ let Myr = function(canvasElement) {
     };
         
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
-        return [
+        const frame = [
             sheet._getTexture(),
             width,
             height,
             xOrigin / width,
             yOrigin / height,
-            x / sheet.getWidth(),
-            y / sheet.getHeight(),
-            width / sheet.getWidth(),
-            height / sheet.getHeight(),
+            x,
+            y,
+            width,
+            height,
             time
         ];
+
+        sheet._addFrame(frame);
+
+        return frame;
     };
     
     this.free = () => {
