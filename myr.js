@@ -90,6 +90,10 @@ let Myr = function(canvasElement) {
 
         return this;
     };
+
+    Color.prototype.equals = function(color) {
+        return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
+    };
     
     const Vector = this.Vector = function(x, y) {
         this.x = x;
