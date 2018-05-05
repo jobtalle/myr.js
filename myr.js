@@ -8,21 +8,80 @@ let Myr = function(canvasElement) {
         this.r = r;
         this.g = g;
         this.b = b;
-
-        if(a === undefined)
-            this.a = 1;
-        else
-            this.a = a;
+        this.a = a === undefined?1:a;
     };
     
-    this.Color.BLACK = new Color(0, 0, 0);
-    this.Color.BLUE = new Color(0, 0, 1);
-    this.Color.GREEN = new Color(0, 1, 0);
-    this.Color.CYAN = new Color(0, 1, 1);
-    this.Color.RED = new Color(1, 0, 0);
-    this.Color.MAGENTA = new Color(1, 0, 1);
-    this.Color.YELLOW = new Color(1, 1, 0);
-    this.Color.WHITE = new Color(1, 1, 1);
+    Color.BLACK = new Color(0, 0, 0);
+    Color.BLUE = new Color(0, 0, 1);
+    Color.GREEN = new Color(0, 1, 0);
+    Color.CYAN = new Color(0, 1, 1);
+    Color.RED = new Color(1, 0, 0);
+    Color.MAGENTA = new Color(1, 0, 1);
+    Color.YELLOW = new Color(1, 1, 0);
+    Color.WHITE = new Color(1, 1, 1);
+
+    Color.fromHSV = (h, s, v) => {
+        const c = v * s;
+        const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+        const m = v - c;
+
+        switch(Math.floor(h * 6)) {
+            case 1:
+                return new Color(x + m, c + m, m);
+            case 2:
+                return new Color(m, c + m, x + m);
+            case 3:
+                return new Color(m, x + m, c + m);
+            case 4:
+                return new Color(x + m, m, c + m);
+            case 5:
+                return new Color(c + m, m, x + m);
+            default:
+                return new Color(c + m, x + m, m);
+        }
+    };
+
+    Color.prototype.toHSV = function() {
+        const cMax = Math.max(this.r, this.g, this.b);
+        const cMin = Math.min(this.r, this.g, this.b);
+        let h, s, l = (cMax + cMin) * 0.5;
+
+        if (cMax == cMin)
+            h = s = 0;
+        else {
+            let delta = cMax - cMin;
+            s = l > 0.5 ? delta / (2 - delta) : delta / (cMax + cMin);
+            
+            switch(cMax) {
+                case this.r:
+                    h = (this.g - this.b) / delta + (this.g < this.b ? 6 : 0);
+                    break;
+                case this.g:
+                    h = (this.b - this.r) / delta + 2;
+                    break;
+                case this.b:
+                    h = (this.r - this.g) / delta + 4;
+            }
+        }
+
+        return {
+            h: h / 6,
+            s: s,
+            v: cMax
+        };
+    };
+
+    Color.prototype.add = function(color) {
+        this.r = Math.min(this.r + color.r, 1);
+        this.g = Math.min(this.g + color.g, 1);
+        this.b = Math.min(this.b + color.b, 1);
+    };
+
+    Color.prototype.multiply = function(color) {
+        this.r *= color.r;
+        this.g *= color.g;
+        this.b *= color.b;
+    };
     
     const Vector = this.Vector = function(x, y) {
         this.x = x;
@@ -86,6 +145,10 @@ let Myr = function(canvasElement) {
         return Math.atan2(this.y, this.x);
     };
     
+    Vector.prototype.equals = function(vector) {
+        return this.x === vector.x && this.y === vector.y;
+    };
+
     const Transform = this.Transform = function(_00, _10, _20, _01, _11, _21) {
         if(_00 == undefined)
             this.identity();
@@ -315,7 +378,7 @@ let Myr = function(canvasElement) {
             gl.viewport(0, 0, width, height);
         };
         
-        this.getTexture = () => texture;
+        this._getTexture = () => texture;
         this.getShaders = () => shaders;
         this.getWidth = () => width;
         this.getHeight = () => height;
@@ -343,7 +406,7 @@ let Myr = function(canvasElement) {
             height = arguments[1];
             ready = true;
             
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
         }
         else {
             const image = document.createElement("img");
@@ -370,7 +433,7 @@ let Myr = function(canvasElement) {
             image.crossOrigin = "Anonymous";
             image.src = arguments[0];
             
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
         }
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -493,8 +556,18 @@ let Myr = function(canvasElement) {
             }
         };
         
+        this._setMeshBounds = () => {
+            meshUvLeft = getFrame()[5];
+            meshUvTop = getFrame()[6];
+            meshUvWidth = getFrame()[7];
+            meshUvHeight = getFrame()[8];
+        };
+
+        this._getTexture = () => getFrame()[0];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
+        this.getWidth = () => getFrame()[1];
+        this.getHeight = () => getFrame()[2];
                
         const getFrame = () => frames[frame];
         
@@ -503,7 +576,7 @@ let Myr = function(canvasElement) {
         let frame = 0;
     };
     
-    const pushVertex = (mode, color, x, y) => {
+    const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
         
         instanceBuffer[++instanceBufferAt] = color.r;
@@ -514,29 +587,30 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = y;
     };
     
-    this.primitives = {};
-    this.primitives.circlePoints = new Array(1024);
-    this.primitives.getCircleStep = radius => Math.max(2, 32 >> Math.floor(radius / 128));
+    const primitivesCirclePoints = new Array(1024);
+    const primitivesGetCircleStep = radius => Math.max(2, 32 >> Math.floor(radius / 128));
     
     for(let i = 0; i < 1024; i += 2) {
         const radians = i * Math.PI * 2 / 1024;
         
-        this.primitives.circlePoints[i] = Math.cos(radians);
-        this.primitives.circlePoints[i + 1] = Math.sin(radians);
+        primitivesCirclePoints[i] = Math.cos(radians);
+        primitivesCirclePoints[i + 1] = Math.sin(radians);
     }
     
+    this.primitives = {};
+    
     this.primitives.drawPoint = (color, x, y) => {
-        pushVertex(RENDER_MODE_POINTS, color, x, y);
+        pushVertexColor(RENDER_MODE_POINTS, color, x, y);
     };
     
     this.primitives.drawLine = (color, x1, y1, x2, y2) => {
-        pushVertex(RENDER_MODE_LINES, color, x1, y1);
-        pushVertex(RENDER_MODE_LINES, color, x2, y2);
+        pushVertexColor(RENDER_MODE_LINES, color, x1, y1);
+        pushVertexColor(RENDER_MODE_LINES, color, x2, y2);
     };
     
     this.primitives.drawLineGradient = (color1, x1, y1, color2, x2, y2) => {
-        pushVertex(RENDER_MODE_LINES, color1, x1, y1);
-        pushVertex(RENDER_MODE_LINES, color2, x2, y2);
+        pushVertexColor(RENDER_MODE_LINES, color1, x1, y1);
+        pushVertexColor(RENDER_MODE_LINES, color2, x2, y2);
     };
     
     this.primitives.drawRectangle = (color, x, y, width, height) => {
@@ -547,35 +621,35 @@ let Myr = function(canvasElement) {
     };
     
     this.primitives.drawCircle = (color, x, y, radius) => {
-        const step = this.primitives.getCircleStep(radius);
-        let i = 0;
+        const step = primitivesGetCircleStep(radius);
+        let i;
         
-        for(; i < 1024 - step; i += step)
+        for(i = 0; i < 1024 - step; i += step)
             this.primitives.drawLine(
                 color,
-                x + this.primitives.circlePoints[i] * radius,
-                y + this.primitives.circlePoints[i + 1] * radius,
-                x + this.primitives.circlePoints[i + step] * radius,
-                y + this.primitives.circlePoints[i + 1 + step] * radius);
+                x + primitivesCirclePoints[i] * radius,
+                y + primitivesCirclePoints[i + 1] * radius,
+                x + primitivesCirclePoints[i + step] * radius,
+                y + primitivesCirclePoints[i + 1 + step] * radius);
         
         this.primitives.drawLine(
             color,
-            x + this.primitives.circlePoints[i] * radius,
-            y + this.primitives.circlePoints[i + 1] * radius,
-            x + this.primitives.circlePoints[0] * radius,
-            y + this.primitives.circlePoints[1] * radius);
+            x + primitivesCirclePoints[i] * radius,
+            y + primitivesCirclePoints[i + 1] * radius,
+            x + primitivesCirclePoints[0] * radius,
+            y + primitivesCirclePoints[1] * radius);
     };
     
     this.primitives.drawTriangle = (color, x1, y1, x2, y2, x3, y3) => {
-        pushVertex(RENDER_MODE_TRIANGLES, color, x1, y1);
-        pushVertex(RENDER_MODE_TRIANGLES, color, x2, y2);
-        pushVertex(RENDER_MODE_TRIANGLES, color, x3, y3);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color, x1, y1);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color, x2, y2);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color, x3, y3);
     };
     
     this.primitives.drawTriangleGradient = (color1, x1, y1, color2, x2, y2, color3, x3, y3) => {
-        pushVertex(RENDER_MODE_TRIANGLES, color1, x1, y1);
-        pushVertex(RENDER_MODE_TRIANGLES, color2, x2, y2);
-        pushVertex(RENDER_MODE_TRIANGLES, color3, x3, y3);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color1, x1, y1);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color2, x2, y2);
+        pushVertexColor(RENDER_MODE_TRIANGLES, color3, x3, y3);
     };
     
     this.primitives.fillRectangle = (color, x, y, width, height) => {
@@ -589,51 +663,105 @@ let Myr = function(canvasElement) {
     };
     
     this.primitives.fillCircle = (color, x, y, radius) => {
-        const step = this.primitives.getCircleStep(radius);
+        const step = primitivesGetCircleStep(radius);
         let i = 0;
         
         for(; i < 1024 - step; i+= step)
             this.primitives.drawTriangle(
                 color,
                 x, y,
-                x + this.primitives.circlePoints[i] * radius,
-                y + this.primitives.circlePoints[i + 1] * radius,
-                x + this.primitives.circlePoints[i + step] * radius,
-                y + this.primitives.circlePoints[i + 1 + step] * radius);
+                x + primitivesCirclePoints[i] * radius,
+                y + primitivesCirclePoints[i + 1] * radius,
+                x + primitivesCirclePoints[i + step] * radius,
+                y + primitivesCirclePoints[i + 1 + step] * radius);
         
         this.primitives.drawTriangle(
             color,
             x, y,
-            x + this.primitives.circlePoints[i] * radius,
-            y + this.primitives.circlePoints[i + 1] * radius,
-            x + this.primitives.circlePoints[0] * radius,
-            y + this.primitives.circlePoints[1] * radius);
+            x + primitivesCirclePoints[i] * radius,
+            y + primitivesCirclePoints[i + 1] * radius,
+            x + primitivesCirclePoints[0] * radius,
+            y + primitivesCirclePoints[1] * radius);
     };
     
     this.primitives.fillCircleGradient = (colorStart, colorEnd, x, y, radius) => {
-        const step = this.primitives.getCircleStep(radius);
-        let i = 0;
+        const step = primitivesGetCircleStep(radius);
+        let i;
         
-        for(; i < 1024 - step; i+= step)
+        for(i = 0; i < 1024 - step; i+= step)
             this.primitives.drawTriangleGradient(
                 colorStart,
                 x, y,
                 colorEnd,
-                x + this.primitives.circlePoints[i] * radius,
-                y + this.primitives.circlePoints[i + 1] * radius,
+                x + primitivesCirclePoints[i] * radius,
+                y + primitivesCirclePoints[i + 1] * radius,
                 colorEnd,
-                x + this.primitives.circlePoints[i + step] * radius,
-                y + this.primitives.circlePoints[i + 1 + step] * radius);
+                x + primitivesCirclePoints[i + step] * radius,
+                y + primitivesCirclePoints[i + 1 + step] * radius);
         
         this.primitives.drawTriangleGradient(
             colorStart,
             x, y,
             colorEnd,
-            x + this.primitives.circlePoints[i] * radius,
-            y + this.primitives.circlePoints[i + 1] * radius,
+            x + primitivesCirclePoints[i] * radius,
+            y + primitivesCirclePoints[i + 1] * radius,
             colorEnd,
-            x + this.primitives.circlePoints[0] * radius,
-            y + this.primitives.circlePoints[1] * radius);
+            x + primitivesCirclePoints[0] * radius,
+            y + primitivesCirclePoints[1] * radius);
+    };
+    
+    const meshBindSource = source => {
+        if(source instanceof this.Surface) {
+            meshUvLeft = meshUvTop = 0;
+            meshUvWidth = meshUvHeight = 1;
+        }
+        else
+            source._setMeshBounds();
+        
+        if(currentTextureMesh == source._getTexture())
+            return;
+        
+        flush();
+        
+        gl.activeTexture(TEXTURE_MESH);
+        gl.bindTexture(gl.TEXTURE_2D, source._getTexture());
+        
+        currentTextureMesh = source._getTexture();
+    };
+    
+    const pushVertexMesh = (mode, x, y, u, v) => {
+        prepareDraw(mode, 4);
+        
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+        instanceBuffer[++instanceBufferAt] = u * meshUvWidth + meshUvLeft;
+        instanceBuffer[++instanceBufferAt] = v * meshUvHeight + meshUvTop;
+    };
+    
+    this.mesh = {};
+    
+    this.mesh.drawTriangle = (source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3) => {
+        meshBindSource(source);
+        
+        pushVertexMesh(RENDER_MODE_MESH, x1, y1, u1, v1);
+        pushVertexMesh(RENDER_MODE_MESH, x2, y2, u2, v2);
+        pushVertexMesh(RENDER_MODE_MESH, x3, y3, u3, v3);
+    };
+    
+    this.utils = {};
+    
+    this.utils.loop = update => {
+        let lastDate = new Date();
+        let loopFunction = function(step) {
+            const date = new Date();
+            
+            if(update((date - lastDate) / 1000))
+                requestAnimationFrame(loopFunction);
+            
+            lastDate = date;
+        };
+        
+        requestAnimationFrame(loopFunction);
     };
     
     const ShaderCore = function(vertex, fragment) {
@@ -686,23 +814,22 @@ let Myr = function(canvasElement) {
             
             core.bind();
             
-            for(let i = 0; i < samplerNames.length; ++i) {
-                const sampler = samplerNames[i];
-                
-                gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
-            }
+            for(let i = 0; i < samplerCalls.length; ++i)
+                samplerCalls[i][0](samplerCalls[i][1], samplerCalls[i][2].value);
         };
         
+        this.setUniform = (name, value) => samplers[name].value = value;
         this.free = () => core.free();
         
+        const samplerCalls = [];
         const samplerNames = Object.keys(samplers);
-        const samplerLocations = new Object();
         
-        for(let i = 0; i < samplerNames.length; ++i) {
-            const sampler = samplerNames[i];
-            
-            samplerLocations.sampler = gl.getUniformLocation(core.getProgram(), sampler);
-        }
+        for(let i = 0; i < samplerNames.length; ++i)
+            samplerCalls.push([
+                gl["uniform" + samplers[samplerNames[i]].type].bind(gl),
+                gl.getUniformLocation(core.getProgram(), samplerNames[i]),
+                samplers[samplerNames[i]]
+            ]);
     };
     
     const bind = target => {
@@ -725,7 +852,7 @@ let Myr = function(canvasElement) {
             return;
         
         flush();
-
+        
         gl.activeTexture(TEXTURE_SURFACE);
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -747,7 +874,11 @@ let Myr = function(canvasElement) {
     const clear = color => {
         flush();
         
-        gl.clearColor(color.r, color.g, color.b, color.a);
+        gl.clearColor(
+            color.r * uboContents[8],
+            color.g * uboContents[9],
+            color.b * uboContents[10],
+            color.a * uboContents[11]);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
@@ -769,11 +900,15 @@ let Myr = function(canvasElement) {
                 gl.drawArrays(gl.LINES, 0, instanceCount);
                 break;
             case RENDER_MODE_POINTS:
-                gl.bindVertexArray(vaoPoints);
+                gl.bindVertexArray(vaoLines);
                 gl.drawArrays(gl.POINTS, 0, instanceCount);
                 break;
             case RENDER_MODE_TRIANGLES:
                 gl.bindVertexArray(vaoLines);
+                gl.drawArrays(gl.TRIANGLES, 0, instanceCount);
+                break;
+            case RENDER_MODE_MESH:
+                gl.bindVertexArray(vaoMesh);
                 gl.drawArrays(gl.TRIANGLES, 0, instanceCount);
                 break;
         }
@@ -782,24 +917,24 @@ let Myr = function(canvasElement) {
         instanceCount = 0;
     };
     
-    const sendTransform = () => {
+    const sendUniformBuffer = () => {
         if(surface == null) {
-            transform[3] = width;
-            transform[7] = height;
+            uboContents[3] = width;
+            uboContents[7] = height;
         }
         else {
-            transform[3] = surface.getWidth();
-            transform[7] = surface.getHeight();
+            uboContents[3] = surface.getWidth();
+            uboContents[7] = surface.getHeight();
         }
         
-        transform[0] = transformStack[transformAt]._00;
-        transform[1] = transformStack[transformAt]._10;
-        transform[2] = transformStack[transformAt]._20;
-        transform[4] = transformStack[transformAt]._01;
-        transform[5] = transformStack[transformAt]._11;
-        transform[6] = transformStack[transformAt]._21;
+        uboContents[0] = transformStack[transformAt]._00;
+        uboContents[1] = transformStack[transformAt]._10;
+        uboContents[2] = transformStack[transformAt]._20;
+        uboContents[4] = transformStack[transformAt]._01;
+        uboContents[5] = transformStack[transformAt]._11;
+        uboContents[6] = transformStack[transformAt]._21;
         
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, transform);
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
         
         transformDirty = false;
     };
@@ -808,7 +943,7 @@ let Myr = function(canvasElement) {
         if(transformDirty) {
             flush();
             
-            sendTransform();
+            sendUniformBuffer();
         }
         
         if(renderMode != mode) {
@@ -874,7 +1009,7 @@ let Myr = function(canvasElement) {
         
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
         return [
-            sheet.getTexture(),
+            sheet._getTexture(),
             width,
             height,
             xOrigin / width,
@@ -887,21 +1022,45 @@ let Myr = function(canvasElement) {
         ];
     };
     
-    this.unregister = name => {
-        delete sprites[name];
-    };
-    
     this.free = () => {
         for(let i = 0; i < shaders.length; ++i)
             shaders[i].free();
         
         gl.deleteVertexArray(vaoSprites);
         gl.deleteVertexArray(vaoLines);
-        gl.deleteVertexArray(vaoPoints);
-        gl.deleteVertexArray(vaoPolygons);
+        gl.deleteVertexArray(vaoMesh);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
-        gl.deleteBuffer(transformBuffer);
+        gl.deleteBuffer(ubo);
+    };
+    
+    this.setColor = color => {
+        if(
+            uboContents[8] == color.r &&
+            uboContents[9] == color.g &&
+            uboContents[10] == color.b &&
+            uboContents[11] == color.a)
+            return;
+        
+        flush();
+        
+        uboContents[8] = color.r;
+        uboContents[9] = color.g;
+        uboContents[10] = color.b;
+        uboContents[11] = color.a;
+        
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
+    };
+    
+    this.setAlpha = alpha => {
+        if(uboContents[11] == alpha)
+            return;
+        
+        flush();
+        
+        uboContents[11] = alpha;
+        
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
     };
     
     const touchTransform = () => {
@@ -920,6 +1079,7 @@ let Myr = function(canvasElement) {
     this.clear = () => clear(clearColor);
     this.getWidth = () => width;
     this.getHeight = () => height;
+    this.unregister = name => delete sprites[name];
     
     const RENDER_MODE_NONE = -1;
     const RENDER_MODE_SURFACES = 0;
@@ -927,55 +1087,56 @@ let Myr = function(canvasElement) {
     const RENDER_MODE_LINES = 2;
     const RENDER_MODE_POINTS = 3;
     const RENDER_MODE_TRIANGLES = 4;
-    const RENDER_MODE_POLYGONS = 5;
+    const RENDER_MODE_MESH = 5;
     const TEXTURE_ATLAS = gl.TEXTURE0;
     const TEXTURE_SURFACE = gl.TEXTURE1;
-    const TEXTURE_EDITING = gl.TEXTURE2;
+    const TEXTURE_MESH = gl.TEXTURE2;
+    const TEXTURE_EDITING = gl.TEXTURE3;
     
     const quad = gl.createBuffer();
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
     const vaoLines = gl.createVertexArray();
-    const vaoPoints = gl.createVertexArray();
-    const vaoPolygons = gl.createVertexArray();
-    const transformBuffer = gl.createBuffer();
-    const transform = new Float32Array(8);
+    const vaoMesh = gl.createVertexArray();
+    const ubo = gl.createBuffer();
+    const uboContents = new Float32Array(12);
     const sprites = [];
     const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
-    const uniformBlock = "layout(std140) uniform transform {vec4 tw;vec4 th;};";
+    const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
     const shaderCoreSprites = new ShaderCore(
-        "layout(location=0) in vec2 vertex;" +
-        "layout(location=1) in vec4 atlas;" +
-        "layout(location=2) in vec4 matrix;" +
-        "layout(location=3) in vec4 position;" +
+        "layout(location=0) in mediump vec2 vertex;" +
+        "layout(location=1) in mediump vec4 atlas;" +
+        "layout(location=2) in mediump vec4 matrix;" +
+        "layout(location=3) in mediump vec4 position;" +
         uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
             "uv=atlas.xy+vertex*atlas.zw;" +
-            "vec2 transformed=(((vertex-position.zw)*" + 
+            "mediump vec2 transformed=(((vertex-position.zw)*" + 
                 "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
         "}",
         "uniform sampler2D source;" +
+        uniformBlock +
         "in mediump vec2 uv;" +
         "layout(location=0) out lowp vec4 color;" +
         "void main() {" +
-            "color=texture(source,uv);" +
+            "color=texture(source,uv)*c;" +
         "}"
     );
     const shaderCoreLines = new ShaderCore(
-        "layout(location=0) in vec4 color;" +
-        "layout(location=1) in vec2 vertex;" +
+        "layout(location=0) in mediump vec4 color;" +
+        "layout(location=1) in mediump vec2 vertex;" +
         uniformBlock +
         "out lowp vec4 colori;" +
         "void main() {" +
-            "vec2 transformed=(vertex*" +
+            "mediump vec2 transformed=(vertex*" +
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
-            "colori = color;" +
+            "colori = color*c;" +
         "}",
         "in lowp vec4 colori;" +
         "layout(location=0) out lowp vec4 color;" +
@@ -984,17 +1145,17 @@ let Myr = function(canvasElement) {
         "}"
     );
     const shaderCorePoints = new ShaderCore(
-        "layout(location=0) in vec4 color;" +
-        "layout(location=1) in vec2 vertex;" +
+        "layout(location=0) in mediump vec4 color;" +
+        "layout(location=1) in mediump vec2 vertex;" +
         uniformBlock +
         "flat out lowp vec4 colorf;" +
         "void main() {" +
-            "vec2 transformed=(vertex*" +
+            "mediump vec2 transformed=(vertex*" +
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
             "gl_PointSize=1.0;" +
-            "colorf = color;" +
+            "colorf = color*c;" +
         "}",
         "flat in lowp vec4 colorf;" +
         "layout(location=0) out lowp vec4 color;" +
@@ -1002,34 +1163,63 @@ let Myr = function(canvasElement) {
             "color=colorf;" +
         "}"
     );
+    const shaderCoreMesh = new ShaderCore(
+        "layout(location=0) in mediump vec4 vertex;" +
+        uniformBlock +
+        "out mediump vec2 uv;" +
+        "void main() {" +
+            "mediump vec2 transformed=(vertex.xy*" +
+                "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+                "vec2(tw.w,th.w)*2.0;" +
+            "gl_Position=vec4(transformed-vec2(1),0,1);" +
+            "uv = vertex.zw;" +
+        "}",
+        "uniform sampler2D source;" +
+        uniformBlock +
+        "in mediump vec2 uv;" +
+        "layout(location=0) out lowp vec4 color;" +
+        "void main() {" +
+            "color=texture(source,uv)*c;" +
+        "}"
+    );
     const shaders = [
         new Shader(
             shaderCoreSprites,
             {
-                source: 1
+                source: {
+                    type: "1i",
+                    value: 1
+                }
             }),
         new Shader(
             shaderCoreSprites,
             {
-                source: 0
+                source: {
+                    type: "1i",
+                    value: 0
+                }
             }),
         new Shader(
             shaderCoreLines,
-            {
-                
-            }),
+            {}),
         new Shader(
             shaderCorePoints,
-            {
-                
-            }),
+            {}),
         new Shader(
             shaderCoreLines,
+            {}),
+        new Shader(
+            shaderCoreMesh,
             {
-                
+                source: {
+                    type: "1i",
+                    value: 2
+                }
             })
     ];
     
+    let currentShader, currentShaderCore, surface, currentTextureSurface, currentTextureAtlas, currentTextureMesh;
+    let meshUvLeft,  meshUvTop, meshUvWidth, meshUvHeight;
     let transformAt = 0;
     let transformDirty = true;
     let renderMode = RENDER_MODE_NONE;
@@ -1040,11 +1230,8 @@ let Myr = function(canvasElement) {
     let clearColor = new Color(0, 0, 0);
     let width = canvasElement.width;
     let height = canvasElement.height;
-    let currentShader = null;
-    let currentShaderCore = null;
-    let surface = null;
-    let currentTextureSurface = null;
-    let currentTextureAtlas = null;
+
+    uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
     
     gl.enable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
@@ -1056,9 +1243,9 @@ let Myr = function(canvasElement) {
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 1, 1, 0]), gl.STATIC_DRAW);
     
-    gl.bindBuffer(gl.UNIFORM_BUFFER, transformBuffer);
-    gl.bufferData(gl.UNIFORM_BUFFER, 32, gl.DYNAMIC_DRAW);
-    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, transformBuffer);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, ubo);
+    gl.bufferData(gl.UNIFORM_BUFFER, 48, gl.DYNAMIC_DRAW);
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, ubo);
     
     gl.bindVertexArray(vaoSprites);
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
@@ -1082,12 +1269,10 @@ let Myr = function(canvasElement) {
     gl.enableVertexAttribArray(1);
     gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
     
-    gl.bindVertexArray(vaoPoints);
+    gl.bindVertexArray(vaoMesh);
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
+    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 16, 0);
     
     gl.bindVertexArray(null);
     

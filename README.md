@@ -31,6 +31,8 @@ The **myr.js** object exposes several namespaces which provide access to specifi
 Namespace | Description
 -|-
 [`primitives`](#primitives)|Exposes primitive rendering functions
+[`mesh`](#mesh)|Exposes mesh rendering functions
+[`utils`](#utils)|Exposes utility functions
 
 # Global functions
 Global functions are members of the object returned by the `Myr` function. One of the most important tasks of the global functions is maintaining the transform stack. Everything that is rendered is transformed by the [`Transform`](#transform) on top of this stack. Before applying transformations, it is useful to first save the current transform state using the `push()` function. The `pop()` function can be called after the transformations are done to get back to the original state.
@@ -38,6 +40,8 @@ Global functions are members of the object returned by the `Myr` function. One o
 Function | Description
 -|-
 [`setClearColor(color)`](#setclearcolor)|Sets the clear color
+[`setColor(color)`](#setcolorcolor)|Sets the global color filter
+[`setAlpha(alpha)`](#setalphaalpha)|Sets the global transparency
 [`clear()`](#clear)|Clears the current target
 [`bind()`](#bind)|Binds the default render target
 [`flush()`](#flush)|Flush the draw calls
@@ -57,11 +61,25 @@ Function | Description
 [`scale(x, y)`](#scalex-y)|Scale
 
 ### `setClearColor(color)`
-Set the clear color of the **myr.js** object. When `clear()` is called, the screen will be cleared using this color.
+Sets the clear color of the **myr.js** object. When `clear()` is called, the screen will be cleared using this color.
 
 Parameter | Type | Description
 -|-|-
-color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called.
+color|[`Color`](#color)|A color which the canvas will be cleared to when `clear()` is called
+
+### `setColor(color)`
+Sets the global color filter. Every drawn color will be multiplied by this color before rendering.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#color)|A color
+
+### `setAlpha(alpha)`
+Sets the global alpha (transparency). Every drawn color will be multiplied by this transparency before rendering. Note that this function sets the alpha component of the current clear color set by [`setColor`](#setcolorcolor).
+
+Parameter | Type | Description
+-|-|-
+alpha|`Number`|A transparency in the range [0, 1]
 
 ### `clear()`
 Clears the canvas to the currently set clear color.
@@ -247,10 +265,10 @@ Clears the surface to the currently set clear color.
 Returns a `Boolean` indicating whether the surface is ready for use. Surfaces constructed from an image will be ready once the image is loaded. Surfaces that don't require an image are always immediately ready.
 
 ### `getWidth()`
-Returns the width of the surface.
+Returns the width of the surface in pixels.
 
 ### `getHeight()`
-Returns the height of the surface.
+Returns the height of the surface in pixels.
 
 ### `free()`
 Frees the surface and all memory allocated by it.
@@ -325,6 +343,8 @@ Function | Description
 [`animate(timeStep)`](#animatetimestep)|Animates the sprite
 [`setFrame(frame)`](#setframeframe)|Set the current frame
 [`getFrame()`](#getframe)|Returns the current frame
+[`getWidth()`](#getwidth-2)|Returns the sprite width
+[`getHeight()`](#getheight-2)|Returns the sprite height
 [`draw(x, y)`](#drawx-y-1)|Draws the sprite
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-1)|Draws the sprite
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-1)|Draws the sprite
@@ -357,6 +377,12 @@ frame|`Number`|The frame index this sprite should be at, starting at zero
 
 ### `getFrame()`
 Returns the current frame index.
+
+### `getWidth()`
+Returns the width of the sprite in pixels.
+
+### `getHeight()`
+Returns the height of the sprite in pixels.
 
 ### `draw(x, y)`
 Draws this sprite on the currently bound target.
@@ -535,6 +561,14 @@ Function | Description
 -|-
 [`Color(r, g, b)`](#colorr-g-b)|Construct from RGB
 [`Color(r, g, b, a)`](#colorr-g-b-a)|Construct from RGBA
+[`toHSV()`](#tohsv)|Convert to HSV values
+[`add(color)`](#addcolor)|Adds another color to itself
+[`multiply(color)`](#multiplycolor)|Multiplies with another color
+
+## Global functions
+Function | Description
+-|-
+[`fromHSV(h, s, v)`](#fromhsvh-s-v)|Constructs a color from hue, saturation and value
 
 ## Constants
 Constant | Description
@@ -551,8 +585,47 @@ Constant | Description
 ### `Color(r, g, b)`
 Constructs a color object from red, green and blue. The values must lie in the range [0, 1]. The color will have an alpha value of `1.0`.
 
+Parameter | Type | Description
+-|-|-
+r|`Number`|Red value in the range [0, 1]
+g|`Number`|Green value in the range [0, 1]
+b|`Number`|Blue value in the range [0, 1]
+
 ### `Color(r, g, b, a)`
 Constructs a color object from red, green, blue and alpha. The values must lie in the range [0, 1].
+
+Parameter | Type | Description
+-|-|-
+r|`Number`|Red value in the range [0, 1]
+g|`Number`|Green value in the range [0, 1]
+b|`Number`|Blue value in the range [0, 1]
+a|`Number`|Alpha value in the range [0, 1]
+
+### `toHSV()`
+Returns an object with the members `h`, `s` and `v`, representing this color's hue, saturation and value.
+
+### `fromHSV(h, s, v)`
+Constructs a color from hue, saturation and value.
+
+Parameter | Type | Description
+-|-|-
+h|`Number`|Hue value in the range [0, 1]
+s|`Number`|Saturation value in the range [0, 1]
+v|`Number`|Value value in the range [0, 1]
+
+### `add(color)`
+Adds another color to itself.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#Color)|A color object
+
+### `multiply(color)`
+Multiplies this color with another color.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#Color)|A color object
 
 # Vector
 This object represents a vector in 2D space. Several useful vector operation functions are provided.
@@ -571,6 +644,7 @@ Function | Description
 [`divide(scalar)`](#dividescalar)|Divide
 [`normalize()`](#normalize)|Normalize
 [`angle()`](#angle)|Returns the angle
+[`equals(vector)`](#equalsvector)|Checks for equality
 
 ### `Vector(x, y)`
 Constructs a vector object.
@@ -629,6 +703,13 @@ Normalizes the vector.
 
 ### `angle()`
 Returns the angle this vector is pointing towards.
+
+### `equals(vector)`
+Returns a boolean indicating whether the vector is equal to another vector.
+
+Parameter | Type | Description
+-|-|-
+vector|[`Vector`](#vector)|A vector object
 
 # Primitives
 The _primitives_ namespace exposes several functions which can be used for primitive rendering.
@@ -775,3 +856,48 @@ colorEnd|[`Color`](#color)|The color at the edge
 x|`Number`|The center's x coordinate
 y|`Number`|The center's y coordinate
 radius|`Number`|The circle radius
+
+# Mesh
+The _mesh_ namespace exposes several functions which can be used for mesh rendering. Meshes consist of textured triangles; both [surfaces](#surface) and [sprites](#sprite) can be used as a source texture.
+
+## Functions
+
+Function | Description
+-|-
+[`drawTriangle(source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3)`](#drawtrianglesource-x1-y1-u1-v1-x2-y2-u2-v2-x3-y3-u3-v3)|Draws a textured triangle
+
+### `drawTriangle(source, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3)`
+Draws a textured triangle. The source can be either a [surface](#surface) or a [sprite](#sprite). If a sprite is used as the source, the current frame of the sprite is used. Note that texture coordinates range from 0 to 1.
+
+Parameter | Type | Description
+-|-|-
+source|[`Surface`](#surface) or [`Sprite`](#sprite)|The image to draw a part of
+x1|`Number`|The first point's x coordinate
+y1|`Number`|The first point's y coordinate
+u1|`Number`|The first point's texture x coordinate
+v1|`Number`|The first point's texture y coordinate
+x2|`Number`|The second point's x coordinate
+y2|`Number`|The second point's y coordinate
+u2|`Number`|The second point's texture x coordinate
+v2|`Number`|The second point's texture y coordinate
+x3|`Number`|The third point's x coordinate
+y3|`Number`|The third point's y coordinate
+u3|`Number`|The third point's texture x coordinate
+v3|`Number`|The third point's texture y coordinate
+
+# Utils
+
+## Functions
+
+Function | Description
+-|-
+[`loop(update)`](#loopupdate)|Calls the function _update_ on every vertical sync
+
+### `loop(update)`
+After calling this function, the provided _update_ function is called for every vertical synchronization. This usually means the function is called sixty frames per second. The argument _timeStep_ is passed to the function, which is the portion of a second the current frame takes; this will be 1/60 when the browser updates at 60 frames per second. When rendering at this frequency, screen tearing is usually prevented.
+
+The _update_ function should return a boolean. As long as `true` is returned, the function keeps being called; when `false` is returned, the loop stops.
+
+Parameter | Type | Description
+-|-|-
+update|`Function`|A function that is called for every update
