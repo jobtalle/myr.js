@@ -1,22 +1,27 @@
 const Raytracer = function(myr) {
-    const UP_SCALING = 6;
     const NUM_REFLECTIONS = 4;
     const COLOR_WORLD = myr.Color.BLACK;
     const TIME_STEP_MAX = 0.5;
 
     let lastDate = null;
 
-    const width = myr.getWidth() / UP_SCALING;
-    const height = myr.getHeight() / UP_SCALING;
-    const renderSurface = new myr.Surface(width, height);
+    const eye   = new Vector3(0.5, 0.5, 1.5);
+    const light = new Vector3(0.5, 0.5, -100);
 
-    let spheres = [new Sphere(new Vector3(0.5 * width, 0.5 * height, 0), 1, 0.1  * width, myr.Color.BLUE),
-                   new Sphere(new Vector3(0.5 * width, 0.5 * height, 0), 2, 0.05 * width, myr.Color.RED),
-                   new Sphere(new Vector3(0.5 * width, 0.5 * height, 0), 3, 0.1  * width, myr.Color.GREEN),
-                   new Sphere(new Vector3(0.5 * width, 0.5 * height, 0), 4, 0.05 * width, myr.Color.YELLOW)];
+    const spheres= [new Sphere(new Vector3(0.5, 0.5, -100), 1, 10, myr.Color.BLUE),
+                    new Sphere(new Vector3(0.5, 0.5, -100), 2, 5, myr.Color.RED),
+                    new Sphere(new Vector3(0.5, 0.5, -100), 3, 10, myr.Color.GREEN),
+                    new Sphere(new Vector3(0.5, 0.5, -100), 4, 5, myr.Color.YELLOW)];
 
-    const eye   = new Vector3(width / 2, height / 2, 1000);
-    const light = new Vector3(width / 2, height / 2, 100);
+    let upScaling = 64;
+
+    const createScaleSurface = () => {
+        let width = myr.getWidth() / upScaling;
+        let height = myr.getHeight() / upScaling;
+        return new myr.Surface(width, height);
+    };
+
+    let renderSurface = createScaleSurface();
 
     const getTimeStep = () => {
         const date = new Date();
@@ -93,16 +98,20 @@ const Raytracer = function(myr) {
         renderSurface.bind();
         renderSurface.clear();
 
+        const height = renderSurface.getHeight();
+        const width = renderSurface.getWidth();
+
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
-                let pixel = new Vector3(x + 0.5, height - 1 - y + 0.5, 0);
-                let ray = new Ray(eye, pixel.subtract(eye).normalize());
+                let spacePixel = new Vector3((x + 0.5) / width, (height - 1 - y + 0.5) / height, 0);
+                let ray = new Ray(eye, spacePixel.subtract(eye).normalize());
                 myr.primitives.drawPoint(trace(ray, NUM_REFLECTIONS), x, y);
             }
         }
 
         myr.bind();
-        renderSurface.drawScaled(0, 0, UP_SCALING, UP_SCALING);
+        myr.clear();
+        renderSurface.drawScaled(0, 0, myr.getWidth()/width, myr.getHeight()/height);
         myr.flush();
     };
     
@@ -116,12 +125,23 @@ const Raytracer = function(myr) {
     this.start = () => {
         lastDate = new Date();
 
+        myr.setClearColor(COLOR_WORLD);
         renderSurface.setClearColor(COLOR_WORLD);
         animate();
     };
+
+    this.increaseResolution = () => {
+        upScaling /= 2;
+        renderSurface.free();
+        renderSurface = createScaleSurface();
+    }
 };
 
 const renderer = document.getElementById("renderer");
 const tracer = new Raytracer(new Myr(renderer));
+
+renderer.addEventListener("click", function() {
+    tracer.increaseResolution();
+});
 
 tracer.start();
