@@ -1,9 +1,13 @@
-const Sphere = function(position, phase, radius) {
+const Sphere = function(position, phase, radius, color) {
     const MOVE_RANGE_X = 2, MOVE_RANGE_Y = 2, MOVE_RANGE_Z = 10,
           MOVE_SPEED = 1;
 
     let timePassed = phase;
     let _originalPosition = position;
+
+    this.getColor = () => {
+        return color;
+    };
 
     this.update = timeStep => {
         timePassed += MOVE_SPEED * timeStep;

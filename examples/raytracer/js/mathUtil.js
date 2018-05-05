@@ -25,13 +25,6 @@ const Vector3 = function(x, y, z) {
         return Math.sqrt(this.dot(this));
     };
 
-    this.multiplyVec = (other) => {
-        let x = this.x * other.x;
-        let y = this.y * other.y;
-        let z = this.z * other.z;
-        return new Vector3(x, y, z);
-    };
-
     this.multiply = (scalar) => {
         let x = this.x * scalar;
         let y = this.y * scalar;
