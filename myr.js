@@ -75,12 +75,14 @@ let Myr = function(canvasElement) {
         this.r = Math.min(this.r + color.r, 1);
         this.g = Math.min(this.g + color.g, 1);
         this.b = Math.min(this.b + color.b, 1);
+        return this;
     };
 
     Color.prototype.multiply = function(color) {
         this.r *= color.r;
         this.g *= color.g;
         this.b *= color.b;
+        return this;
     };
     
     const Vector = this.Vector = function(x, y) {
