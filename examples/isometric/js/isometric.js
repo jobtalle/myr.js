@@ -66,6 +66,8 @@ const Isometric = function(myr) {
             blocks[i].render();
 
         myr.pop();
+        sprites.draw(10, 10);
+
         myr.flush();
     };
 

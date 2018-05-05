@@ -229,6 +229,139 @@ let Myr = function(canvasElement) {
         this._11 *= y;
     };
     
+    this.Surface = function() {
+        this.free = () => {
+            gl.deleteTexture(texture);
+            gl.deleteFramebuffer(framebuffer);
+        };
+        
+        this.bind = () => {
+            bind(this);
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.viewport(0, 0, width, height);
+        };
+
+        this._prepareDraw = () => {
+            bindTextureSurface(texture);
+            prepareDraw(RENDER_MODE_SURFACES, 12);
+        };
+        
+        this._getTexture = () => texture;
+        this._getUvLeft = () => 0;
+        this._getUvTop = () => 0;
+        this._getUvWidth = () => 1;
+        this._getUvHeight = () => 1;
+        this._getOriginX = () => 0;
+        this._getOriginY = () => 0;
+        this.getShaders = () => shaders;
+        this.getWidth = () => width;
+        this.getHeight = () => height;
+        this.setClearColor = color => clearColor = color;
+        this.clear = () => clear(clearColor);
+        this.ready = () => ready;
+        
+        const texture = gl.createTexture();
+        const framebuffer = gl.createFramebuffer();
+        
+        let ready = false;
+        let width = 0;
+        let height = 0;
+        let clearColor = new Color(0, 0, 0, 0);
+        
+        gl.activeTexture(TEXTURE_EDITING);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        
+        if(arguments.length == 2) {
+            width = arguments[0];
+            height = arguments[1];
+            ready = true;
+            
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
+        }
+        else {
+            const image = document.createElement("img");
+            
+            if(arguments[2] != undefined) {
+                width = arguments[1];
+                height = arguments[2];
+            }
+            
+            image.onload = () => {
+                if(width == 0 || height == 0) {
+                    width = image.width;
+                    height = image.height;
+                }
+                
+                gl.activeTexture(TEXTURE_EDITING);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                
+                ready = true;
+            };
+            
+            image.crossOrigin = "Anonymous";
+            image.src = arguments[0];
+            
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+        }
+        
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    };
+    
+    this.Sprite = function(name) {
+        this.animate = timeStep => {
+            const currentFrame = getFrame();
+            
+            frameCounter += timeStep;
+            
+            while(frameCounter > getFrame()[9]) {
+                frameCounter -= getFrame()[9];
+
+                if(++frame == frames.length)
+                    frame = 0;
+            }
+        };
+        
+        this._setMeshBounds = () => {
+            meshUvLeft = getFrame()[5];
+            meshUvTop = getFrame()[6];
+            meshUvWidth = getFrame()[7];
+            meshUvHeight = getFrame()[8];
+        };
+
+        this._prepareDraw = () => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+        };
+
+        this._getTexture = () => getFrame()[0];
+        this._getUvLeft = () => getFrame()[5];
+        this._getUvTop = () => getFrame()[6];
+        this._getUvWidth = () => getFrame()[7];
+        this._getUvHeight = () => getFrame()[8];
+        this._getOriginX = () => getFrame()[3];
+        this._getOriginY = () => getFrame()[4];
+        this.setFrame = index => frame = index;
+        this.getFrame = () => frame;
+        this.getWidth = () => getFrame()[1];
+        this.getHeight = () => getFrame()[2];
+               
+        const getFrame = () => frames[frame];
+        
+        const frames = sprites[name];
+        let frameCounter = 0;
+        let frame = 0;
+    };
+
     const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
         instanceBuffer[++instanceBufferAt] = uvLeft;
         instanceBuffer[++instanceBufferAt] = uvTop;
@@ -294,289 +427,93 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = xOrigin;
         instanceBuffer[++instanceBufferAt] = yOrigin;
     };
-    
-    this.Surface = function() {
-        this.draw = (x, y) => {
-            bindTextureSurface(texture);
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDraw(x, y, width, height);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawScaled = (x, y, xScale, yScale) => {
-            bindTextureSurface(texture);
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDraw(x, y, width * xScale, height * yScale);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawSheared = (x, y, xShear, yShear) => {
-            bindTextureSurface(texture);
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDrawSheared(x, y, width, height, xShear, yShear);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawTransformed = transform => {
-            bindTextureSurface(texture);
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDrawTransform(transform, width, height);
-            setAttributesOrigin(0, 0);
-        };
 
-        this.drawTransformedAt = (x, y, transform) => {
-            bindTextureSurface(texture);
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDrawTransformAt(x, y, transform, width, height);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawPart = (x, y, left, top, w, h) => {
-            bindTextureSurface(texture);
-            prepareDraw(RENDER_MODE_SURFACES, 12);
+    const Renderable = function() {
 
-            const wf = 1 / width;
-            const hf = 1 / height;
-            
-            setAttributesUvPart(0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
-            setAttributesDraw(x, y, w, h);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawPartTransformed = (transform, left, top, w, h) => {
-            bindTextureSurface(texture);
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-
-            const wf = 1 / width;
-            const hf = 1 / height;
-            
-            setAttributesUvPart(0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
-            setAttributesDrawTransform(transform, w, h);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.free = () => {
-            gl.deleteTexture(texture);
-            gl.deleteFramebuffer(framebuffer);
-        };
-        
-        this.bind = () => {
-            bind(this);
-            
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.viewport(0, 0, width, height);
-        };
-        
-        this._getTexture = () => texture;
-        this.getShaders = () => shaders;
-        this.getWidth = () => width;
-        this.getHeight = () => height;
-        this.setClearColor = color => clearColor = color;
-        this.clear = () => clear(clearColor);
-        this.ready = () => ready;
-        
-        const texture = gl.createTexture();
-        const framebuffer = gl.createFramebuffer();
-        
-        let ready = false;
-        let width = 0;
-        let height = 0;
-        let clearColor = new Color(0, 0, 0, 0);
-        
-        gl.activeTexture(TEXTURE_EDITING);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        
-        if(arguments.length == 2) {
-            width = arguments[0];
-            height = arguments[1];
-            ready = true;
-            
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
-        }
-        else {
-            const image = document.createElement("img");
-            
-            if(arguments[2] != undefined) {
-                width = arguments[1];
-                height = arguments[2];
-            }
-            
-            image.onload = () => {
-                if(width == 0 || height == 0) {
-                    width = image.width;
-                    height = image.height;
-                }
-                
-                gl.activeTexture(TEXTURE_EDITING);
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                
-                ready = true;
-            };
-            
-            image.crossOrigin = "Anonymous";
-            image.src = arguments[0];
-            
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
-        }
-        
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
     };
-    
-    this.Sprite = function(name) {
-        this.draw = (x, y) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDraw(x, y, frame[1], frame[2]);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawScaled = (x, y, xScale, yScale) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDraw(x, y, frame[1] * xScale, frame[2] * yScale);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawSheared = (x, y, xShear, yShear) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawSheared(x, y, frame[1], frame[2], xShear, yShear);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawRotated = (x, y, angle) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawRotated(x, y, frame[1], frame[2], angle);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawScaledRotated = (x, y, xScale, yScale, angle) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawRotated(x, y, frame[1] * xScale, frame[2] * yScale, angle);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawTransformed = transform => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawTransform(transform, frame[1], frame[2]);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawTransformedAt = (x, y, transform) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawTransformAt(x, y, transform, frame[1], frame[2]);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
 
-        this.drawPart = (x, y, left, top, w, h) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
+    Renderable.prototype = {
+        draw: function(x, y) {
+            this._prepareDraw();
 
-            const wf = 1 / frame[1];
-            const hf = 1 / frame[2];
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDraw(x, y, this.getWidth(), this.getHeight());
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        },
+
+        drawScaled: function(x, y, xScale, yScale) {
+            this._prepareDraw();
             
-            setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDraw(x, y, this.getWidth() * xScale, this.getHeight() * yScale);
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        },
+
+        drawSheared: function(x, y, xShear, yShear) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawSheared(x, y, this.getWidth(), this.getHeight(), xShear, yShear);
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        },
+
+        drawRotated: function(x, y, angle) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawRotated(x, y, this.getWidth(), this.getHeight(), angle);
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        },
+
+        drawScaledRotated: function(x, y, xScale, yScale, angle) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawRotated(x, y, this.getWidth() * xScale, this.getHeight() * yScale, angle);
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        },
+
+        drawTransformed: function(transform) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawTransform(transform, this.getWidth());
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        },
+
+        drawTransformedAt: function(x, y, transform) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawTransformAt(x, y, transform, this.getWidth(), this.getHeight());
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        },
+
+        drawPart: function(x, y, left, top, w, h) {
+            this._prepareDraw();
+
+            const wf = 1 / this.getWidth();
+            const hf = 1 / this.getHeight();
+            
+            setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
             setAttributesDraw(x, y, w, h);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawPartTransformed = (transform, left, top, w, h) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        },
 
-            const wf = 1 / frame[1];
-            const hf = 1 / frame[2];
+        drawPartTransformed: function(transform, left, top, w, h) {
+            this._prepareDraw();
+
+            const wf = 1 / this.getWidth();
+            const hf = 1 / this.getHeight();
             
-            setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
+            setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
             setAttributesDrawTransform(transform, w, h);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.animate = timeStep => {
-            const currentFrame = getFrame();
-            
-            frameCounter += timeStep;
-            
-            while(frameCounter > getFrame()[9]) {
-                frameCounter -= getFrame()[9];
-
-                if(++frame == frames.length)
-                    frame = 0;
-            }
-        };
-        
-        this._setMeshBounds = () => {
-            meshUvLeft = getFrame()[5];
-            meshUvTop = getFrame()[6];
-            meshUvWidth = getFrame()[7];
-            meshUvHeight = getFrame()[8];
-        };
-
-        this._getTexture = () => getFrame()[0];
-        this.setFrame = index => frame = index;
-        this.getFrame = () => frame;
-        this.getWidth = () => getFrame()[1];
-        this.getHeight = () => getFrame()[2];
-               
-        const getFrame = () => frames[frame];
-        
-        const frames = sprites[name];
-        let frameCounter = 0;
-        let frame = 0;
+            setAttributesOrigin(this._getOriginX(), this._getOriginY());
+        }
     };
+
+    this.Surface.prototype = Object.create(Renderable.prototype);
+    this.Sprite.prototype = Object.create(Renderable.prototype);
     
     const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
