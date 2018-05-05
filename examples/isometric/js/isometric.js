@@ -14,9 +14,9 @@ const Isometric = function(myr) {
                 texture.getSide(backWalls[i]).drawTransformedAt(0, 0, tWalls[backWalls[i]]);
             */
             for(let i = 0; i < frontWalls.length; ++i)
-                texture.getSide(frontWalls[i]).drawTransformedAt(0, 0, tWalls[frontWalls[i]]);
+                texture.getSide(frontWalls[i]).drawTransformedAt(0, 16 * scale, tWalls[frontWalls[i]]);
 
-            texture.getRoof().drawTransformedAt(0, -32 * scale, tRoof);
+            texture.getRoof().drawTransformedAt(0, -16 * scale, tRoof);
         };
     };
     

@@ -245,6 +245,9 @@ let Myr = function(canvasElement) {
         this._prepareDraw = () => {
             bindTextureSurface(texture);
             prepareDraw(RENDER_MODE_SURFACES, 12);
+
+            instanceBuffer[++instanceBufferAt] = 0;
+            instanceBuffer[++instanceBufferAt] = 0;
         };
         
         this._getTexture = () => texture;
@@ -252,8 +255,6 @@ let Myr = function(canvasElement) {
         this._getUvTop = () => 0;
         this._getUvWidth = () => 1;
         this._getUvHeight = () => 1;
-        this._getOriginX = () => 0;
-        this._getOriginY = () => 0;
         this.getShaders = () => shaders;
         this.getWidth = () => width;
         this.getHeight = () => height;
@@ -341,6 +342,9 @@ let Myr = function(canvasElement) {
             
             bindTextureAtlas(frame[0]);
             prepareDraw(RENDER_MODE_SPRITES, 12);
+
+            instanceBuffer[++instanceBufferAt] = frame[3];
+            instanceBuffer[++instanceBufferAt] = frame[4];
         };
 
         this._getTexture = () => getFrame()[0];
@@ -348,8 +352,6 @@ let Myr = function(canvasElement) {
         this._getUvTop = () => getFrame()[6];
         this._getUvWidth = () => getFrame()[7];
         this._getUvHeight = () => getFrame()[8];
-        this._getOriginX = () => getFrame()[3];
-        this._getOriginY = () => getFrame()[4];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
         this.getWidth = () => getFrame()[1];
@@ -422,15 +424,8 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = transform._20 + x;
         instanceBuffer[++instanceBufferAt] = transform._21 + y;
     };
-    
-    const setAttributesOrigin = (xOrigin, yOrigin) => {
-        instanceBuffer[++instanceBufferAt] = xOrigin;
-        instanceBuffer[++instanceBufferAt] = yOrigin;
-    };
 
-    const Renderable = function() {
-
-    };
+    const Renderable = new Object();
 
     Renderable.prototype = {
         draw: function(x, y) {
@@ -438,7 +433,6 @@ let Myr = function(canvasElement) {
 
             setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
             setAttributesDraw(x, y, this.getWidth(), this.getHeight());
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         },
 
         drawScaled: function(x, y, xScale, yScale) {
@@ -446,7 +440,6 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
             setAttributesDraw(x, y, this.getWidth() * xScale, this.getHeight() * yScale);
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         },
 
         drawSheared: function(x, y, xShear, yShear) {
@@ -454,7 +447,6 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
             setAttributesDrawSheared(x, y, this.getWidth(), this.getHeight(), xShear, yShear);
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         },
 
         drawRotated: function(x, y, angle) {
@@ -462,7 +454,6 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
             setAttributesDrawRotated(x, y, this.getWidth(), this.getHeight(), angle);
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         },
 
         drawScaledRotated: function(x, y, xScale, yScale, angle) {
@@ -470,7 +461,6 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
             setAttributesDrawRotated(x, y, this.getWidth() * xScale, this.getHeight() * yScale, angle);
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         },
 
         drawTransformed: function(transform) {
@@ -478,7 +468,6 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
             setAttributesDrawTransform(transform, this.getWidth());
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         },
 
         drawTransformedAt: function(x, y, transform) {
@@ -486,7 +475,6 @@ let Myr = function(canvasElement) {
             
             setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
             setAttributesDrawTransformAt(x, y, transform, this.getWidth(), this.getHeight());
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         },
 
         drawPart: function(x, y, left, top, w, h) {
@@ -497,7 +485,6 @@ let Myr = function(canvasElement) {
             
             setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
             setAttributesDraw(x, y, w, h);
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         },
 
         drawPartTransformed: function(transform, left, top, w, h) {
@@ -508,7 +495,6 @@ let Myr = function(canvasElement) {
             
             setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
             setAttributesDrawTransform(transform, w, h);
-            setAttributesOrigin(this._getOriginX(), this._getOriginY());
         }
     };
 
@@ -1040,15 +1026,15 @@ let Myr = function(canvasElement) {
     const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
     const shaderCoreSprites = new ShaderCore(
         "layout(location=0) in mediump vec2 vertex;" +
-        "layout(location=1) in mediump vec4 atlas;" +
-        "layout(location=2) in mediump vec4 matrix;" +
-        "layout(location=3) in mediump vec4 position;" +
+        "layout(location=1) in mediump vec4 a1;" +
+        "layout(location=2) in mediump vec4 a2;" +
+        "layout(location=3) in mediump vec4 a3;" +
         uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
-            "uv=atlas.xy+vertex*atlas.zw;" +
-            "mediump vec2 transformed=(((vertex-position.zw)*" + 
-                "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
+            "uv=a1.zw+vertex*a2.xy;" +
+            "mediump vec2 transformed=(((vertex-a1.xy)*" + 
+                "mat2(a2.zw,a3.xy)+a3.zw)*" + 
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
