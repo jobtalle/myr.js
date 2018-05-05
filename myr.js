@@ -467,7 +467,7 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = transform._21 + y;
     };
 
-    const Renderable = new Object();
+    const Renderable = {};
 
     Renderable.prototype = {
         draw: function(x, y) {
