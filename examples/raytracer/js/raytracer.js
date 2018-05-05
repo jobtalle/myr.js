@@ -111,7 +111,7 @@ const Raytracer = function(myr) {
 
         myr.bind();
         myr.clear();
-        renderSurface.drawScaled(0, 0, myr.getWidth()/width, myr.getHeight()/height);
+        renderSurface.drawScaled(0, 0, myr.getWidth()/(width-1), (myr.getHeight()-1)/(height-1));
         myr.flush();
     };
     
