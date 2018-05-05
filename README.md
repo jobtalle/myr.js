@@ -562,6 +562,8 @@ Function | Description
 [`Color(r, g, b)`](#colorr-g-b)|Construct from RGB
 [`Color(r, g, b, a)`](#colorr-g-b-a)|Construct from RGBA
 [`toHSV()`](#tohsv)|Convert to HSV values
+[`add(color)`](#addcolor)|Adds another color to itself
+[`multiply(color)`](#multiplycolor)|Multiplies with another color
 
 ## Global functions
 Function | Description
@@ -610,6 +612,20 @@ Parameter | Type | Description
 h|`Number`|Hue value in the range [0, 1]
 s|`Number`|Saturation value in the range [0, 1]
 v|`Number`|Value value in the range [0, 1]
+
+### `add(color)`
+Adds another color to itself.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#Color)|A color object
+
+### `multiply(color)`
+Multiplies this color with another color.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#Color)|A color object
 
 # Vector
 This object represents a vector in 2D space. Several useful vector operation functions are provided.
