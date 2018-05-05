@@ -72,9 +72,9 @@ let Myr = function(canvasElement) {
     };
 
     Color.prototype.add = function(color) {
-        this.r = Math.max(0, Math.min(this.r + color.r, 1));
-        this.g = Math.max(0, Math.min(this.g + color.g, 1));
-        this.b = Math.max(0, Math.min(this.b + color.b, 1));
+        this.r = Math.min(this.r + color.r, 1);
+        this.g = Math.min(this.g + color.g, 1);
+        this.b = Math.min(this.b + color.b, 1);
     };
 
     Color.prototype.multiply = function(color) {
