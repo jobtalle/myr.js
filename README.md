@@ -562,8 +562,8 @@ Function | Description
 [`Color(r, g, b)`](#colorr-g-b)|Construct from RGB
 [`Color(r, g, b, a)`](#colorr-g-b-a)|Construct from RGBA
 [`toHSV()`](#tohsv)|Convert to HSV values
-[`add(color)`](#addcolor)|Adds another color to itself.
-[`multiply(color)`](#multiplycolor)|Multiplies another color with itself.
+[`add(color)`](#addcolor)|Adds another color to itself
+[`multiply(color)`](#multiplycolor)|Multiplies with another color
 
 ## Global functions
 Function | Description
@@ -621,7 +621,7 @@ Parameter | Type | Description
 color|[`Color`](#Color)|A color object
 
 ### `multiply(color)`
-Multiplies another color with itself.
+Multiplies this color with another color.
 
 Parameter | Type | Description
 -|-|-
