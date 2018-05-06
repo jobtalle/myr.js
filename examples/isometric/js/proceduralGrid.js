@@ -1,4 +1,6 @@
-const ProceduralGrid = function(width, height, depth) {
+const ProceduralGrid = function(width, height, depth, rules) {
+    const EMPTY_CELL = -1;
+
     let locations = [];
 
     const Point = (x, y, z) => {
@@ -6,15 +8,44 @@ const ProceduralGrid = function(width, height, depth) {
     };
 
     const createEmptyGrid = () => {
-        return new Array(width * height * depth).fill(0);
+        return new Array(width * height * depth).fill(EMPTY_CELL);
     };
 
     const gridIndex = (point) => {
         return point.x + point.y * width + point.z * width * depth;
     };
 
-    const solveCell = (rules, point) => {
-        return 1;
+    const setCell = (grid, point, value) => {
+        grid[gridIndex(point)] = value;
+    };
+
+    const getCell = (grid, point) => {
+        return grid[gridIndex(point)];
+    };
+
+    const getOptions = (point) => {
+        let options = [];
+        let value = getCell(currentGrid, point);
+        if (value !== EMPTY_CELL)
+            options = rules[value];
+        return options;
+    };
+
+    const solveCell = (neighbours) => {
+        let options = getOptions(neighbours[0]);
+
+        for (let index = 1; index < neighbours.length; index++) {
+            options = options.concat(getOptions(neighbours[index]));
+        }
+
+        for(let left = 0; left < options.length; left++) {
+            for(let right = left+1; right < options.length; right++) {
+                if(options[left] === options[right])
+                    options.splice(right--, 1);
+            }
+        }
+
+        return options[Math.floor(Math.random() * options.length)];;
     };
 
     const getNeighbours = (point) => {
@@ -28,26 +59,19 @@ const ProceduralGrid = function(width, height, depth) {
         return [left, right, up, down, top, bottom];
     };
 
-    const setCell = (grid, point, value) => {
-        grid[gridIndex(point)] = value;
-    };
-
-    const getCell = (grid, point) => {
-        return grid[gridIndex(point)];
-    };
-
     this.getCell = (x, y, z) => {
         return getCell(currentGrid, Point(x, y, z));
     };
 
-    this.solveGridStep = (rules) => {
+    this.solveGridStep = () => {
         let newGrid = currentGrid.slice();
         let newLocations = [];
         while (locations.length > 0) {
             let point = locations.pop();
-            if (!getCell(currentGrid, point)) {
-                setCell(newGrid, point, solveCell(rules, point));
-                newLocations = newLocations.concat(getNeighbours(point));
+            if (getCell(currentGrid, point) === EMPTY_CELL) {
+                let neighbours = getNeighbours(point);
+                setCell(newGrid, point, solveCell(neighbours));
+                newLocations = newLocations.concat(neighbours);
             }
         }
         currentGrid = newGrid;
