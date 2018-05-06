@@ -882,8 +882,8 @@ let Myr = function(canvasElement) {
     
     const sendUniformBuffer = () => {
         if(surface == null) {
-            uboContents[3] = width;
-            uboContents[7] = height;
+            uboContents[3] = canvasElement.width;
+            uboContents[7] = canvasElement.height;
         }
         else {
             uboContents[3] = surface.getWidth();
@@ -958,7 +958,7 @@ let Myr = function(canvasElement) {
         bind(null);
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, width, height);
+        gl.viewport(0, 0, canvasElement.width, canvasElement.height);
     };
     
     this.register = function() {
@@ -1044,8 +1044,8 @@ let Myr = function(canvasElement) {
     this.scale = (x, y) => touchTransform().scale(x, y);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
-    this.getWidth = () => width;
-    this.getHeight = () => height;
+    this.getWidth = () => canvasElement.width;
+    this.getHeight = () => canvasElement.height;
     this.unregister = name => delete sprites[name];
     
     const RENDER_MODE_NONE = -1;
@@ -1195,8 +1195,6 @@ let Myr = function(canvasElement) {
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
     let clearColor = new Color(0, 0, 0);
-    let width = canvasElement.width;
-    let height = canvasElement.height;
     
     uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
     
