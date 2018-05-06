@@ -5,8 +5,8 @@ const ProceduralGrid = function(width, height, depth) {
       return {x, y, z};
     };
 
-    const createEmptyGrid = (width, height, depth) => {
-        return new Array(width * length * depth).fill(0);
+    const createEmptyGrid = () => {
+        return new Array(width * height * depth).fill(0);
     };
 
     const gridIndex = (point) => {
@@ -41,13 +41,13 @@ const ProceduralGrid = function(width, height, depth) {
     };
 
     this.solveGridStep = (rules) => {
-        let newGrid = createEmptyGrid();
+        let newGrid = currentGrid.slice();
         let newLocations = [];
         while (locations.length > 0) {
             let point = locations.pop();
             if (!getCell(currentGrid, point)) {
                 setCell(newGrid, point, solveCell(rules, point));
-                newLocations.push(getNeighbours(point));
+                newLocations = newLocations.concat(getNeighbours(point));
             }
         }
         currentGrid = newGrid;
