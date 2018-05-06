@@ -1,10 +1,19 @@
+/**
+ * A simple 3D grid that fills its cells using an array of adjacency rules.
+ * @param width The width of the grid, as seen from the front.
+ * @param height The height of the grid, as seen from the front.
+ * @param depth The depth of the grid, as seen from the front.
+ * @param rules The generation rules, an array of arrays that represent allowed cell values for a cell at that index.
+ * @constructor
+ */
 const ProceduralGrid = function(width, height, depth, rules) {
     const EMPTY_CELL = -1;
 
+    let currentGrid = [];
     let locations = [];
 
     const Point = (x, y, z) => {
-      return {x, y, z};
+        return {x: Math.floor(x), y: Math.floor(y), z: Math.floor(z)};
     };
 
     const createEmptyGrid = () => {
@@ -31,6 +40,10 @@ const ProceduralGrid = function(width, height, depth, rules) {
         return options;
     };
 
+    const randomIndex = (array) => {
+        return Math.floor(Math.random() * array.length);
+    };
+
     const solveCell = (neighbours) => {
         let options = getOptions(neighbours[0]);
 
@@ -45,18 +58,26 @@ const ProceduralGrid = function(width, height, depth, rules) {
             }
         }
 
-        return options[Math.floor(Math.random() * options.length)];;
+        return options[randomIndex(options)];
     };
 
     const getNeighbours = (point) => {
-        let left   = Point(Math.min(point.x + 1, width), point.y, point.z);
-        let right  = Point(Math.max(point.x - 1, 0)    , point.y, point.z);
-        let up     = Point(point.x, Math.min(point.y + 1, height), point.z);
-        let down   = Point(point.x, Math.max(point.y - 1,      0), point.z);
-        let top    = Point(point.x, point.y, Math.min(point.z + 1, depth));
-        let bottom = Point(point.x, point.y, Math.max(point.z - 1, 0));
+        let neighbours = [];
 
-        return [left, right, up, down, top, bottom];
+        if (point.x + 1 < width)
+            neighbours.push(Point(point.x + 1, point.y, point.z));
+        if (point.x - 1 >= 0)
+            neighbours.push(Point(point.x - 1, point.y, point.z));
+        if (point.y + 1 < height)
+            neighbours.push(Point(point.x, point.y + 1, point.z));
+        if (point.y - 1 >= 0)
+            neighbours.push(Point(point.x, point.y - 1, point.z));
+        if (point.z + 1 < depth)
+            neighbours.push(Point(point.x, point.y, point.z + 1));
+        if (point.z - 1 >= 0)
+            neighbours.push(Point(point.x, point.y, point.z - 1));
+
+        return neighbours;
     };
 
     this.getCell = (x, y, z) => {
@@ -78,6 +99,12 @@ const ProceduralGrid = function(width, height, depth, rules) {
         locations = newLocations;
     };
 
-    let currentGrid = createEmptyGrid();
-    locations.push(Point(0, 0, 0));
+    this.initialize = (x, y, z, value) => {
+        currentGrid = createEmptyGrid();
+        let seedPoint = Point(x, y, z);
+        setCell(currentGrid, seedPoint, value);
+        locations = getNeighbours(seedPoint);
+    };
+
+    currentGrid = createEmptyGrid();
 };
