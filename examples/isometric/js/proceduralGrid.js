@@ -32,9 +32,9 @@ const ProceduralGrid = function(width, height, depth, rules) {
         return grid[gridIndex(point)];
     };
 
-    const getOptions = (point) => {
+    const getOptions = (grid, point) => {
         let options = [];
-        let value = getCell(currentGrid, point);
+        let value = getCell(grid, point);
         if (value !== EMPTY_CELL)
             options = rules[value];
         return options;
@@ -44,38 +44,50 @@ const ProceduralGrid = function(width, height, depth, rules) {
         return Math.floor(Math.random() * array.length);
     };
 
-    const solveCell = (neighbours) => {
-        let options = getOptions(neighbours[0]);
-
-        for (let index = 1; index < neighbours.length; index++) {
-            options = options.concat(getOptions(neighbours[index]));
-        }
-
-        for(let left = 0; left < options.length; left++) {
-            for(let right = left+1; right < options.length; right++) {
-                if(options[left] === options[right])
-                    options.splice(right--, 1);
-            }
-        }
-
+    const solveCell = (grid, point) => {
+        let options = getCell(grid, point);
         return options[randomIndex(options)];
     };
 
-    const getNeighbours = (point) => {
+    const prepareEmptyNeighbours = (grid, point) => {
         let neighbours = [];
+        let options = getOptions(grid, point);
 
-        if (point.x + 1 < width)
-            neighbours.push(Point(point.x + 1, point.y, point.z));
-        if (point.x - 1 >= 0)
-            neighbours.push(Point(point.x - 1, point.y, point.z));
-        if (point.y + 1 < height)
-            neighbours.push(Point(point.x, point.y + 1, point.z));
-        if (point.y - 1 >= 0)
-            neighbours.push(Point(point.x, point.y - 1, point.z));
-        if (point.z + 1 < depth)
-            neighbours.push(Point(point.x, point.y, point.z + 1));
-        if (point.z - 1 >= 0)
-            neighbours.push(Point(point.x, point.y, point.z - 1));
+        let left = Point(point.x + 1, point.y, point.z);
+        if (left.x < width && getCell(currentGrid, left) === EMPTY_CELL) {
+            setCell(grid, left, options);
+            neighbours.push(left);
+        }
+
+        let right = Point(point.x - 1, point.y, point.z);
+        if (right.x >= 0 && getCell(currentGrid, right) === EMPTY_CELL) {
+            setCell(grid, right, options);
+            neighbours.push(right);
+        }
+
+        let up = Point(point.x, point.y + 1, point.z);
+        if (up.y < height && getCell(currentGrid, up) === EMPTY_CELL) {
+            setCell(grid, up, options);
+            neighbours.push(up);
+        }
+
+        let down = Point(point.x, point.y - 1, point.z);
+        if (down.y >= 0 && getCell(currentGrid, down) === EMPTY_CELL) {
+            setCell(grid, down, options);
+            neighbours.push(down);
+        }
+
+        let top = Point(point.x, point.y, point.z + 1);
+        if (top.z < depth && getCell(currentGrid, top) === EMPTY_CELL) {
+            setCell(grid, top, options);
+            neighbours.push(top);
+        }
+
+        let bottom = Point(point.x, point.y, point.z - 1);
+        if (bottom.z >= 0 && getCell(currentGrid, bottom) === EMPTY_CELL) {
+            setCell(grid, bottom, options);
+            neighbours.push(bottom);
+        }
 
         return neighbours;
     };
@@ -89,11 +101,8 @@ const ProceduralGrid = function(width, height, depth, rules) {
         let newLocations = [];
         while (locations.length > 0) {
             let point = locations.pop();
-            if (getCell(currentGrid, point) === EMPTY_CELL) {
-                let neighbours = getNeighbours(point);
-                setCell(newGrid, point, solveCell(neighbours));
-                newLocations = newLocations.concat(neighbours);
-            }
+            setCell(newGrid, point, solveCell(currentGrid, point));
+            newLocations = newLocations.concat(prepareEmptyNeighbours(newGrid, point));
         }
         currentGrid = newGrid;
         locations = newLocations;
@@ -103,7 +112,7 @@ const ProceduralGrid = function(width, height, depth, rules) {
         currentGrid = createEmptyGrid();
         let seedPoint = Point(x, y, z);
         setCell(currentGrid, seedPoint, value);
-        locations = getNeighbours(seedPoint);
+        locations = prepareEmptyNeighbours(currentGrid, seedPoint);
     };
 
     currentGrid = createEmptyGrid();
