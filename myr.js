@@ -509,7 +509,7 @@ let Myr = function(canvasElement) {
             this._prepareDraw();
             
             setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
-            setAttributesDrawTransform(transform, this.getWidth());
+            setAttributesDrawTransform(transform, this.getWidth(), this.getHeight());
         },
 
         drawTransformedAt: function(x, y, transform) {

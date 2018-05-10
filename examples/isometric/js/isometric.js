@@ -81,8 +81,8 @@ const Isometric = function(myr) {
     const shade = () => {
         const ambient = 0.35;
 
-        let lx = Math.cos(Math.PI * 0.875);
-        let ly = Math.sin(Math.PI * 0.875);
+        let lx = Math.cos(Math.PI * (1 + 0.125));
+        let ly = Math.sin(Math.PI * (1 + 0.125));
 
         let nsx = Math.cos((angle + Math.PI * 0.5) % Math.PI + Math.PI * 0.5);
         let nsy = Math.sin((angle + Math.PI * 0.5) % Math.PI + Math.PI * 0.5);
