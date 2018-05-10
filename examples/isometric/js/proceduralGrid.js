@@ -12,8 +12,29 @@ const ProceduralGrid = function(width, height, depth, rules) {
     let currentGrid = [];
     let locations = [];
 
-    const Point = (x, y, z) => {
-        return {x: Math.floor(x), y: Math.floor(y), z: Math.floor(z)};
+    const Point = function (x, y, z) {
+        this.x = Math.floor(x);
+        this.y = Math.floor(y);
+        this.z = Math.floor(z);
+
+        return this;
+    };
+
+    Point.prototype.equals = function (other) {
+        return this.x === other.x &&
+               this.y === other.y &&
+               this.z === other.z;
+    };
+
+    const mergePointsUnique = (toArray, fromArray) => {
+        let array = toArray.concat(fromArray);
+        for(let left = 0; left < array.length; left++) {
+            for(let right = left+1; right < array.length; right++) {
+                if (array[left].equals(array[right]))
+                    array.splice(right--, 1);
+            }
+        }
+        return array;
     };
 
     const createEmptyGrid = () => {
@@ -53,37 +74,37 @@ const ProceduralGrid = function(width, height, depth, rules) {
         let neighbours = [];
         let options = getOptions(grid, point);
 
-        let left = Point(point.x + 1, point.y, point.z);
+        let left = new Point(point.x + 1, point.y, point.z);
         if (left.x < width && getCell(currentGrid, left) === EMPTY_CELL) {
             setCell(grid, left, options);
             neighbours.push(left);
         }
 
-        let right = Point(point.x - 1, point.y, point.z);
+        let right = new Point(point.x - 1, point.y, point.z);
         if (right.x >= 0 && getCell(currentGrid, right) === EMPTY_CELL) {
             setCell(grid, right, options);
             neighbours.push(right);
         }
 
-        let up = Point(point.x, point.y + 1, point.z);
+        let up = new Point(point.x, point.y + 1, point.z);
         if (up.y < height && getCell(currentGrid, up) === EMPTY_CELL) {
             setCell(grid, up, options);
             neighbours.push(up);
         }
 
-        let down = Point(point.x, point.y - 1, point.z);
+        let down = new Point(point.x, point.y - 1, point.z);
         if (down.y >= 0 && getCell(currentGrid, down) === EMPTY_CELL) {
             setCell(grid, down, options);
             neighbours.push(down);
         }
 
-        let top = Point(point.x, point.y, point.z + 1);
+        let top = new Point(point.x, point.y, point.z + 1);
         if (top.z < depth && getCell(currentGrid, top) === EMPTY_CELL) {
             setCell(grid, top, options);
             neighbours.push(top);
         }
 
-        let bottom = Point(point.x, point.y, point.z - 1);
+        let bottom = new Point(point.x, point.y, point.z - 1);
         if (bottom.z >= 0 && getCell(currentGrid, bottom) === EMPTY_CELL) {
             setCell(grid, bottom, options);
             neighbours.push(bottom);
@@ -93,7 +114,7 @@ const ProceduralGrid = function(width, height, depth, rules) {
     };
 
     this.getCell = (x, y, z) => {
-        return getCell(currentGrid, Point(x, y, z));
+        return getCell(currentGrid, new Point(x, y, z));
     };
 
     this.solveGridStep = () => {
@@ -102,7 +123,7 @@ const ProceduralGrid = function(width, height, depth, rules) {
         while (locations.length > 0) {
             let point = locations.pop();
             setCell(newGrid, point, solveCell(currentGrid, point));
-            newLocations = newLocations.concat(prepareEmptyNeighbours(newGrid, point));
+            newLocations = mergePointsUnique(newLocations,prepareEmptyNeighbours(newGrid, point));
         }
         currentGrid = newGrid;
         locations = newLocations;
