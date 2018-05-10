@@ -32,9 +32,9 @@ const Isometric = function(myr) {
             */
                 
             for(let i = 0; i < frontWalls.length; ++i)
-                texture.getWall(frontWalls[i]).drawTransformedAt(0, 8 * scale, tWalls[frontWalls[i]]);
+                texture.getWall(frontWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[frontWalls[i]]);
 
-            texture.getRoof().drawTransformedAt(0, -8 * scale, tRoof);
+            texture.getRoof().drawTransformedAt(0, -8 * Math.cos(pitch), tRoof);
         };
     };
     
@@ -86,6 +86,8 @@ const Isometric = function(myr) {
                 return;
         }
 
+        const ambient = 0.35;
+
         let lx = Math.cos(Math.PI * (0.75 + 0.125));
         let ly = Math.sin(Math.PI * (0.75 + 0.125));
 
@@ -95,11 +97,13 @@ const Isometric = function(myr) {
         let nex = Math.cos(angle % Math.PI + Math.PI * 0.5);
         let ney = Math.sin(angle % Math.PI + Math.PI * 0.5);
         
-        let ls = Math.max(0, lx * nsx + ly * nsy) * 0.75 + 0.25;
-        let le = Math.max(0, lx * nex + ly * ney) * 0.75 + 0.25;
+        let lt = Math.sin(pitch) * (1 - ambient) + ambient;
+        let ls = Math.max(0, lx * nsx + ly * nsy) * (1 - ambient) * Math.cos(pitch) + ambient;
+        let le = Math.max(0, lx * nex + ly * ney) * (1 - ambient) * Math.cos(pitch) + ambient;
         
-        cNorthSouth.r = cNorthSouth.g = cNorthSouth.b = Math.abs(ls);
-        cEastWest.r = cEastWest.g = cEastWest.b = Math.abs(le);
+        cTop.r = cTop.g = cTop.b = lt;
+        cNorthSouth.r = cNorthSouth.g = cNorthSouth.b = ls;
+        cEastWest.r = cEastWest.g = cEastWest.b = le;
 
         sprites.bind();
         sprites.clear();
@@ -120,16 +124,15 @@ const Isometric = function(myr) {
         const radius = Math.sqrt(2) * 8;
         
         tRoof.identity();
-        tRoof.scale(1, scale);
+        tRoof.scale(1, Math.sin(pitch));
         tRoof.rotate(angle);
 
         for(let i = 0; i < 4; ++i) {
             const a = Math.PI * 0.5 * (i + 0.5) + angle;
-
+            
             tWalls[i].identity();
-            tWalls[i].scale(1, scale);
-            tWalls[i].translate(Math.cos(-a) * radius, Math.sin(-a) * radius);
-            tWalls[i].scale(-Math.cos(a - Math.PI * 0.25), 1);
+            tWalls[i].translate(Math.cos(-a) * radius, Math.sin(-a) * radius * Math.sin(pitch));
+            tWalls[i].scale(-Math.cos(a - Math.PI * 0.25), Math.cos(pitch));
             tWalls[i].shear(0, -Math.cos(a + Math.PI * 0.25));
         }
 
@@ -137,13 +140,9 @@ const Isometric = function(myr) {
         backWalls[1] = (backWalls[0] + 1) % 4;
         frontWalls[0] = (backWalls[1] + 1) % 4;
         frontWalls[1] = (frontWalls[0] + 1) % 4;
-
-        scale = Math.cos(pitch);
     };
 
     const update = timeStep => {
-        angle += timeStep;
-
         while(angle > Math.PI * 2)
             angle -= Math.PI * 2;
 
@@ -157,7 +156,7 @@ const Isometric = function(myr) {
         myr.push();
 
         myr.translate(myr.getWidth() / 2, myr.getHeight() / 2);
-        myr.scale(6, 6);
+        myr.scale(20, 20);
 
         for(let i = 0; i < blocks.length; ++i)
             blocks[i].render();
@@ -182,6 +181,22 @@ const Isometric = function(myr) {
 
             return true;
         });
+    };
+
+    this.rotate = delta => {
+        angle += delta;
+
+        if(angle < 0)
+            angle += Math.PI * 2;
+    };
+
+    this.pitch = delta => {
+        pitch += delta;
+
+        if(pitch < 0)
+            pitch = 0;
+        else if(pitch > Math.PI * 0.5)
+            pitch = Math.PI * 0.5;
     };
 
     const blockSprites = {
@@ -244,12 +259,42 @@ const Isometric = function(myr) {
 
     let angle = Math.PI / 4;
     let pitch = Math.PI / 4;
-    let scale;
 
     myr.setClearColor(CLEAR_COLOR);
 };
 
 const renderer = document.getElementById("renderer");
 const isometric = new Isometric(new Myr(renderer));
+
+let dragging = false;
+let mouseX = 0;
+let mouseY = 0;
+
+renderer.addEventListener("mousemove", function(event) {
+    if(dragging) {
+        const dx = event.clientX - mouseX;
+        const dy = event.clientY - mouseY;
+
+        if(dx != 0)
+            isometric.rotate(dx * 0.015);
+        
+        if(dy != 0)
+            isometric.pitch(dy * 0.015);
+
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+    }
+});
+
+renderer.addEventListener("mousedown", function(event) {
+    dragging = true;
+
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+});
+
+renderer.addEventListener("mouseup", function(event) {
+    dragging = false;
+});
 
 isometric.start();

@@ -831,7 +831,7 @@ let Myr = function(canvasElement) {
             return;
         
         flush();
-
+        
         gl.activeTexture(TEXTURE_ATLAS);
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
