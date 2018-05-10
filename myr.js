@@ -967,9 +967,18 @@ let Myr = function(canvasElement) {
         for(let i = 1; i < arguments.length; ++i)
             frames.push(arguments[i]);
         
-        sprites[arguments[0]] = frames;
+        if(sprites[arguments[0]] === undefined)
+            sprites[arguments[0]] = frames;
+        else {
+            sprites[arguments[0]].length = 0;
+
+            for(let i = 0; i < frames.length; ++i)
+                sprites[arguments[0]].push(frames[i]);
+        }
     };
-        
+    
+    this.isRegistered = name => sprites[name] != undefined;
+
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
         const frame = [
             sheet._getTexture(),
