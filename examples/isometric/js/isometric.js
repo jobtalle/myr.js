@@ -28,7 +28,7 @@ const Isometric = function(myr) {
             
             /*
             for(let i = 0; i < backWalls.length; ++i)
-                texture.getWall(backWalls[i]).drawTransformedAt(0, 16 * scale, tWalls[backWalls[i]]);
+                texture.getWall(backWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[backWalls[i]]);
             */
                 
             for(let i = 0; i < frontWalls.length; ++i)
@@ -97,13 +97,9 @@ const Isometric = function(myr) {
         let nex = Math.cos(angle % Math.PI + Math.PI * 0.5);
         let ney = Math.sin(angle % Math.PI + Math.PI * 0.5);
         
-        let lt = Math.sin(pitch) * (1 - ambient) + ambient;
-        let ls = Math.max(0, lx * nsx + ly * nsy) * (1 - ambient) * Math.cos(pitch) + ambient;
-        let le = Math.max(0, lx * nex + ly * ney) * (1 - ambient) * Math.cos(pitch) + ambient;
-        
-        cTop.r = cTop.g = cTop.b = lt;
-        cNorthSouth.r = cNorthSouth.g = cNorthSouth.b = ls;
-        cEastWest.r = cEastWest.g = cEastWest.b = le;
+        cTop.r = cTop.g = cTop.b = Math.sin(pitch) * (1 - ambient) + ambient;
+        cNorthSouth.r = cNorthSouth.g = cNorthSouth.b = Math.max(0, lx * nsx + ly * nsy) * (1 - ambient) * Math.cos(pitch) + ambient;
+        cEastWest.r = cEastWest.g = cEastWest.b = Math.max(0, lx * nex + ly * ney) * (1 - ambient) * Math.cos(pitch) + ambient;
 
         sprites.bind();
         sprites.clear();
@@ -132,8 +128,9 @@ const Isometric = function(myr) {
             
             tWalls[i].identity();
             tWalls[i].translate(Math.cos(-a) * radius, Math.sin(-a) * radius * Math.sin(pitch));
-            tWalls[i].scale(-Math.cos(a - Math.PI * 0.25), Math.cos(pitch));
-            tWalls[i].shear(0, -Math.cos(a + Math.PI * 0.25));
+            tWalls[i].scale(-Math.cos(a - Math.PI * 0.25), 1);
+            tWalls[i].shear(0, -Math.cos(a + Math.PI * 0.25) * Math.sin(pitch));
+            tWalls[i].scale(1, Math.cos(pitch));
         }
 
         backWalls[0] = 3 - Math.floor(angle / (Math.PI * 0.5));
