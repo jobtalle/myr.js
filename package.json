@@ -1,0 +1,20 @@
+{
+  "name": "myr.js",
+  "version": "0.3.0",
+  "description": "A fast and lean WebGL 2 based 2D graphics renderer with no external dependencies.",
+  "main": "myr.js",
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jobtalle/myr.js.git"
+  },
+  "keywords": ["myriad", "myr.js", "WebGL", "graphics", "renderer", "game", "canvas", "2D", "transform", "sprites"],
+  "author": "Job Talle",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jobtalle/myr.js/issues"
+  },
+  "homepage": "https://github.com/jobtalle/myr.js#readme"
+}
