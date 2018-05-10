@@ -1,12 +1,13 @@
 const Isometric = function(myr) {
     const Texture = function(blockName) {
+        const walls = [];
         let floor = undefined;
         let roof = undefined;
-        let walls = [];
 
         this.getFloor = () => floor;
         this.getRoof = () => roof;
         this.getWall = wall => walls[wall];
+        this.isTransparent = () => floor === undefined;
 
         if(myr.isRegistered(blockName + "-floor"))
             floor = new myr.Sprite(blockName + "-floor");
@@ -24,12 +25,12 @@ const Isometric = function(myr) {
         const texture = textures[name];
 
         this.render = () => {
-            //texture.getFloor().drawTransformedAt(0, 0, tRoof);
-            
-            /*
-            for(let i = 0; i < backWalls.length; ++i)
-                texture.getWall(backWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[backWalls[i]]);
-            */
+            if(texture.isTransparent()) {
+                texture.getFloor().drawTransformedAt(0, 0, tRoof);
+                
+                for(let i = 0; i < backWalls.length; ++i)
+                    texture.getWall(backWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[backWalls[i]]);
+            }
                 
             for(let i = 0; i < frontWalls.length; ++i)
                 texture.getWall(frontWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[frontWalls[i]]);
@@ -40,11 +41,10 @@ const Isometric = function(myr) {
     
     const registerSprites = () => {
         parts = new myr.Surface(sprites.getWidth() * 3, sprites.getHeight());
-
-        const blockKeys = Object.keys(blockSprites);
-
         parts.bind();
         parts.clear();
+
+        const blockKeys = Object.keys(blockSprites);
 
         for(let i = 0; i < blockKeys.length; ++i) {
             const block = blockKeys[i];
@@ -79,17 +79,10 @@ const Isometric = function(myr) {
     };
 
     const shade = () => {
-        if(parts === null) {
-            if(sprites.ready())
-                registerSprites();
-            else
-                return;
-        }
-
         const ambient = 0.35;
 
-        let lx = Math.cos(Math.PI * (0.75 + 0.125));
-        let ly = Math.sin(Math.PI * (0.75 + 0.125));
+        let lx = Math.cos(Math.PI * 0.875);
+        let ly = Math.sin(Math.PI * 0.875);
 
         let nsx = Math.cos((angle + Math.PI * 0.5) % Math.PI + Math.PI * 0.5);
         let nsy = Math.sin((angle + Math.PI * 0.5) % Math.PI + Math.PI * 0.5);
@@ -140,18 +133,28 @@ const Isometric = function(myr) {
     };
 
     const update = timeStep => {
-        while(angle > Math.PI * 2)
-            angle -= Math.PI * 2;
-
-        shade();
-        setTransforms(angle, pitch);
+        
     };
 
     const render = () => {
+        if(parts === null) {
+            if(sprites.ready())
+                registerSprites();
+            else
+                return;
+        }
+
+        if(moved) {
+            shade();
+            setTransforms(angle, pitch);
+
+            moved = false;
+        }
+
         myr.bind();
         myr.clear();
-        myr.push();
 
+        myr.push();
         myr.translate(myr.getWidth() / 2, myr.getHeight() / 2);
         myr.scale(20, 20);
 
@@ -183,8 +186,13 @@ const Isometric = function(myr) {
     this.rotate = delta => {
         angle += delta;
 
-        if(angle < 0)
+        while(angle < 0)
             angle += Math.PI * 2;
+
+        while(angle > Math.PI * 2)
+            angle -= Math.PI * 2;
+
+        moved = true;
     };
 
     this.pitch = delta => {
@@ -194,6 +202,8 @@ const Isometric = function(myr) {
             pitch = 0;
         else if(pitch > Math.PI * 0.5)
             pitch = Math.PI * 0.5;
+        
+        moved = true;
     };
 
     const blockSprites = {
@@ -211,6 +221,7 @@ const Isometric = function(myr) {
     const blockKeys = Object.keys(blockSprites);
     const sprites = new myr.Surface("img/dirtWaterBottom.png");
     let parts = null;
+    let moved = true;
 
     for(let i = 0; i < blockKeys.length; ++i) {
         const block = blockKeys[i];
