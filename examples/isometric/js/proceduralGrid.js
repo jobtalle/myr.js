@@ -45,12 +45,24 @@ const ProceduralGrid = function(width, height, depth, rules) {
         return point.x + point.y * width + point.z * width * depth;
     };
 
-    const setCell = (grid, point, value) => {
-        grid[gridIndex(point)] = value;
+    const isArray = (variable) => {
+        return variable.constructor === Array;
     };
 
     const getCell = (grid, point) => {
         return grid[gridIndex(point)];
+    };
+
+    const setCell = (grid, point, newCell) => {
+        let currentCell = getCell(grid, point);
+        if (isArray(newCell) && isArray(currentCell)) {
+            newCell.filter(function(value) {
+                return currentCell.indexOf(value) !== -1;
+            }).filter(function (value, index, potentialDuplicates) {
+                return potentialDuplicates.indexOf(value) === index;
+            });
+        }
+        grid[gridIndex(point)] = newCell;
     };
 
     const getOptions = (grid, point) => {
@@ -70,42 +82,53 @@ const ProceduralGrid = function(width, height, depth, rules) {
         return options[randomIndex(options)];
     };
 
+    const isInBounds = (point) => {
+        return point.x < width && point.x >= 0 &&
+               point.y < height && point.y >= 0 &&
+               point.z < depth && point.z >= 0;
+    };
+
+    const isEmpty = (grid, point) => {
+        let cell = getCell(grid, point);
+        return cell === EMPTY_CELL || isArray(cell);
+    };
+
     const prepareEmptyNeighbours = (grid, point) => {
         let neighbours = [];
         let options = getOptions(grid, point);
 
         let left = new Point(point.x + 1, point.y, point.z);
-        if (left.x < width && getCell(currentGrid, left) === EMPTY_CELL) {
+        if (isInBounds(left) && isEmpty(currentGrid, left)) {
             setCell(grid, left, options);
             neighbours.push(left);
         }
 
         let right = new Point(point.x - 1, point.y, point.z);
-        if (right.x >= 0 && getCell(currentGrid, right) === EMPTY_CELL) {
+        if (isInBounds(right) && isEmpty(currentGrid, right)) {
             setCell(grid, right, options);
             neighbours.push(right);
         }
 
         let up = new Point(point.x, point.y + 1, point.z);
-        if (up.y < height && getCell(currentGrid, up) === EMPTY_CELL) {
+        if (isInBounds(up) && isEmpty(currentGrid, up)) {
             setCell(grid, up, options);
             neighbours.push(up);
         }
 
         let down = new Point(point.x, point.y - 1, point.z);
-        if (down.y >= 0 && getCell(currentGrid, down) === EMPTY_CELL) {
+        if (isInBounds(down) && isEmpty(currentGrid, down)) {
             setCell(grid, down, options);
             neighbours.push(down);
         }
 
         let top = new Point(point.x, point.y, point.z + 1);
-        if (top.z < depth && getCell(currentGrid, top) === EMPTY_CELL) {
+        if (isInBounds(top) && isEmpty(currentGrid, top)) {
             setCell(grid, top, options);
             neighbours.push(top);
         }
 
         let bottom = new Point(point.x, point.y, point.z - 1);
-        if (bottom.z >= 0 && getCell(currentGrid, bottom) === EMPTY_CELL) {
+        if (isInBounds(bottom) && isEmpty(currentGrid, bottom)) {
             setCell(grid, bottom, options);
             neighbours.push(bottom);
         }
@@ -127,6 +150,8 @@ const ProceduralGrid = function(width, height, depth, rules) {
         }
         currentGrid = newGrid;
         locations = newLocations;
+
+        return locations.length > 0;
     };
 
     this.initialize = (x, y, z, value) => {
