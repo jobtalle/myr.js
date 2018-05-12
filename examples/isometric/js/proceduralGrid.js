@@ -136,10 +136,6 @@ const ProceduralGrid = function(width, height, depth, rules) {
         return neighbours;
     };
 
-    this.getCell = (x, y, z) => {
-        return getCell(currentGrid, new Point(x, y, z));
-    };
-
     this.solveGridStep = () => {
         let newGrid = currentGrid.slice();
         let newLocations = [];
@@ -154,12 +150,20 @@ const ProceduralGrid = function(width, height, depth, rules) {
         return locations.length > 0;
     };
 
-    this.initialize = (x, y, z, value) => {
+    this.initialize = () => {
         currentGrid = createEmptyGrid();
-        let seedPoint = Point(x, y, z);
-        setCell(currentGrid, seedPoint, value);
-        locations = prepareEmptyNeighbours(currentGrid, seedPoint);
+        locations = [];
     };
 
-    currentGrid = createEmptyGrid();
+    this.setCell = (x, y, z, value) => {
+        let point = Point(x, y, z);
+        setCell(currentGrid, point, value);
+        locations = prepareEmptyNeighbours(currentGrid, point);
+    };
+
+    this.getCell = (x, y, z) => {
+        return getCell(currentGrid, new Point(x, y, z));
+    };
+
+    this.initialize();
 };
