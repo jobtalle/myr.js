@@ -158,7 +158,7 @@ const ProceduralGrid = function(width, height, depth, rules) {
     this.setCell = (x, y, z, value) => {
         let point = Point(x, y, z);
         setCell(currentGrid, point, value);
-        locations = prepareEmptyNeighbours(currentGrid, point);
+        locations = mergePointsUnique(locations, prepareEmptyNeighbours(currentGrid, point));
     };
 
     this.getCell = (x, y, z) => {
