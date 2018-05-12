@@ -83,14 +83,14 @@ const Isometric = function(myr) {
 
         let lx = Math.cos(Math.PI * (1 + 0.125));
         let ly = Math.sin(Math.PI * (1 + 0.125));
-
+        
         let nsx = Math.cos((angle + Math.PI * 0.5) % Math.PI + Math.PI * 0.5);
         let nsy = Math.sin((angle + Math.PI * 0.5) % Math.PI + Math.PI * 0.5);
 
         let nex = Math.cos(angle % Math.PI + Math.PI * 0.5);
         let ney = Math.sin(angle % Math.PI + Math.PI * 0.5);
         
-        cTop.r = cTop.g = cTop.b = Math.sin(pitch) * (1 - ambient) + ambient;
+        cTop.r = cTop.g = cTop.b = -lx * (1 - ambient) * Math.sin(pitch) + ambient;
         cNorthSouth.r = cNorthSouth.g = cNorthSouth.b = Math.max(0, lx * nsx + ly * nsy) * (1 - ambient) * Math.cos(pitch) + ambient;
         cEastWest.r = cEastWest.g = cEastWest.b = Math.max(0, lx * nex + ly * ney) * (1 - ambient) * Math.cos(pitch) + ambient;
 
@@ -144,11 +144,11 @@ const Isometric = function(myr) {
                 return;
         }
 
-        if(moved) {
+        if(rotated) {
             shade();
             setTransforms(angle, pitch);
 
-            moved = false;
+            rotated = false;
         }
 
         myr.bind();
@@ -156,7 +156,7 @@ const Isometric = function(myr) {
 
         myr.push();
         myr.translate(myr.getWidth() / 2, myr.getHeight() / 2);
-        myr.scale(20, 20);
+        myr.scale(zoom, zoom);
 
         for(let i = 0; i < blocks.length; ++i)
             blocks[i].render();
@@ -192,7 +192,7 @@ const Isometric = function(myr) {
         while(angle > Math.PI * 2)
             angle -= Math.PI * 2;
 
-        moved = true;
+        rotated = true;
     };
 
     this.pitch = delta => {
@@ -203,7 +203,16 @@ const Isometric = function(myr) {
         else if(pitch > Math.PI * 0.5)
             pitch = Math.PI * 0.5;
         
-        moved = true;
+        rotated = true;
+    };
+
+    this.zoom = delta => {
+        zoom *= 1 + delta;
+
+        if(zoom > ZOOM_MAX)
+            zoom = ZOOM_MAX;
+        else if(zoom < ZOOM_MIN)
+            zoom = ZOOM_MIN;
     };
 
     const blockSprites = {
@@ -221,7 +230,7 @@ const Isometric = function(myr) {
     const blockKeys = Object.keys(blockSprites);
     const sprites = new myr.Surface("img/dirtWaterBottom.png");
     let parts = null;
-    let moved = true;
+    let rotated = true;
 
     for(let i = 0; i < blockKeys.length; ++i) {
         const block = blockKeys[i];
@@ -256,6 +265,9 @@ const Isometric = function(myr) {
     }
 
     const CLEAR_COLOR = new myr.Color(0.2, 0.8, 0.5);
+    const ZOOM_MIN = 1;
+    const ZOOM_MAX = 40;
+
     const tRoof = new myr.Transform();
     const tWalls = [new myr.Transform(), new myr.Transform(), new myr.Transform(), new myr.Transform()];
     const cTop = new myr.Color(1, 1, 1);
@@ -267,6 +279,7 @@ const Isometric = function(myr) {
 
     let angle = Math.PI / 4;
     let pitch = Math.PI / 4;
+    let zoom = 12;
 
     myr.setClearColor(CLEAR_COLOR);
 };
@@ -303,6 +316,13 @@ renderer.addEventListener("mousedown", function(event) {
 
 renderer.addEventListener("mouseup", function(event) {
     dragging = false;
+});
+
+renderer.addEventListener("wheel", function(event) {
+    if(event.deltaY > 0)
+        isometric.zoom(-0.25);
+    else
+        isometric.zoom(0.25);
 });
 
 isometric.start();
