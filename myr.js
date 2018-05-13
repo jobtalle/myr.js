@@ -1,3 +1,9 @@
+/**
+ * The constructor method of the Myriad library,
+ * All global functions and objects are members of the returned object.
+ * @param {Element} canvasElement HTML Canvas containing a WebGL 2 context.
+ * @constructor
+ */
 let Myr = function(canvasElement) {
     const gl = canvasElement.getContext("webgl2", {
         antialias: false,
@@ -302,6 +308,13 @@ let Myr = function(canvasElement) {
     };
     
     this.Surface = function() {
+
+        /**
+         * Draw the entire surface with a translation transform.
+         * @param {number} x Where the surface is to be drawn horizontally.
+         * @param {number} y Where the surface is to be drawn vertically.
+         * @returns {undefined}
+         */
         this.draw = (x, y) => {
             bindTextureSurface(texture);
             
@@ -311,7 +324,15 @@ let Myr = function(canvasElement) {
             setAttributesDraw(x, y, width, height);
             setAttributesOrigin(0, 0);
         };
-        
+
+        /**
+         * Draw the entire surface with a scale transform.
+         * @param {number} x Where the surface is to be drawn horizontally.
+         * @param {number} y Where the surface is to be drawn vertically.
+         * @param {number} xScale Horizontal scale.
+         * @param {number} yScale Vertical scale.
+         * @returns {undefined}
+         */
         this.drawScaled = (x, y, xScale, yScale) => {
             bindTextureSurface(texture);
             
@@ -321,7 +342,15 @@ let Myr = function(canvasElement) {
             setAttributesDraw(x, y, width * xScale, height * yScale);
             setAttributesOrigin(0, 0);
         };
-        
+
+        /**
+         * Draw the entire surface with a shear transform.
+         * @param {number} x Where the surface is to be drawn horizontally.
+         * @param {number} y Where the surface is to be drawn vertically.
+         * @param {number} xShear Horizontal shear.
+         * @param {number} yShear Vertical shear.
+         * @returns {undefined}
+         */
         this.drawSheared = (x, y, xShear, yShear) => {
             bindTextureSurface(texture);
             
@@ -331,7 +360,12 @@ let Myr = function(canvasElement) {
             setAttributesDrawSheared(x, y, width, height, xShear, yShear);
             setAttributesOrigin(0, 0);
         };
-        
+
+        /**
+         * Draw the entire surface with a given transform.
+         * @param {Transform} transform The transformation to apply.
+         * @returns {undefined}
+         */
         this.drawTransformed = transform => {
             bindTextureSurface(texture);
             
@@ -341,7 +375,17 @@ let Myr = function(canvasElement) {
             setAttributesDrawTransform(transform, width, height);
             setAttributesOrigin(0, 0);
         };
-        
+
+        /**
+         * Draw a part of the surface at a given position.
+         * @param {number} x Where the part is to be drawn horizontally.
+         * @param {number} y Where the part is to be drawn vertically.
+         * @param {number} left The horizontal offset in the surface.
+         * @param {number} top The vertical offset in the surface.
+         * @param {number} w The width of the part.
+         * @param {number} h The height of the part.
+         * @returns {undefined}
+         */
         this.drawPart = (x, y, left, top, w, h) => {
             bindTextureSurface(texture);
             
@@ -354,7 +398,16 @@ let Myr = function(canvasElement) {
             setAttributesDraw(x, y, w, h);
             setAttributesOrigin(0, 0);
         };
-        
+
+        /**
+         * Draw a part of the surface with a given transform.
+         * @param {Transform} transform The transformation to apply.
+         * @param {number} left The horizontal offset in the surface.
+         * @param {number} top The vertical offset in the surface.
+         * @param {number} w The width of the part.
+         * @param {number} h The height of the part.
+         * @returns {undefined}
+         */
         this.drawPartTransformed = (transform, left, top, w, h) => {
             bindTextureSurface(texture);
             
@@ -367,25 +420,71 @@ let Myr = function(canvasElement) {
             setAttributesDrawTransform(transform, w, h);
             setAttributesOrigin(0, 0);
         };
-        
+
+        /**
+         * Free all allocated GL objects for this surface.
+         * @returns {undefined}
+         */
         this.free = () => {
             gl.deleteTexture(texture);
             gl.deleteFramebuffer(framebuffer);
         };
-        
+
+        /**
+         * Set this surface as the drawing target.
+         * @returns {undefined}
+         */
         this.bind = () => {
             bind(this);
             
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             gl.viewport(0, 0, width, height);
         };
-        
+
+        /**
+         * Retrieve the WebGL texture.
+         * @returns {WebGLTexture} The used texture.
+         * @private
+         */
         this._getTexture = () => texture;
+
+        /**
+         * Retrieve all Shader objects.
+         * @returns {Shader[]} A list of all Shader objects.
+         */
         this.getShaders = () => shaders;
+
+        /**
+         * Retrieve the width of the surface.
+         * The surface must be ready for this information to be valid.
+         * @returns {number} The surface width.
+         */
         this.getWidth = () => width;
+
+        /**
+         * Retrieve the height of the surface.
+         * The surface must be ready for this information to be valid.
+         * @returns {number} The surface height.
+         */
         this.getHeight = () => height;
+
+        /**
+         * Set the clear color.
+         * @param {Color} color The color with which to clear the surface.
+         * @returns {undefined}
+         */
         this.setClearColor = color => clearColor = color;
+
+        /**
+         * Clear the surface with the clear color.
+         * @returns {undefined}
+         */
         this.clear = () => clear(clearColor);
+
+        /**
+         * State whether the image data has been loaded into memory.
+         * @returns {boolean} True if the surface is ready.
+         */
         this.ready = () => ready;
         
         const texture = gl.createTexture();
