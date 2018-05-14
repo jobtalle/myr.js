@@ -53,6 +53,7 @@ Function | Description
 [`getHeight()`](#getheight)|Returns the height of the default render target
 [`makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`](#makespriteframesurface-x-y-width-height-xorigin-yorigin-time)|Returns a sprite frame
 [`register(name, ...)`](#registername-)|Register a sprite
+[`isRegistered(name)`](#isregisteredname)|Check if a sprite is registered
 [`unregister(name)`](#unregistername)|Unregister a sprite
 [`transform(transform)`](#transformtransform)|Transform
 [`translate(x, y)`](#translatex-y)|Translate
@@ -123,7 +124,7 @@ yOrigin|`Number`|The frame y origin in pixels
 time|`Number`|The duration of this frame in seconds
 
 ### `register(name, ...)`
-Registers a new sprite under a name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite).
+Registers a new sprite under a name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite). When the sprite has been registered previously, the new frames overwrite the old ones.
 
 While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is created using the [`makeSpriteFrame`](#makespriteframesurface-x-y-width-height-xorigin-yorigin-time) function.
 
@@ -156,6 +157,13 @@ for(let i = 0; i < sprites.length; ++i)
 ```
 
 Note that `sprites` can be any kind of data, the member names may differ for other formats; it is only necessary that all required information about a sprite is passed. If animated sprites exist, any number of sprite frames can be passed to the [`register`](#registername-) function.
+
+### `isRegistered(name)`
+Returns a boolean indicating whether a sprite with the given name has been registered.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The name of the sprite
 
 ### `unregister(name)`
 Unregisters a previously registered sprite.
@@ -221,6 +229,7 @@ Function | Description
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale)|Draws the surface
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear)|Draws the surface
 [`drawTransformed(transform)`](#drawtransformedtransform)|Draws the surface
+[`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform)|Draws the surface
 [`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height)|Draws the surface
 [`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height)|Draws the surface
 
@@ -308,6 +317,15 @@ Parameter | Type | Description
 -|-|-
 transform|[`Transform`](#transform)|A transformation to apply to this surface
 
+### `drawTransformedAt(x, y, transform)`
+Draws this surface on the currently bound target at a certain position after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+transform|[`Transform`](#transform)|A transformation to apply to this surface
+
 ### `drawPart(x, y, left, top, width, height)`
 Draws a part of this surface on the currently bound render target. Make sure the specified region is part of the surface; rendering parts that fall outside this surface results in undefined behavior.
 
@@ -351,6 +369,7 @@ Function | Description
 [`drawRotated(x, y, angle)`](#drawrotatedx-y-angle)|Draws the sprite
 [`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle)|Draws the sprite
 [`drawTransformed(transform)`](#drawtransformedtransform-1)|Draws the sprite
+[`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform-1)|Draws the sprite
 [`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height-1)|Draws the sprite
 [`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height-1)|Draws the sprite
 
@@ -437,6 +456,15 @@ Draws this sprite on the currently bound target after applying a transformation 
 
 Parameter | Type | Description
 -|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this sprite
+
+### `drawTransformedAt(x, y, transform)`
+Draws this sprite on the currently bound target at a certain position after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
 transform|[`Transform`](#transform)|A transformation to apply to this sprite
 
 ### `drawPart(x, y, left, top, width, height)`

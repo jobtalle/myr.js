@@ -77,10 +77,15 @@ let Myr = function(canvasElement) {
         };
     };
 
+    Color.prototype.copy = function() {
+        return new Color(this.r, this.g, this.b, this.a);
+    }
+
     Color.prototype.add = function(color) {
         this.r = Math.min(this.r + color.r, 1);
         this.g = Math.min(this.g + color.g, 1);
         this.b = Math.min(this.b + color.b, 1);
+
         return this;
     };
 
@@ -88,7 +93,12 @@ let Myr = function(canvasElement) {
         this.r *= color.r;
         this.g *= color.g;
         this.b *= color.b;
+
         return this;
+    };
+
+    Color.prototype.equals = function(color) {
+        return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
     };
     
     const Vector = this.Vector = function(x, y) {
@@ -249,182 +259,7 @@ let Myr = function(canvasElement) {
         this._11 *= y;
     };
     
-    const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
-        instanceBuffer[++instanceBufferAt] = uvLeft;
-        instanceBuffer[++instanceBufferAt] = uvTop;
-        instanceBuffer[++instanceBufferAt] = uvWidth;
-        instanceBuffer[++instanceBufferAt] = uvHeight;
-    };
-    
-    const setAttributesUvPart = (uvLeft, uvTop, uvWidth, uvHeight, left, top, width, height) => {
-        instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * left;
-        instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * top;
-        instanceBuffer[++instanceBufferAt] = uvWidth * width;
-        instanceBuffer[++instanceBufferAt] = uvHeight * height;
-    };
-    
-    const setAttributesDraw = (x, y, width, height) => {
-        instanceBuffer[++instanceBufferAt] = width;
-        instanceBuffer[++instanceBufferAt] = 0;
-        instanceBuffer[++instanceBufferAt] = 0;
-        instanceBuffer[++instanceBufferAt] = height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
-    };
-    
-    const setAttributesDrawSheared = (x, y, width, height, xShear, yShear) => {
-        instanceBuffer[++instanceBufferAt] = width;
-        instanceBuffer[++instanceBufferAt] = width * xShear;
-        instanceBuffer[++instanceBufferAt] = height * yShear;
-        instanceBuffer[++instanceBufferAt] = height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
-    };
-    
-    const setAttributesDrawRotated = (x, y, width, height, angle) => {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        
-        instanceBuffer[++instanceBufferAt] = cos * width;
-        instanceBuffer[++instanceBufferAt] = sin * height;
-        instanceBuffer[++instanceBufferAt] = -sin * width;
-        instanceBuffer[++instanceBufferAt] = cos * height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
-    };
-    
-    const setAttributesDrawTransform = (transform, width, height) => {
-        instanceBuffer[++instanceBufferAt] = transform._00 * width;
-        instanceBuffer[++instanceBufferAt] = transform._10 * height;
-        instanceBuffer[++instanceBufferAt] = transform._01 * width;
-        instanceBuffer[++instanceBufferAt] = transform._11 * height;
-        instanceBuffer[++instanceBufferAt] = transform._20;
-        instanceBuffer[++instanceBufferAt] = transform._21;
-    };
-    
-    const setAttributesOrigin = (xOrigin, yOrigin) => {
-        instanceBuffer[++instanceBufferAt] = xOrigin;
-        instanceBuffer[++instanceBufferAt] = yOrigin;
-    };
-    
     this.Surface = function() {
-
-        /**
-         * Draw the entire surface with a translation transform.
-         * @param {number} x Where the surface is to be drawn horizontally.
-         * @param {number} y Where the surface is to be drawn vertically.
-         * @returns {undefined}
-         */
-        this.draw = (x, y) => {
-            bindTextureSurface(texture);
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDraw(x, y, width, height);
-            setAttributesOrigin(0, 0);
-        };
-
-        /**
-         * Draw the entire surface with a scale transform.
-         * @param {number} x Where the surface is to be drawn horizontally.
-         * @param {number} y Where the surface is to be drawn vertically.
-         * @param {number} xScale Horizontal scale.
-         * @param {number} yScale Vertical scale.
-         * @returns {undefined}
-         */
-        this.drawScaled = (x, y, xScale, yScale) => {
-            bindTextureSurface(texture);
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDraw(x, y, width * xScale, height * yScale);
-            setAttributesOrigin(0, 0);
-        };
-
-        /**
-         * Draw the entire surface with a shear transform.
-         * @param {number} x Where the surface is to be drawn horizontally.
-         * @param {number} y Where the surface is to be drawn vertically.
-         * @param {number} xShear Horizontal shear.
-         * @param {number} yShear Vertical shear.
-         * @returns {undefined}
-         */
-        this.drawSheared = (x, y, xShear, yShear) => {
-            bindTextureSurface(texture);
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDrawSheared(x, y, width, height, xShear, yShear);
-            setAttributesOrigin(0, 0);
-        };
-
-        /**
-         * Draw the entire surface with a given transform.
-         * @param {Transform} transform The transformation to apply.
-         * @returns {undefined}
-         */
-        this.drawTransformed = transform => {
-            bindTextureSurface(texture);
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDrawTransform(transform, width, height);
-            setAttributesOrigin(0, 0);
-        };
-
-        /**
-         * Draw a part of the surface at a given position.
-         * @param {number} x Where the part is to be drawn horizontally.
-         * @param {number} y Where the part is to be drawn vertically.
-         * @param {number} left The horizontal offset in the surface.
-         * @param {number} top The vertical offset in the surface.
-         * @param {number} w The width of the part.
-         * @param {number} h The height of the part.
-         * @returns {undefined}
-         */
-        this.drawPart = (x, y, left, top, w, h) => {
-            bindTextureSurface(texture);
-            
-            const wf = 1 / width;
-            const hf = 1 / height;
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUvPart(0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
-            setAttributesDraw(x, y, w, h);
-            setAttributesOrigin(0, 0);
-        };
-
-        /**
-         * Draw a part of the surface with a given transform.
-         * @param {Transform} transform The transformation to apply.
-         * @param {number} left The horizontal offset in the surface.
-         * @param {number} top The vertical offset in the surface.
-         * @param {number} w The width of the part.
-         * @param {number} h The height of the part.
-         * @returns {undefined}
-         */
-        this.drawPartTransformed = (transform, left, top, w, h) => {
-            bindTextureSurface(texture);
-            
-            const wf = 1 / width;
-            const hf = 1 / height;
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUvPart(0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
-            setAttributesDrawTransform(transform, w, h);
-            setAttributesOrigin(0, 0);
-        };
-
-        /**
-         * Free all allocated GL objects for this surface.
-         * @returns {undefined}
-         */
         this.free = () => {
             gl.deleteTexture(texture);
             gl.deleteFramebuffer(framebuffer);
@@ -441,17 +276,30 @@ let Myr = function(canvasElement) {
             gl.viewport(0, 0, width, height);
         };
 
-        /**
-         * Retrieve the WebGL texture.
-         * @returns {WebGLTexture} The used texture.
-         * @private
-         */
-        this._getTexture = () => texture;
+        this._prepareDraw = () => {
+            bindTextureSurface(texture);
+            prepareDraw(RENDER_MODE_SURFACES, 12);
 
-        /**
-         * Retrieve all Shader objects.
-         * @returns {Shader[]} A list of all Shader objects.
-         */
+            instanceBuffer[++instanceBufferAt] = 0;
+            instanceBuffer[++instanceBufferAt] = 0;
+        };
+        
+        this._addFrame = frame => {
+            if(ready) {
+                frame[5] /= width;
+                frame[6] /= height;
+                frame[7] /= width;
+                frame[8] /= height;
+            }
+            else
+                frames.push(frame);
+        };
+
+        this._getTexture = () => texture;
+        this._getUvLeft = () => 0;
+        this._getUvTop = () => 0;
+        this._getUvWidth = () => 1;
+        this._getUvHeight = () => 1;
         this.getShaders = () => shaders;
 
         /**
@@ -489,6 +337,7 @@ let Myr = function(canvasElement) {
         
         const texture = gl.createTexture();
         const framebuffer = gl.createFramebuffer();
+        const frames = [];
         
         let ready = false;
         let width = 0;
@@ -525,8 +374,14 @@ let Myr = function(canvasElement) {
                 
                 gl.activeTexture(TEXTURE_EDITING);
                 gl.bindTexture(gl.TEXTURE_2D, texture);
-                
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+                for(let frame = frames.pop(); frame != undefined; frame = frames.pop()) {
+                    frame[5] /= width;
+                    frame[6] /= height;
+                    frame[7] /= width;
+                    frame[8] /= height;
+                }
                 
                 ready = true;
             };
@@ -542,108 +397,6 @@ let Myr = function(canvasElement) {
     };
     
     this.Sprite = function(name) {
-        this.draw = (x, y) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDraw(x, y, frame[1], frame[2]);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawScaled = (x, y, xScale, yScale) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDraw(x, y, frame[1] * xScale, frame[2] * yScale);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawSheared = (x, y, xShear, yShear) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawSheared(x, y, frame[1], frame[2], xShear, yShear);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawRotated = (x, y, angle) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawRotated(x, y, frame[1], frame[2], angle);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawScaledRotated = (x, y, xScale, yScale, angle) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawRotated(x, y, frame[1] * xScale, frame[2] * yScale, angle);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawTransformed = transform => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawTransform(transform, frame[1], frame[2]);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawPart = (x, y, left, top, w, h) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            const wf = 1 / frame[1];
-            const hf = 1 / frame[2];
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
-            setAttributesDraw(x, y, w, h);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawPartTransformed = (transform, left, top, w, h) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            const wf = 1 / frame[1];
-            const hf = 1 / frame[2];
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
-            setAttributesDrawTransform(transform, w, h);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
         this.animate = timeStep => {
             const currentFrame = getFrame();
             
@@ -664,7 +417,21 @@ let Myr = function(canvasElement) {
             meshUvHeight = getFrame()[8];
         };
 
+        this._prepareDraw = () => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+
+            instanceBuffer[++instanceBufferAt] = frame[3];
+            instanceBuffer[++instanceBufferAt] = frame[4];
+        };
+
         this._getTexture = () => getFrame()[0];
+        this._getUvLeft = () => getFrame()[5];
+        this._getUvTop = () => getFrame()[6];
+        this._getUvWidth = () => getFrame()[7];
+        this._getUvHeight = () => getFrame()[8];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
         this.getWidth = () => getFrame()[1];
@@ -676,6 +443,154 @@ let Myr = function(canvasElement) {
         let frameCounter = 0;
         let frame = 0;
     };
+
+    const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
+        instanceBuffer[++instanceBufferAt] = uvLeft;
+        instanceBuffer[++instanceBufferAt] = uvTop;
+        instanceBuffer[++instanceBufferAt] = uvWidth;
+        instanceBuffer[++instanceBufferAt] = uvHeight;
+    };
+    
+    const setAttributesUvPart = (uvLeft, uvTop, uvWidth, uvHeight, left, top, width, height) => {
+        instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * left;
+        instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * top;
+        instanceBuffer[++instanceBufferAt] = uvWidth * width;
+        instanceBuffer[++instanceBufferAt] = uvHeight * height;
+    };
+    
+    const setAttributesDraw = (x, y, width, height) => {
+        instanceBuffer[++instanceBufferAt] = width;
+        instanceBuffer[++instanceBufferAt] = instanceBuffer[++instanceBufferAt] = 0;
+        instanceBuffer[++instanceBufferAt] = height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
+    
+    const setAttributesDrawSheared = (x, y, width, height, xShear, yShear) => {
+        instanceBuffer[++instanceBufferAt] = width;
+        instanceBuffer[++instanceBufferAt] = width * xShear;
+        instanceBuffer[++instanceBufferAt] = height * yShear;
+        instanceBuffer[++instanceBufferAt] = height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
+    
+    const setAttributesDrawRotated = (x, y, width, height, angle) => {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        
+        instanceBuffer[++instanceBufferAt] = cos * width;
+        instanceBuffer[++instanceBufferAt] = sin * height;
+        instanceBuffer[++instanceBufferAt] = -sin * width;
+        instanceBuffer[++instanceBufferAt] = cos * height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
+    
+    const setAttributesDrawTransform = (transform, width, height) => {
+        instanceBuffer[++instanceBufferAt] = transform._00 * width;
+        instanceBuffer[++instanceBufferAt] = transform._10 * height;
+        instanceBuffer[++instanceBufferAt] = transform._01 * width;
+        instanceBuffer[++instanceBufferAt] = transform._11 * height;
+        instanceBuffer[++instanceBufferAt] = transform._20;
+        instanceBuffer[++instanceBufferAt] = transform._21;
+    };
+
+    const setAttributesDrawTransformAt = (x, y, transform, width, height) => {
+        instanceBuffer[++instanceBufferAt] = transform._00 * width;
+        instanceBuffer[++instanceBufferAt] = transform._10 * height;
+        instanceBuffer[++instanceBufferAt] = transform._01 * width;
+        instanceBuffer[++instanceBufferAt] = transform._11 * height;
+        instanceBuffer[++instanceBufferAt] = transform._20 + x;
+        instanceBuffer[++instanceBufferAt] = transform._21 + y;
+    };
+
+    const Renderable = {};
+
+    Renderable.prototype = {
+        /**
+         * Draw at a certain position.
+         * @param {number} x Where the surface is to be drawn on the x axis.
+         * @param {number} y Where the surface is to be drawn on the y axis.
+         * @returns {undefined}
+         */
+        draw: function(x, y) {
+            this._prepareDraw();
+
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDraw(x, y, this.getWidth(), this.getHeight());
+        },
+
+        /**
+         * Draw with a given transform.
+         * @param {Transform} transform The transformation to apply.
+         * @returns {undefined}
+         */
+        drawScaled: function(x, y, xScale, yScale) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDraw(x, y, this.getWidth() * xScale, this.getHeight() * yScale);
+        },
+
+        drawSheared: function(x, y, xShear, yShear) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawSheared(x, y, this.getWidth(), this.getHeight(), xShear, yShear);
+        },
+
+        drawRotated: function(x, y, angle) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawRotated(x, y, this.getWidth(), this.getHeight(), angle);
+        },
+
+        drawScaledRotated: function(x, y, xScale, yScale, angle) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawRotated(x, y, this.getWidth() * xScale, this.getHeight() * yScale, angle);
+        },
+
+        drawTransformed: function(transform) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawTransform(transform, this.getWidth(), this.getHeight());
+        },
+
+        drawTransformedAt: function(x, y, transform) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawTransformAt(x, y, transform, this.getWidth(), this.getHeight());
+        },
+
+        drawPart: function(x, y, left, top, w, h) {
+            this._prepareDraw();
+
+            const wf = 1 / this.getWidth();
+            const hf = 1 / this.getHeight();
+            
+            setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
+            setAttributesDraw(x, y, w, h);
+        },
+
+        drawPartTransformed: function(transform, left, top, w, h) {
+            this._prepareDraw();
+
+            const wf = 1 / this.getWidth();
+            const hf = 1 / this.getHeight();
+            
+            setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
+            setAttributesDrawTransform(transform, w, h);
+        }
+    };
+
+    this.Surface.prototype = Object.create(Renderable.prototype);
+    this.Sprite.prototype = Object.create(Renderable.prototype);
     
     const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
@@ -965,7 +880,7 @@ let Myr = function(canvasElement) {
             return;
         
         flush();
-
+        
         gl.activeTexture(TEXTURE_ATLAS);
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -975,11 +890,7 @@ let Myr = function(canvasElement) {
     const clear = color => {
         flush();
         
-        gl.clearColor(
-            color.r * uboContents[8],
-            color.g * uboContents[9],
-            color.b * uboContents[10],
-            color.a * uboContents[11]);
+        gl.clearColor(color.r * uboContents[8], color.g * uboContents[9], color.b * uboContents[10], color.a * uboContents[11]);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
@@ -1020,8 +931,8 @@ let Myr = function(canvasElement) {
     
     const sendUniformBuffer = () => {
         if(surface == null) {
-            uboContents[3] = width;
-            uboContents[7] = height;
+            uboContents[3] = canvasElement.width;
+            uboContents[7] = canvasElement.height;
         }
         else {
             uboContents[3] = surface.getWidth();
@@ -1096,7 +1007,7 @@ let Myr = function(canvasElement) {
         bind(null);
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, width, height);
+        gl.viewport(0, 0, canvasElement.width, canvasElement.height);
     };
     
     this.register = function() {
@@ -1105,22 +1016,35 @@ let Myr = function(canvasElement) {
         for(let i = 1; i < arguments.length; ++i)
             frames.push(arguments[i]);
         
-        sprites[arguments[0]] = frames;
+        if(sprites[arguments[0]] === undefined)
+            sprites[arguments[0]] = frames;
+        else {
+            sprites[arguments[0]].length = 0;
+
+            for(let i = 0; i < frames.length; ++i)
+                sprites[arguments[0]].push(frames[i]);
+        }
     };
-        
+    
+    this.isRegistered = name => sprites[name] != undefined;
+
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
-        return [
+        const frame = [
             sheet._getTexture(),
             width,
             height,
             xOrigin / width,
             yOrigin / height,
-            x / sheet.getWidth(),
-            y / sheet.getHeight(),
-            width / sheet.getWidth(),
-            height / sheet.getHeight(),
+            x,
+            y,
+            width,
+            height,
             time
         ];
+
+        sheet._addFrame(frame);
+
+        return frame;
     };
     
     this.free = () => {
@@ -1178,8 +1102,8 @@ let Myr = function(canvasElement) {
     this.scale = (x, y) => touchTransform().scale(x, y);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
-    this.getWidth = () => width;
-    this.getHeight = () => height;
+    this.getWidth = () => canvasElement.width;
+    this.getHeight = () => canvasElement.height;
     this.unregister = name => delete sprites[name];
     
     const RENDER_MODE_NONE = -1;
@@ -1206,15 +1130,15 @@ let Myr = function(canvasElement) {
     const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
     const shaderCoreSprites = new ShaderCore(
         "layout(location=0) in mediump vec2 vertex;" +
-        "layout(location=1) in mediump vec4 atlas;" +
-        "layout(location=2) in mediump vec4 matrix;" +
-        "layout(location=3) in mediump vec4 position;" +
+        "layout(location=1) in mediump vec4 a1;" +
+        "layout(location=2) in mediump vec4 a2;" +
+        "layout(location=3) in mediump vec4 a3;" +
         uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
-            "uv=atlas.xy+vertex*atlas.zw;" +
-            "mediump vec2 transformed=(((vertex-position.zw)*" + 
-                "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
+            "uv=a1.zw+vertex*a2.xy;" +
+            "mediump vec2 transformed=(((vertex-a1.xy)*" + 
+                "mat2(a2.zw,a3.xy)+a3.zw)*" + 
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
@@ -1329,9 +1253,7 @@ let Myr = function(canvasElement) {
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
     let clearColor = new Color(0, 0, 0);
-    let width = canvasElement.width;
-    let height = canvasElement.height;
-
+    
     uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
     
     gl.enable(gl.BLEND);
@@ -1379,3 +1301,5 @@ let Myr = function(canvasElement) {
     
     this.bind();
 };
+
+if (typeof module !== 'undefined') module.exports = Myr;
