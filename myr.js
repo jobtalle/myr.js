@@ -1,7 +1,7 @@
 /**
- * The constructor method of the Myriad library,
+ * Constructs the Myriad library,
  * All global functions and objects are members of the returned object.
- * @param {Element} canvasElement HTML Canvas containing a WebGL 2 context.
+ * @param {Element} canvasElement HTML Canvas containing a WebGL 2 context
  * @constructor
  */
 let Myr = function(canvasElement) {
@@ -10,44 +10,52 @@ let Myr = function(canvasElement) {
         depth: false
     });
     
-    const Color = this.Color = function(r, g, b, a) {
+    /**
+     * Constructs a Color object, which represents a 4-channel color.
+     * @constructor
+     * @param {number} r Red value in the range [0, 1]
+     * @param {number} g Green value in the range [0, 1]
+     * @param {number} b Blue value in the range [0, 1]
+     * @param {number} [a=1] Alpha (transparency) value in the range [0, 1]
+     */
+    this.Color = function(r, g, b, a) {
         this.r = r;
         this.g = g;
         this.b = b;
         this.a = a === undefined?1:a;
     };
     
-    Color.BLACK = new Color(0, 0, 0);
-    Color.BLUE = new Color(0, 0, 1);
-    Color.GREEN = new Color(0, 1, 0);
-    Color.CYAN = new Color(0, 1, 1);
-    Color.RED = new Color(1, 0, 0);
-    Color.MAGENTA = new Color(1, 0, 1);
-    Color.YELLOW = new Color(1, 1, 0);
-    Color.WHITE = new Color(1, 1, 1);
+    this.Color.BLACK = new this.Color(0, 0, 0);
+    this.Color.BLUE = new this.Color(0, 0, 1);
+    this.Color.GREEN = new this.Color(0, 1, 0);
+    this.Color.CYAN = new this.Color(0, 1, 1);
+    this.Color.RED = new this.Color(1, 0, 0);
+    this.Color.MAGENTA = new this.Color(1, 0, 1);
+    this.Color.YELLOW = new this.Color(1, 1, 0);
+    this.Color.WHITE = new this.Color(1, 1, 1);
 
-    Color.fromHSV = (h, s, v) => {
+    this.Color.fromHSV = (h, s, v) => {
         const c = v * s;
         const x = c * (1 - Math.abs((h * 6) % 2 - 1));
         const m = v - c;
 
         switch(Math.floor(h * 6)) {
             case 1:
-                return new Color(x + m, c + m, m);
+                return new this.Color(x + m, c + m, m);
             case 2:
-                return new Color(m, c + m, x + m);
+                return new this.Color(m, c + m, x + m);
             case 3:
-                return new Color(m, x + m, c + m);
+                return new this.Color(m, x + m, c + m);
             case 4:
-                return new Color(x + m, m, c + m);
+                return new this.Color(x + m, m, c + m);
             case 5:
-                return new Color(c + m, m, x + m);
+                return new this.Color(c + m, m, x + m);
             default:
-                return new Color(c + m, x + m, m);
+                return new this.Color(c + m, x + m, m);
         }
     };
 
-    Color.prototype.toHSV = function() {
+    this.Color.prototype.toHSV = function() {
         const cMax = Math.max(this.r, this.g, this.b);
         const cMin = Math.min(this.r, this.g, this.b);
         let h, s, l = (cMax + cMin) * 0.5;
@@ -77,11 +85,11 @@ let Myr = function(canvasElement) {
         };
     };
 
-    Color.prototype.copy = function() {
-        return new Color(this.r, this.g, this.b, this.a);
+    this.Color.prototype.copy = function() {
+        return new this.Color(this.r, this.g, this.b, this.a);
     }
 
-    Color.prototype.add = function(color) {
+    this.Color.prototype.add = function(color) {
         this.r = Math.min(this.r + color.r, 1);
         this.g = Math.min(this.g + color.g, 1);
         this.b = Math.min(this.b + color.b, 1);
@@ -89,7 +97,7 @@ let Myr = function(canvasElement) {
         return this;
     };
 
-    Color.prototype.multiply = function(color) {
+    this.Color.prototype.multiply = function(color) {
         this.r *= color.r;
         this.g *= color.g;
         this.b *= color.b;
@@ -97,7 +105,7 @@ let Myr = function(canvasElement) {
         return this;
     };
 
-    Color.prototype.equals = function(color) {
+    this.Color.prototype.equals = function(color) {
         return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
     };
     
@@ -342,7 +350,7 @@ let Myr = function(canvasElement) {
         let ready = false;
         let width = 0;
         let height = 0;
-        let clearColor = new Color(0, 0, 0, 0);
+        let clearColor = new this.Color(0, 0, 0, 0);
         
         gl.activeTexture(TEXTURE_EDITING);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -1252,7 +1260,7 @@ let Myr = function(canvasElement) {
     let instanceBufferAt = -1;
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
-    let clearColor = new Color(0, 0, 0);
+    let clearColor = new this.Color(0, 0, 0);
     
     uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
     
@@ -1302,4 +1310,4 @@ let Myr = function(canvasElement) {
     this.bind();
 };
 
-if (typeof module !== 'undefined') module.exports = Myr;
+if(typeof module !== 'undefined') module.exports = Myr;
