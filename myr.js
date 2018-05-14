@@ -1280,3 +1280,5 @@ let Myr = function(canvasElement) {
     
     this.bind();
 };
+
+if (typeof module !== 'undefined') module.exports = Myr;
