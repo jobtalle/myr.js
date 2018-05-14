@@ -385,6 +385,8 @@ Function | Description
 [`getFrame()`](#getframe)|Returns the current frame
 [`getWidth()`](#getwidth-2)|Returns the sprite width
 [`getHeight()`](#getheight-2)|Returns the sprite height
+[`getOriginX()`](#getoriginx)|Returns the X origin
+[`getOriginY()`](#getoriginy)|Returns the Y origin
 [`draw(x, y)`](#drawx-y-1)|Draws the sprite
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-1)|Draws the sprite
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-1)|Draws the sprite
@@ -424,6 +426,12 @@ Returns the width of the sprite in pixels.
 
 ### `getHeight()`
 Returns the height of the sprite in pixels.
+
+### `getOriginX()`
+Returns the X origin of this sprite's current frame.
+
+### `getOriginY()`
+Returns the Y origin of this sprite's current frame.
 
 ### `draw(x, y)`
 Draws this sprite on the currently bound target.

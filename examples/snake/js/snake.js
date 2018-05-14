@@ -8,7 +8,7 @@ const Snake = function(myr) {
     const ANCHOR_SPACING = 16;
     const ANCHOR_COUNT = (SEGMENT_LENGTH * SEGMENTS + LAG_MAX) / ANCHOR_SPACING + 4 + 2;
           
-    const sheet = new myr.Surface("img/snake.png", 128, 128);
+    const sheet = new myr.Surface("img/snake.png");
     const anchors = [];
     const mesh = [];
     let anchorDistance = 0;

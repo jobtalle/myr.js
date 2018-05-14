@@ -398,6 +398,8 @@ let Myr = function(canvasElement) {
         this.getFrame = () => frame;
         this.getWidth = () => getFrame()[1];
         this.getHeight = () => getFrame()[2];
+        this.getOriginX = () => getFrame()[3] * this.getWidth();
+        this.getOriginY = () => getFrame()[4] * this.getHeight();
                
         const getFrame = () => frames[frame];
         
