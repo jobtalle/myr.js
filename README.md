@@ -228,6 +228,8 @@ Function | Description
 [`draw(x, y)`](#drawx-y)|Draws the surface
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale)|Draws the surface
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear)|Draws the surface
+[`drawRotated(x, y, angle)`](#drawrotatedx-y-angle)|Draws the surface
+[`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle)|Draws the surface
 [`drawTransformed(transform)`](#drawtransformedtransform)|Draws the surface
 [`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform)|Draws the surface
 [`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height)|Draws the surface
@@ -310,6 +312,26 @@ y|`Number`|The Y position to draw to
 xShear|`Number`|Horizontal shearing
 yShear|`Number`|Vertical shearing
 
+### `drawRotated(x, y, angle)`
+Draws this surface on the currently bound target after applying rotation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+angle|`Number`|The rotation in radians
+
+### `drawScaledRotated(x, y, xScale, yScale, angle)`
+Draws this surface on the currently bound target after applying both scaling and rotation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+xScale|`Number`|The horizontal scale factor
+yScale|`Number`|The vertical scale factor
+angle|`Number`|The rotation in radians
+
 ### `drawTransformed(transform)`
 Draws this surface on the currently bound target after applying a transformation to it.
 
@@ -366,8 +388,8 @@ Function | Description
 [`draw(x, y)`](#drawx-y-1)|Draws the sprite
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-1)|Draws the sprite
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-1)|Draws the sprite
-[`drawRotated(x, y, angle)`](#drawrotatedx-y-angle)|Draws the sprite
-[`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle)|Draws the sprite
+[`drawRotated(x, y, angle)`](#drawrotatedx-y-angle-1)|Draws the sprite
+[`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle-1)|Draws the sprite
 [`drawTransformed(transform)`](#drawtransformedtransform-1)|Draws the sprite
 [`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform-1)|Draws the sprite
 [`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height-1)|Draws the sprite
