@@ -1,40 +1,26 @@
-/**
- * Constructs the Myriad library,
- * All global functions and objects are members of the returned object.
- * @param {Element} canvasElement HTML Canvas containing a WebGL 2 context
- * @constructor
- */
 let Myr = function(canvasElement) {
     const gl = canvasElement.getContext("webgl2", {
         antialias: false,
         depth: false
     });
     
-    /**
-     * Constructs a Color object, which represents a 4-channel color.
-     * @constructor
-     * @param {number} r Red value in the range [0, 1]
-     * @param {number} g Green value in the range [0, 1]
-     * @param {number} b Blue value in the range [0, 1]
-     * @param {number} [a=1] Alpha (transparency) value in the range [0, 1]
-     */
-    this.Color = function(r, g, b, a) {
+    const Color = this.Color = function(r, g, b, a) {
         this.r = r;
         this.g = g;
         this.b = b;
         this.a = a === undefined?1:a;
     };
     
-    this.Color.BLACK = new this.Color(0, 0, 0);
-    this.Color.BLUE = new this.Color(0, 0, 1);
-    this.Color.GREEN = new this.Color(0, 1, 0);
-    this.Color.CYAN = new this.Color(0, 1, 1);
-    this.Color.RED = new this.Color(1, 0, 0);
-    this.Color.MAGENTA = new this.Color(1, 0, 1);
-    this.Color.YELLOW = new this.Color(1, 1, 0);
-    this.Color.WHITE = new this.Color(1, 1, 1);
+    Color.BLACK = new this.Color(0, 0, 0);
+    Color.BLUE = new this.Color(0, 0, 1);
+    Color.GREEN = new this.Color(0, 1, 0);
+    Color.CYAN = new this.Color(0, 1, 1);
+    Color.RED = new this.Color(1, 0, 0);
+    Color.MAGENTA = new this.Color(1, 0, 1);
+    Color.YELLOW = new this.Color(1, 1, 0);
+    Color.WHITE = new this.Color(1, 1, 1);
 
-    this.Color.fromHSV = (h, s, v) => {
+    Color.fromHSV = (h, s, v) => {
         const c = v * s;
         const x = c * (1 - Math.abs((h * 6) % 2 - 1));
         const m = v - c;
@@ -55,7 +41,7 @@ let Myr = function(canvasElement) {
         }
     };
 
-    this.Color.prototype.toHSV = function() {
+    Color.prototype.toHSV = function() {
         const cMax = Math.max(this.r, this.g, this.b);
         const cMin = Math.min(this.r, this.g, this.b);
         let h, s, l = (cMax + cMin) * 0.5;
@@ -85,11 +71,11 @@ let Myr = function(canvasElement) {
         };
     };
 
-    this.Color.prototype.copy = function() {
+    Color.prototype.copy = function() {
         return new this.Color(this.r, this.g, this.b, this.a);
     }
 
-    this.Color.prototype.add = function(color) {
+    Color.prototype.add = function(color) {
         this.r = Math.min(this.r + color.r, 1);
         this.g = Math.min(this.g + color.g, 1);
         this.b = Math.min(this.b + color.b, 1);
@@ -97,7 +83,7 @@ let Myr = function(canvasElement) {
         return this;
     };
 
-    this.Color.prototype.multiply = function(color) {
+    Color.prototype.multiply = function(color) {
         this.r *= color.r;
         this.g *= color.g;
         this.b *= color.b;
@@ -105,7 +91,7 @@ let Myr = function(canvasElement) {
         return this;
     };
 
-    this.Color.prototype.equals = function(color) {
+    Color.prototype.equals = function(color) {
         return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
     };
     
@@ -273,10 +259,6 @@ let Myr = function(canvasElement) {
             gl.deleteFramebuffer(framebuffer);
         };
 
-        /**
-         * Set this surface as the drawing target.
-         * @returns {undefined}
-         */
         this.bind = () => {
             bind(this);
             
@@ -308,39 +290,11 @@ let Myr = function(canvasElement) {
         this._getUvTop = () => 0;
         this._getUvWidth = () => 1;
         this._getUvHeight = () => 1;
-        this.getShaders = () => shaders;
 
-        /**
-         * Retrieve the width of the surface.
-         * The surface must be ready for this information to be valid.
-         * @returns {number} The surface width.
-         */
         this.getWidth = () => width;
-
-        /**
-         * Retrieve the height of the surface.
-         * The surface must be ready for this information to be valid.
-         * @returns {number} The surface height.
-         */
         this.getHeight = () => height;
-
-        /**
-         * Set the clear color.
-         * @param {Color} color The color with which to clear the surface.
-         * @returns {undefined}
-         */
         this.setClearColor = color => clearColor = color;
-
-        /**
-         * Clear the surface with the clear color.
-         * @returns {undefined}
-         */
         this.clear = () => clear(clearColor);
-
-        /**
-         * State whether the image data has been loaded into memory.
-         * @returns {boolean} True if the surface is ready.
-         */
         this.ready = () => ready;
         
         const texture = gl.createTexture();
@@ -350,7 +304,7 @@ let Myr = function(canvasElement) {
         let ready = false;
         let width = 0;
         let height = 0;
-        let clearColor = new this.Color(0, 0, 0, 0);
+        let clearColor = new Color(0, 0, 0, 0);
         
         gl.activeTexture(TEXTURE_EDITING);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -516,12 +470,6 @@ let Myr = function(canvasElement) {
     const Renderable = {};
 
     Renderable.prototype = {
-        /**
-         * Draw at a certain position.
-         * @param {number} x Where the surface is to be drawn on the x axis.
-         * @param {number} y Where the surface is to be drawn on the y axis.
-         * @returns {undefined}
-         */
         draw: function(x, y) {
             this._prepareDraw();
 
@@ -529,11 +477,6 @@ let Myr = function(canvasElement) {
             setAttributesDraw(x, y, this.getWidth(), this.getHeight());
         },
 
-        /**
-         * Draw with a given transform.
-         * @param {Transform} transform The transformation to apply.
-         * @returns {undefined}
-         */
         drawScaled: function(x, y, xScale, yScale) {
             this._prepareDraw();
             
@@ -745,7 +688,7 @@ let Myr = function(canvasElement) {
         if(currentTextureMesh == source._getTexture())
             return;
         
-        flush();
+        this.flush();
         
         gl.activeTexture(TEXTURE_MESH);
         gl.bindTexture(gl.TEXTURE_2D, source._getTexture());
@@ -860,7 +803,7 @@ let Myr = function(canvasElement) {
         if(surface == target)
             return;
         
-        flush();
+        this.flush();
         
         if(surface != null)
             this.pop();
@@ -875,7 +818,7 @@ let Myr = function(canvasElement) {
         if(currentTextureSurface == texture)
             return;
         
-        flush();
+        this.flush();
         
         gl.activeTexture(TEXTURE_SURFACE);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -887,7 +830,7 @@ let Myr = function(canvasElement) {
         if(currentTextureAtlas == texture)
             return;
         
-        flush();
+        this.flush();
         
         gl.activeTexture(TEXTURE_ATLAS);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -896,13 +839,13 @@ let Myr = function(canvasElement) {
     };
     
     const clear = color => {
-        flush();
+        this.flush();
         
         gl.clearColor(color.r * uboContents[8], color.g * uboContents[9], color.b * uboContents[10], color.a * uboContents[11]);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
-    const flush = this.flush = () => {
+    this.flush = () => {
         if(instanceCount == 0)
             return;
         
@@ -961,13 +904,13 @@ let Myr = function(canvasElement) {
     
     const prepareDraw = (mode, size) => {
         if(transformDirty) {
-            flush();
+            this.flush();
             
             sendUniformBuffer();
         }
         
         if(renderMode != mode) {
-            flush();
+            this.flush();
             
             renderMode = mode;
         
@@ -1075,7 +1018,7 @@ let Myr = function(canvasElement) {
             uboContents[11] == color.a)
             return;
         
-        flush();
+        this.flush();
         
         uboContents[8] = color.r;
         uboContents[9] = color.g;
@@ -1089,7 +1032,7 @@ let Myr = function(canvasElement) {
         if(uboContents[11] == alpha)
             return;
         
-        flush();
+        this.flush();
         
         uboContents[11] = alpha;
         

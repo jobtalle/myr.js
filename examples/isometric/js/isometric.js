@@ -1,4 +1,22 @@
-const Isometric = function(myr) {
+const Isometric = function(myr, width, height) {
+    this.Block = function(name) {
+        const texture = textures[name];
+
+        this.render = () => {
+            if(texture.isTransparent()) {
+                texture.getFloor().drawTransformedAt(0, 0, tRoof);
+                
+                for(let i = 0; i < backWalls.length; ++i)
+                    texture.getWall(backWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[backWalls[i]]);
+            }
+            
+            for(let i = 0; i < frontWalls.length; ++i)
+                texture.getWall(frontWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[frontWalls[i]]);
+
+            texture.getRoof().drawTransformedAt(0, -8 * Math.cos(pitch), tRoof);
+        };
+    };
+
     const Texture = function(blockName) {
         const walls = [];
         let floor = undefined;
@@ -20,39 +38,21 @@ const Isometric = function(myr) {
         walls.push(new myr.Sprite(blockName + "-south"));
         walls.push(new myr.Sprite(blockName + "-west"));
     };
-
-    const Block = function(name) {
-        const texture = textures[name];
-
-        this.render = () => {
-            if(texture.isTransparent()) {
-                texture.getFloor().drawTransformedAt(0, 0, tRoof);
-                
-                for(let i = 0; i < backWalls.length; ++i)
-                    texture.getWall(backWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[backWalls[i]]);
-            }
-                
-            for(let i = 0; i < frontWalls.length; ++i)
-                texture.getWall(frontWalls[i]).drawTransformedAt(0, 8 * Math.cos(pitch), tWalls[frontWalls[i]]);
-
-            texture.getRoof().drawTransformedAt(0, -8 * Math.cos(pitch), tRoof);
-        };
-    };
     
-    const registerSprites = () => {
-        parts = new myr.Surface(sprites.getWidth() * 3, sprites.getHeight());
+    const partitionTextures = () => {
+        parts = new myr.Surface(sprites.getWidth() * 2, sprites.getHeight() * 2);
         parts.bind();
         parts.clear();
 
-        const blockKeys = Object.keys(blockSprites);
+        const blockKeys = Object.keys(locations);
 
         for(let i = 0; i < blockKeys.length; ++i) {
             const block = blockKeys[i];
-            const partKeys = Object.keys(blockSprites[block]);
+            const partKeys = Object.keys(locations[block]);
 
             for(let j = 0; j < partKeys.length; ++j) {
                 const part = partKeys[j];
-                const frame = blockSprites[block][part];
+                const frame = locations[block][part];
                 
                 switch(part) {
                     case "floor":
@@ -65,13 +65,13 @@ const Isometric = function(myr) {
                         textures[block].getWall(0).draw(frame[0] + sprites.getWidth(), frame[1] + frame[3]);
                         break;
                     case "east":
-                        textures[block].getWall(1).draw(frame[0] + sprites.getWidth() * 2, frame[1] + frame[3]);
+                        textures[block].getWall(1).draw(frame[0], frame[1] + frame[3] + sprites.getHeight());
                         break;
                     case "south":
                         textures[block].getWall(2).draw(frame[0] + sprites.getWidth(), frame[1] + frame[3]);
                         break;
                     case "west":
-                        textures[block].getWall(3).draw(frame[0] + sprites.getWidth() * 2, frame[1] + frame[3]);
+                        textures[block].getWall(3).draw(frame[0], frame[1] + frame[3] + sprites.getHeight());
                         break;
                 }
             }
@@ -104,7 +104,7 @@ const Isometric = function(myr) {
         parts.drawPart(0, 0, sprites.getWidth(), 0, sprites.getWidth(), sprites.getHeight());
 
         myr.setColor(cEastWest);
-        parts.drawPart(0, 0, sprites.getWidth() * 2, 0, sprites.getWidth(), sprites.getHeight());
+        parts.drawPart(0, 0, 0, sprites.getHeight(), sprites.getWidth(), sprites.getHeight());
 
         myr.setColor(myr.Color.WHITE);
     };
@@ -139,7 +139,7 @@ const Isometric = function(myr) {
     const render = () => {
         if(parts === null) {
             if(sprites.ready())
-                registerSprites();
+                partitionTextures();
             else
                 return;
         }
@@ -158,9 +158,6 @@ const Isometric = function(myr) {
         myr.translate(myr.getWidth() / 2, myr.getHeight() / 2);
         myr.scale(zoom, zoom);
 
-        for(let i = 0; i < blocks.length; ++i)
-            blocks[i].render();
-
         myr.pop();
 
         sprites.draw(10, 10);
@@ -168,13 +165,7 @@ const Isometric = function(myr) {
         myr.flush();
     };
 
-    const generate = () => {
-        blocks.push(new Block("colorbox"));
-    };
-
     this.start = () => {
-        generate();
-
         myr.utils.loop(function(timeStep) {
             update(timeStep);
             render();
@@ -215,7 +206,46 @@ const Isometric = function(myr) {
             zoom = ZOOM_MIN;
     };
 
-    const blockSprites = {
+    const loadTextures = (sprites, locations) => {
+        const textures = {};
+        const blockKeys = Object.keys(locations);
+
+        for(let i = 0; i < blockKeys.length; ++i) {
+            const block = blockKeys[i];
+            const partKeys = Object.keys(locations[block]);
+    
+            for(let j = 0; j < partKeys.length; ++j) {
+                const part = partKeys[j];
+                let xOrigin, yOrigin;
+    
+                switch(part) {
+                    case "roof":
+                    case "floor":
+                        xOrigin = locations[block][part][2] * 0.5;
+                        yOrigin = locations[block][part][3] * 0.5;
+                        break;
+                    default:
+                        xOrigin = 0;
+                        yOrigin = locations[block][part][3];
+                }
+    
+                myr.register(block + "-" + part, myr.makeSpriteFrame(sprites,
+                    locations[block][part][0],
+                    locations[block][part][1],
+                    locations[block][part][2],
+                    locations[block][part][3],
+                    xOrigin,
+                    yOrigin,
+                    0));
+            }
+    
+            textures[block] = new Texture(block);
+        }
+
+        return textures;
+    };
+
+    const locations = {
         colorbox: {
             roof: [0, 0, 16, 16],
             floor: [16, 0, 16, 16],
@@ -226,43 +256,11 @@ const Isometric = function(myr) {
         }
     };
 
-    const textures = {};
-    const blockKeys = Object.keys(blockSprites);
+    const grid = new Array(width * height);
     const sprites = new myr.Surface("img/dirtWaterBottom.png");
+    const textures = loadTextures(sprites, locations);
     let parts = null;
     let rotated = true;
-
-    for(let i = 0; i < blockKeys.length; ++i) {
-        const block = blockKeys[i];
-        const partKeys = Object.keys(blockSprites[block]);
-
-        for(let j = 0; j < partKeys.length; ++j) {
-            const part = partKeys[j];
-            let xOrigin, yOrigin;
-
-            switch(part) {
-                case "roof":
-                case "floor":
-                    xOrigin = blockSprites[block][part][2] * 0.5;
-                    yOrigin = blockSprites[block][part][3] * 0.5;
-                    break;
-                default:
-                    xOrigin = 0;
-                    yOrigin = blockSprites[block][part][3];
-            }
-
-            myr.register(block + "-" + part, myr.makeSpriteFrame(sprites,
-                blockSprites[block][part][0],
-                blockSprites[block][part][1],
-                blockSprites[block][part][2],
-                blockSprites[block][part][3],
-                xOrigin,
-                yOrigin,
-                0));
-        }
-
-        textures[block] = new Texture(block);
-    }
 
     const CLEAR_COLOR = new myr.Color(0.2, 0.8, 0.5);
     const ZOOM_MIN = 1;
@@ -273,7 +271,6 @@ const Isometric = function(myr) {
     const cTop = new myr.Color(1, 1, 1);
     const cNorthSouth = new myr.Color(1, 1, 1);
     const cEastWest = new myr.Color(1, 1, 1);
-    const blocks = [];
     const backWalls = [0, 1];
     const frontWalls = [2, 3];
 
@@ -282,10 +279,13 @@ const Isometric = function(myr) {
     let zoom = 12;
 
     myr.setClearColor(CLEAR_COLOR);
+    
+    for(let i = 0; i < grid.length; ++i)
+        grid[i] = [];
 };
 
 const renderer = document.getElementById("renderer");
-const isometric = new Isometric(new Myr(renderer));
+const isometric = new Isometric(new Myr(renderer), 8, 8);
 
 let dragging = false;
 let mouseX = 0;
