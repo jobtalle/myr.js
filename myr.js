@@ -1249,4 +1249,8 @@ let Myr = function(canvasElement) {
     gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 16, 0);
     
     gl.bindVertexArray(null);
+    
+    this.bind();
 };
+
+if (typeof module !== 'undefined') module.exports = Myr;
