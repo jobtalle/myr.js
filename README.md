@@ -147,6 +147,7 @@ for(let i = 0; i < sprites.length; ++i)
     myr.register(
         sprites[i].name,
         myr.makeSpriteFrame(
+            sheet,
             sprites[i].x,
             sprites[i].y,
             sprites[i].width,
