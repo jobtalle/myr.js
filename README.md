@@ -53,6 +53,7 @@ Function | Description
 [`getHeight()`](#getheight)|Returns the height of the default render target
 [`makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`](#makespriteframesurface-x-y-width-height-xorigin-yorigin-time)|Returns a sprite frame
 [`register(name, ...)`](#registername-)|Register a sprite
+[`isRegistered(name)`](#isregisteredname)|Check if a sprite is registered
 [`unregister(name)`](#unregistername)|Unregister a sprite
 [`transform(transform)`](#transformtransform)|Transform
 [`translate(x, y)`](#translatex-y)|Translate
@@ -109,7 +110,7 @@ Returns the width of the default render target
 Returns the height of the default render target
 
 ### `makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`
-Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function.
+Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function. If the time parameter is less than zero, [sprite animation](#animatetimestep) will stop at this frame.
 
 Parameter | Type | Description
 -|-|-
@@ -123,7 +124,7 @@ yOrigin|`Number`|The frame y origin in pixels
 time|`Number`|The duration of this frame in seconds
 
 ### `register(name, ...)`
-Registers a new sprite under a name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite).
+Registers a new sprite under a name. Once a sprite has been registered, its name can be used to instatiate [sprites](#sprite). When the sprite has been registered previously, the new frames overwrite the old ones.
 
 While the first argument must be the sprite name, the number of following parameters depends on the number of frames. All frames must be passed as arguments after the sprite name. A frame is created using the [`makeSpriteFrame`](#makespriteframesurface-x-y-width-height-xorigin-yorigin-time) function.
 
@@ -134,8 +135,8 @@ name|`String`|The name of the sprite to register
 Registering sprites usually happens when loading a sprite sheet. This sheet is first loaded onto a surface, after which all sprites on the sheet are registered to make them available for use. This will usually look like this:
 
 ```javascript
-// Load a sprite sheet of 512x512 pixels
-sheet = new myr.Surface("source.png", 512, 512);
+// Load a sprite sheet
+sheet = new myr.Surface("source.png");
 
 // Load information about the sprites in this sheet
 // This could be loaded from JSon exported by a sprite sheet tool
@@ -156,6 +157,13 @@ for(let i = 0; i < sprites.length; ++i)
 ```
 
 Note that `sprites` can be any kind of data, the member names may differ for other formats; it is only necessary that all required information about a sprite is passed. If animated sprites exist, any number of sprite frames can be passed to the [`register`](#registername-) function.
+
+### `isRegistered(name)`
+Returns a boolean indicating whether a sprite with the given name has been registered.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The name of the sprite
 
 ### `unregister(name)`
 Unregisters a previously registered sprite.
@@ -210,6 +218,7 @@ Function | Description
 -|-
 [`Surface(width, height)`](#surfacewidth-height)|Construct from size
 [`Surface(image)`](#surfaceimage)|Construct from image
+[`Surface(image, width, height)`](#surfaceimage-width-height)|Construct from image and size
 [`bind()`](#bind-1)|Bind the surface
 [`setClearColor(color)`](#setclearcolorcolor-1)|Set clear color
 [`clear()`](#clear-1)|Clear the surface
@@ -220,7 +229,10 @@ Function | Description
 [`draw(x, y)`](#drawx-y)|Draws the surface
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale)|Draws the surface
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear)|Draws the surface
+[`drawRotated(x, y, angle)`](#drawrotatedx-y-angle)|Draws the surface
+[`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle)|Draws the surface
 [`drawTransformed(transform)`](#drawtransformedtransform)|Draws the surface
+[`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform)|Draws the surface
 [`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height)|Draws the surface
 [`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height)|Draws the surface
 
@@ -301,11 +313,40 @@ y|`Number`|The Y position to draw to
 xShear|`Number`|Horizontal shearing
 yShear|`Number`|Vertical shearing
 
+### `drawRotated(x, y, angle)`
+Draws this surface on the currently bound target after applying rotation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+angle|`Number`|The rotation in radians
+
+### `drawScaledRotated(x, y, xScale, yScale, angle)`
+Draws this surface on the currently bound target after applying both scaling and rotation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+xScale|`Number`|The horizontal scale factor
+yScale|`Number`|The vertical scale factor
+angle|`Number`|The rotation in radians
+
 ### `drawTransformed(transform)`
 Draws this surface on the currently bound target after applying a transformation to it.
 
 Parameter | Type | Description
 -|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this surface
+
+### `drawTransformedAt(x, y, transform)`
+Draws this surface on the currently bound target at a certain position after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
 transform|[`Transform`](#transform)|A transformation to apply to this surface
 
 ### `drawPart(x, y, left, top, width, height)`
@@ -343,14 +384,19 @@ Function | Description
 [`animate(timeStep)`](#animatetimestep)|Animates the sprite
 [`setFrame(frame)`](#setframeframe)|Set the current frame
 [`getFrame()`](#getframe)|Returns the current frame
+[`isFinished()`](#isfinished)|Returns whether the animation is finished
+[`getFrameCount()`](#getframecount)|Returns the number of frames
 [`getWidth()`](#getwidth-2)|Returns the sprite width
 [`getHeight()`](#getheight-2)|Returns the sprite height
+[`getOriginX()`](#getoriginx)|Returns the X origin
+[`getOriginY()`](#getoriginy)|Returns the Y origin
 [`draw(x, y)`](#drawx-y-1)|Draws the sprite
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-1)|Draws the sprite
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-1)|Draws the sprite
-[`drawRotated(x, y, angle)`](#drawrotatedx-y-angle)|Draws the sprite
-[`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle)|Draws the sprite
+[`drawRotated(x, y, angle)`](#drawrotatedx-y-angle-1)|Draws the sprite
+[`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle-1)|Draws the sprite
 [`drawTransformed(transform)`](#drawtransformedtransform-1)|Draws the sprite
+[`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform-1)|Draws the sprite
 [`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height-1)|Draws the sprite
 [`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height-1)|Draws the sprite
 
@@ -362,7 +408,7 @@ Parameter | Type | Description
 name|`String`|The sprite source
 
 ### `animate(timeStep)`
-Advances the animation frame of this sprite according to its own frame rate. When the maximum frame has been reached, the animation rewinds. If a sprite only has one frame, this method does nothing.
+Advances the animation frame of this sprite according to its frame times. When the maximum frame has been reached, the animation rewinds. If a sprite only has one frame, this method does nothing. Note that the animation stops at any frame with a time value below zero.
 
 Parameter | Type | Description
 -|-|-
@@ -378,11 +424,23 @@ frame|`Number`|The frame index this sprite should be at, starting at zero
 ### `getFrame()`
 Returns the current frame index.
 
+### `isFinished()`
+Returns a boolean indicating whether the animation is finished. A sprite animation is finished when _any_ frame with a time value below zero is reached. If the frame is set to another frame using [`setFrame`](#setframeframe) after this, the animation will continue again.
+
+### `getFrameCount()`
+Returns the total number of frames for this sprite.
+
 ### `getWidth()`
 Returns the width of the sprite in pixels.
 
 ### `getHeight()`
 Returns the height of the sprite in pixels.
+
+### `getOriginX()`
+Returns the X origin of this sprite's current frame.
+
+### `getOriginY()`
+Returns the Y origin of this sprite's current frame.
 
 ### `draw(x, y)`
 Draws this sprite on the currently bound target.
@@ -437,6 +495,15 @@ Draws this sprite on the currently bound target after applying a transformation 
 
 Parameter | Type | Description
 -|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this sprite
+
+### `drawTransformedAt(x, y, transform)`
+Draws this sprite on the currently bound target at a certain position after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
 transform|[`Transform`](#transform)|A transformation to apply to this sprite
 
 ### `drawPart(x, y, left, top, width, height)`
@@ -562,6 +629,8 @@ Function | Description
 [`Color(r, g, b)`](#colorr-g-b)|Construct from RGB
 [`Color(r, g, b, a)`](#colorr-g-b-a)|Construct from RGBA
 [`toHSV()`](#tohsv)|Convert to HSV values
+[`add(color)`](#addcolor)|Adds another color to itself
+[`multiply(color)`](#multiplycolor)|Multiplies with another color
 
 ## Global functions
 Function | Description
@@ -610,6 +679,20 @@ Parameter | Type | Description
 h|`Number`|Hue value in the range [0, 1]
 s|`Number`|Saturation value in the range [0, 1]
 v|`Number`|Value value in the range [0, 1]
+
+### `add(color)`
+Adds another color to itself.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#Color)|A color object
+
+### `multiply(color)`
+Multiplies this color with another color.
+
+Parameter | Type | Description
+-|-|-
+color|[`Color`](#Color)|A color object
 
 # Vector
 This object represents a vector in 2D space. Several useful vector operation functions are provided.

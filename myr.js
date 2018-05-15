@@ -8,21 +8,17 @@ let Myr = function(canvasElement) {
         this.r = r;
         this.g = g;
         this.b = b;
-
-        if(a === undefined)
-            this.a = 1;
-        else
-            this.a = a;
+        this.a = a === undefined?1:a;
     };
     
-    Color.BLACK = new Color(0, 0, 0);
-    Color.BLUE = new Color(0, 0, 1);
-    Color.GREEN = new Color(0, 1, 0);
-    Color.CYAN = new Color(0, 1, 1);
-    Color.RED = new Color(1, 0, 0);
-    Color.MAGENTA = new Color(1, 0, 1);
-    Color.YELLOW = new Color(1, 1, 0);
-    Color.WHITE = new Color(1, 1, 1);
+    Color.BLACK = new this.Color(0, 0, 0);
+    Color.BLUE = new this.Color(0, 0, 1);
+    Color.GREEN = new this.Color(0, 1, 0);
+    Color.CYAN = new this.Color(0, 1, 1);
+    Color.RED = new this.Color(1, 0, 0);
+    Color.MAGENTA = new this.Color(1, 0, 1);
+    Color.YELLOW = new this.Color(1, 1, 0);
+    Color.WHITE = new this.Color(1, 1, 1);
 
     Color.fromHSV = (h, s, v) => {
         const c = v * s;
@@ -31,28 +27,28 @@ let Myr = function(canvasElement) {
 
         switch(Math.floor(h * 6)) {
             case 1:
-                return new Color(x + m, c + m, m);
+                return new this.Color(x + m, c + m, m);
             case 2:
-                return new Color(m, c + m, x + m);
+                return new this.Color(m, c + m, x + m);
             case 3:
-                return new Color(m, x + m, c + m);
+                return new this.Color(m, x + m, c + m);
             case 4:
-                return new Color(x + m, m, c + m);
+                return new this.Color(x + m, m, c + m);
             case 5:
-                return new Color(c + m, m, x + m);
+                return new this.Color(c + m, m, x + m);
             default:
-                return new Color(c + m, x + m, m);
+                return new this.Color(c + m, x + m, m);
         }
     };
 
     Color.prototype.toHSV = function() {
         const cMax = Math.max(this.r, this.g, this.b);
         const cMin = Math.min(this.r, this.g, this.b);
-        let h, s, l = (cMax + cMin) / 2;
+        let h, s, l = (cMax + cMin) * 0.5;
 
-        if (cMax == cMin) {
+        if (cMax == cMin)
             h = s = 0;
-        } else {
+        else {
             let delta = cMax - cMin;
             s = l > 0.5 ? delta / (2 - delta) : delta / (cMax + cMin);
             
@@ -73,6 +69,30 @@ let Myr = function(canvasElement) {
             s: s,
             v: cMax
         };
+    };
+
+    Color.prototype.copy = function() {
+        return new this.Color(this.r, this.g, this.b, this.a);
+    }
+
+    Color.prototype.add = function(color) {
+        this.r = Math.min(this.r + color.r, 1);
+        this.g = Math.min(this.g + color.g, 1);
+        this.b = Math.min(this.b + color.b, 1);
+
+        return this;
+    };
+
+    Color.prototype.multiply = function(color) {
+        this.r *= color.r;
+        this.g *= color.g;
+        this.b *= color.b;
+
+        return this;
+    };
+
+    Color.prototype.equals = function(color) {
+        return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
     };
     
     const Vector = this.Vector = function(x, y) {
@@ -233,6 +253,158 @@ let Myr = function(canvasElement) {
         this._11 *= y;
     };
     
+    this.Surface = function() {
+        this.free = () => {
+            gl.deleteTexture(texture);
+            gl.deleteFramebuffer(framebuffer);
+        };
+
+        this.bind = () => {
+            bind(this);
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.viewport(0, 0, width, height);
+        };
+
+        this._prepareDraw = () => {
+            bindTextureSurface(texture);
+            prepareDraw(RENDER_MODE_SURFACES, 12);
+
+            instanceBuffer[++instanceBufferAt] = 0;
+            instanceBuffer[++instanceBufferAt] = 0;
+        };
+        
+        this._addFrame = frame => {
+            if(ready) {
+                frame[5] /= width;
+                frame[6] /= height;
+                frame[7] /= width;
+                frame[8] /= height;
+            }
+            else
+                frames.push(frame);
+        };
+
+        this._getTexture = () => texture;
+        this._getUvLeft = () => 0;
+        this._getUvTop = () => 0;
+        this._getUvWidth = () => 1;
+        this._getUvHeight = () => 1;
+
+        this.getWidth = () => width;
+        this.getHeight = () => height;
+        this.setClearColor = color => clearColor = color;
+        this.clear = () => clear(clearColor);
+        this.ready = () => ready;
+        
+        const texture = gl.createTexture();
+        const framebuffer = gl.createFramebuffer();
+        const frames = [];
+        
+        let ready = false;
+        let width = 0;
+        let height = 0;
+        let clearColor = new Color(0, 0, 0, 0);
+        
+        gl.activeTexture(TEXTURE_EDITING);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        
+        if(arguments.length == 2) {
+            width = arguments[0];
+            height = arguments[1];
+            ready = true;
+            
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
+        }
+        else {
+            const image = document.createElement("img");
+            
+            if(arguments[2] != undefined) {
+                width = arguments[1];
+                height = arguments[2];
+            }
+            
+            image.onload = () => {
+                if(width == 0 || height == 0) {
+                    width = image.width;
+                    height = image.height;
+                }
+                
+                gl.activeTexture(TEXTURE_EDITING);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+                for(let frame = frames.pop(); frame != undefined; frame = frames.pop()) {
+                    frame[5] /= width;
+                    frame[6] /= height;
+                    frame[7] /= width;
+                    frame[8] /= height;
+                }
+                
+                ready = true;
+            };
+            
+            image.crossOrigin = "Anonymous";
+            image.src = arguments[0];
+            
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+        }
+        
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    };
+    
+    this.Sprite = function(name) {
+        this.animate = timeStep => {
+            frameCounter += timeStep;
+            
+            for(let frameTime; frameTime = getFrame()[9], frameTime >= 0 && frameCounter > frameTime; frameCounter -= frameTime)
+                if(++frame == frames.length)
+                    frame = 0;
+        };
+        
+        this._setMeshBounds = () => {
+            meshUvLeft = getFrame()[5];
+            meshUvTop = getFrame()[6];
+            meshUvWidth = getFrame()[7];
+            meshUvHeight = getFrame()[8];
+        };
+
+        this._prepareDraw = () => {
+            const frame = getFrame();
+            
+            bindTextureAtlas(frame[0]);
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+
+            instanceBuffer[++instanceBufferAt] = frame[3];
+            instanceBuffer[++instanceBufferAt] = frame[4];
+        };
+
+        this._getTexture = () => getFrame()[0];
+        this._getUvLeft = () => getFrame()[5];
+        this._getUvTop = () => getFrame()[6];
+        this._getUvWidth = () => getFrame()[7];
+        this._getUvHeight = () => getFrame()[8];
+        this.setFrame = index => frame = index;
+        this.getFrame = () => frame;
+        this.isFinished = () => getFrame()[9] < 0;
+        this.getFrameCount = () => frames.length;
+        this.getWidth = () => getFrame()[1];
+        this.getHeight = () => getFrame()[2];
+        this.getOriginX = () => getFrame()[3] * this.getWidth();
+        this.getOriginY = () => getFrame()[4] * this.getHeight();
+               
+        const getFrame = () => frames[frame];
+        
+        const frames = sprites[name];
+        let frameCounter = 0;
+        let frame = 0;
+    };
+
     const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
         instanceBuffer[++instanceBufferAt] = uvLeft;
         instanceBuffer[++instanceBufferAt] = uvTop;
@@ -249,8 +421,7 @@ let Myr = function(canvasElement) {
     
     const setAttributesDraw = (x, y, width, height) => {
         instanceBuffer[++instanceBufferAt] = width;
-        instanceBuffer[++instanceBufferAt] = 0;
-        instanceBuffer[++instanceBufferAt] = 0;
+        instanceBuffer[++instanceBufferAt] = instanceBuffer[++instanceBufferAt] = 0;
         instanceBuffer[++instanceBufferAt] = height;
         instanceBuffer[++instanceBufferAt] = x;
         instanceBuffer[++instanceBufferAt] = y;
@@ -285,285 +456,91 @@ let Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = transform._20;
         instanceBuffer[++instanceBufferAt] = transform._21;
     };
-    
-    const setAttributesOrigin = (xOrigin, yOrigin) => {
-        instanceBuffer[++instanceBufferAt] = xOrigin;
-        instanceBuffer[++instanceBufferAt] = yOrigin;
-    };
-    
-    this.Surface = function() {
-        this.draw = (x, y) => {
-            bindTextureSurface(texture);
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDraw(x, y, width, height);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawScaled = (x, y, xScale, yScale) => {
-            bindTextureSurface(texture);
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDraw(x, y, width * xScale, height * yScale);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawSheared = (x, y, xShear, yShear) => {
-            bindTextureSurface(texture);
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDrawSheared(x, y, width, height, xShear, yShear);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawTransformed = transform => {
-            bindTextureSurface(texture);
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDrawTransform(transform, width, height);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawPart = (x, y, left, top, w, h) => {
-            bindTextureSurface(texture);
-            
-            const wf = 1 / width;
-            const hf = 1 / height;
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUvPart(0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
-            setAttributesDraw(x, y, w, h);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.drawPartTransformed = (transform, left, top, w, h) => {
-            bindTextureSurface(texture);
-            
-            const wf = 1 / width;
-            const hf = 1 / height;
-            
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-            
-            setAttributesUvPart(0, 0, 1, 1, left * wf, top * hf, w * wf, h * hf);
-            setAttributesDrawTransform(transform, w, h);
-            setAttributesOrigin(0, 0);
-        };
-        
-        this.free = () => {
-            gl.deleteTexture(texture);
-            gl.deleteFramebuffer(framebuffer);
-        };
-        
-        this.bind = () => {
-            bind(this);
-            
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.viewport(0, 0, width, height);
-        };
-        
-        this._getTexture = () => texture;
-        this.getShaders = () => shaders;
-        this.getWidth = () => width;
-        this.getHeight = () => height;
-        this.setClearColor = color => clearColor = color;
-        this.clear = () => clear(clearColor);
-        this.ready = () => ready;
-        
-        const texture = gl.createTexture();
-        const framebuffer = gl.createFramebuffer();
-        
-        let ready = false;
-        let width = 0;
-        let height = 0;
-        let clearColor = new Color(0, 0, 0, 0);
-        
-        gl.activeTexture(TEXTURE_EDITING);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        
-        if(arguments.length == 2) {
-            width = arguments[0];
-            height = arguments[1];
-            ready = true;
-            
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        }
-        else {
-            const image = document.createElement("img");
-            
-            if(arguments[2] != undefined) {
-                width = arguments[1];
-                height = arguments[2];
-            }
-            
-            image.onload = () => {
-                if(width == 0 || height == 0) {
-                    width = image.width;
-                    height = image.height;
-                }
-                
-                gl.activeTexture(TEXTURE_EDITING);
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                
-                ready = true;
-            };
-            
-            image.crossOrigin = "Anonymous";
-            image.src = arguments[0];
-            
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        }
-        
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-    };
-    
-    this.Sprite = function(name) {
-        this.draw = (x, y) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDraw(x, y, frame[1], frame[2]);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawScaled = (x, y, xScale, yScale) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDraw(x, y, frame[1] * xScale, frame[2] * yScale);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawSheared = (x, y, xShear, yShear) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawSheared(x, y, frame[1], frame[2], xShear, yShear);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawRotated = (x, y, angle) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawRotated(x, y, frame[1], frame[2], angle);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawScaledRotated = (x, y, xScale, yScale, angle) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawRotated(x, y, frame[1] * xScale, frame[2] * yScale, angle);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawTransformed = transform => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUv(frame[5], frame[6], frame[7], frame[8]);
-            setAttributesDrawTransform(transform, frame[1], frame[2]);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawPart = (x, y, left, top, w, h) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            const wf = 1 / frame[1];
-            const hf = 1 / frame[2];
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
-            setAttributesDraw(x, y, w, h);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.drawPartTransformed = (transform, left, top, w, h) => {
-            const frame = getFrame();
-            
-            bindTextureAtlas(frame[0]);
-            
-            const wf = 1 / frame[1];
-            const hf = 1 / frame[2];
-            
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-            
-            setAttributesUvPart(frame[5], frame[6], frame[7], frame[8], left * wf, top * hf, w * wf, h * hf);
-            setAttributesDrawTransform(transform, w, h);
-            setAttributesOrigin(frame[3], frame[4]);
-        };
-        
-        this.animate = timeStep => {
-            const currentFrame = getFrame();
-            
-            frameCounter += timeStep;
-            
-            while(frameCounter > getFrame()[9]) {
-                frameCounter -= getFrame()[9];
 
-                if(++frame == frames.length)
-                    frame = 0;
-            }
-        };
-        
-        this._getTexture = () => getFrame()[0];
-        this._getUvLeft = () => getFrame()[5];
-        this._getUvTop = () => getFrame()[6];
-        this._getUvWidth = () => getFrame()[7];
-        this._getUvHeight = () => getFrame()[8];
-        this.setFrame = index => frame = index;
-        this.getFrame = () => frame;
-        this.getWidth = () => getFrame()[1];
-        this.getHeight = () => getFrame()[2];
-               
-        const getFrame = () => frames[frame];
-        
-        const frames = sprites[name];
-        let frameCounter = 0;
-        let frame = 0;
+    const setAttributesDrawTransformAt = (x, y, transform, width, height) => {
+        instanceBuffer[++instanceBufferAt] = transform._00 * width;
+        instanceBuffer[++instanceBufferAt] = transform._10 * height;
+        instanceBuffer[++instanceBufferAt] = transform._01 * width;
+        instanceBuffer[++instanceBufferAt] = transform._11 * height;
+        instanceBuffer[++instanceBufferAt] = transform._20 + x;
+        instanceBuffer[++instanceBufferAt] = transform._21 + y;
     };
+
+    const Renderable = {};
+
+    Renderable.prototype = {
+        draw: function(x, y) {
+            this._prepareDraw();
+
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDraw(x, y, this.getWidth(), this.getHeight());
+        },
+
+        drawScaled: function(x, y, xScale, yScale) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDraw(x, y, this.getWidth() * xScale, this.getHeight() * yScale);
+        },
+
+        drawSheared: function(x, y, xShear, yShear) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawSheared(x, y, this.getWidth(), this.getHeight(), xShear, yShear);
+        },
+
+        drawRotated: function(x, y, angle) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawRotated(x, y, this.getWidth(), this.getHeight(), angle);
+        },
+
+        drawScaledRotated: function(x, y, xScale, yScale, angle) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawRotated(x, y, this.getWidth() * xScale, this.getHeight() * yScale, angle);
+        },
+
+        drawTransformed: function(transform) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawTransform(transform, this.getWidth(), this.getHeight());
+        },
+
+        drawTransformedAt: function(x, y, transform) {
+            this._prepareDraw();
+            
+            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesDrawTransformAt(x, y, transform, this.getWidth(), this.getHeight());
+        },
+
+        drawPart: function(x, y, left, top, w, h) {
+            this._prepareDraw();
+
+            const wf = 1 / this.getWidth();
+            const hf = 1 / this.getHeight();
+            
+            setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
+            setAttributesDraw(x, y, w, h);
+        },
+
+        drawPartTransformed: function(transform, left, top, w, h) {
+            this._prepareDraw();
+
+            const wf = 1 / this.getWidth();
+            const hf = 1 / this.getHeight();
+            
+            setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
+            setAttributesDrawTransform(transform, w, h);
+        }
+    };
+
+    this.Surface.prototype = Object.create(Renderable.prototype);
+    this.Sprite.prototype = Object.create(Renderable.prototype);
     
     const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
@@ -611,9 +588,9 @@ let Myr = function(canvasElement) {
     
     this.primitives.drawCircle = (color, x, y, radius) => {
         const step = primitivesGetCircleStep(radius);
-        let i = 0;
+        let i;
         
-        for(; i < 1024 - step; i += step)
+        for(i = 0; i < 1024 - step; i += step)
             this.primitives.drawLine(
                 color,
                 x + primitivesCirclePoints[i] * radius,
@@ -675,9 +652,9 @@ let Myr = function(canvasElement) {
     
     this.primitives.fillCircleGradient = (colorStart, colorEnd, x, y, radius) => {
         const step = primitivesGetCircleStep(radius);
-        let i = 0;
+        let i;
         
-        for(; i < 1024 - step; i+= step)
+        for(i = 0; i < 1024 - step; i+= step)
             this.primitives.drawTriangleGradient(
                 colorStart,
                 x, y,
@@ -699,27 +676,18 @@ let Myr = function(canvasElement) {
             y + primitivesCirclePoints[1] * radius);
     };
     
-    let meshUvLeft = undefined;
-    let meshUvTop = undefined;
-    let meshUvWidth = undefined;
-    let meshUvHeight = undefined;
-    
     const meshBindSource = source => {
         if(source instanceof this.Surface) {
             meshUvLeft = meshUvTop = 0;
             meshUvWidth = meshUvHeight = 1;
         }
-        else {
-            meshUvLeft = source._getUvLeft();
-            meshUvTop = source._getUvTop();
-            meshUvWidth = source._getUvWidth();
-            meshUvHeight = source._getUvHeight();
-        }
+        else
+            source._setMeshBounds();
         
         if(currentTextureMesh == source._getTexture())
             return;
         
-        flush();
+        this.flush();
         
         gl.activeTexture(TEXTURE_MESH);
         gl.bindTexture(gl.TEXTURE_2D, source._getTexture());
@@ -812,30 +780,29 @@ let Myr = function(canvasElement) {
             
             core.bind();
             
-            for(let i = 0; i < samplerNames.length; ++i) {
-                const sampler = samplerNames[i];
-                
-                gl.uniform1i(samplerLocations.sampler, samplers[sampler]);
-            }
+            for(let i = 0; i < samplerCalls.length; ++i)
+                samplerCalls[i][0](samplerCalls[i][1], samplerCalls[i][2].value);
         };
         
+        this.setUniform = (name, value) => samplers[name].value = value;
         this.free = () => core.free();
         
+        const samplerCalls = [];
         const samplerNames = Object.keys(samplers);
-        const samplerLocations = new Object();
         
-        for(let i = 0; i < samplerNames.length; ++i) {
-            const sampler = samplerNames[i];
-            
-            samplerLocations.sampler = gl.getUniformLocation(core.getProgram(), sampler);
-        }
+        for(let i = 0; i < samplerNames.length; ++i)
+            samplerCalls.push([
+                gl["uniform" + samplers[samplerNames[i]].type].bind(gl),
+                gl.getUniformLocation(core.getProgram(), samplerNames[i]),
+                samplers[samplerNames[i]]
+            ]);
     };
     
     const bind = target => {
         if(surface == target)
             return;
         
-        flush();
+        this.flush();
         
         if(surface != null)
             this.pop();
@@ -850,8 +817,8 @@ let Myr = function(canvasElement) {
         if(currentTextureSurface == texture)
             return;
         
-        flush();
-
+        this.flush();
+        
         gl.activeTexture(TEXTURE_SURFACE);
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -862,8 +829,8 @@ let Myr = function(canvasElement) {
         if(currentTextureAtlas == texture)
             return;
         
-        flush();
-
+        this.flush();
+        
         gl.activeTexture(TEXTURE_ATLAS);
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -871,17 +838,13 @@ let Myr = function(canvasElement) {
     };
     
     const clear = color => {
-        flush();
+        this.flush();
         
-        gl.clearColor(
-            color.r * uboContents[8],
-            color.g * uboContents[9],
-            color.b * uboContents[10],
-            color.a * uboContents[11]);
+        gl.clearColor(color.r * uboContents[8], color.g * uboContents[9], color.b * uboContents[10], color.a * uboContents[11]);
         gl.clear(gl.COLOR_BUFFER_BIT);
     };
     
-    const flush = this.flush = () => {
+    this.flush = () => {
         if(instanceCount == 0)
             return;
         
@@ -899,7 +862,7 @@ let Myr = function(canvasElement) {
                 gl.drawArrays(gl.LINES, 0, instanceCount);
                 break;
             case RENDER_MODE_POINTS:
-                gl.bindVertexArray(vaoPoints);
+                gl.bindVertexArray(vaoLines);
                 gl.drawArrays(gl.POINTS, 0, instanceCount);
                 break;
             case RENDER_MODE_TRIANGLES:
@@ -918,8 +881,8 @@ let Myr = function(canvasElement) {
     
     const sendUniformBuffer = () => {
         if(surface == null) {
-            uboContents[3] = width;
-            uboContents[7] = height;
+            uboContents[3] = canvasElement.width;
+            uboContents[7] = canvasElement.height;
         }
         else {
             uboContents[3] = surface.getWidth();
@@ -940,13 +903,13 @@ let Myr = function(canvasElement) {
     
     const prepareDraw = (mode, size) => {
         if(transformDirty) {
-            flush();
+            this.flush();
             
             sendUniformBuffer();
         }
         
         if(renderMode != mode) {
-            flush();
+            this.flush();
             
             renderMode = mode;
         
@@ -994,7 +957,7 @@ let Myr = function(canvasElement) {
         bind(null);
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, width, height);
+        gl.viewport(0, 0, canvasElement.width, canvasElement.height);
     };
     
     this.register = function() {
@@ -1003,26 +966,35 @@ let Myr = function(canvasElement) {
         for(let i = 1; i < arguments.length; ++i)
             frames.push(arguments[i]);
         
-        sprites[arguments[0]] = frames;
+        if(sprites[arguments[0]] === undefined)
+            sprites[arguments[0]] = frames;
+        else {
+            sprites[arguments[0]].length = 0;
+
+            for(let i = 0; i < frames.length; ++i)
+                sprites[arguments[0]].push(frames[i]);
+        }
     };
-        
+    
+    this.isRegistered = name => sprites[name] != undefined;
+
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
-        return [
+        const frame = [
             sheet._getTexture(),
             width,
             height,
             xOrigin / width,
             yOrigin / height,
-            x / sheet.getWidth(),
-            y / sheet.getHeight(),
-            width / sheet.getWidth(),
-            height / sheet.getHeight(),
+            x,
+            y,
+            width,
+            height,
             time
         ];
-    };
-    
-    this.unregister = name => {
-        delete sprites[name];
+
+        sheet._addFrame(frame);
+
+        return frame;
     };
     
     this.free = () => {
@@ -1031,7 +1003,6 @@ let Myr = function(canvasElement) {
         
         gl.deleteVertexArray(vaoSprites);
         gl.deleteVertexArray(vaoLines);
-        gl.deleteVertexArray(vaoPoints);
         gl.deleteVertexArray(vaoMesh);
         gl.deleteBuffer(quad);
         gl.deleteBuffer(instances);
@@ -1046,7 +1017,7 @@ let Myr = function(canvasElement) {
             uboContents[11] == color.a)
             return;
         
-        flush();
+        this.flush();
         
         uboContents[8] = color.r;
         uboContents[9] = color.g;
@@ -1060,7 +1031,7 @@ let Myr = function(canvasElement) {
         if(uboContents[11] == alpha)
             return;
         
-        flush();
+        this.flush();
         
         uboContents[11] = alpha;
         
@@ -1081,8 +1052,9 @@ let Myr = function(canvasElement) {
     this.scale = (x, y) => touchTransform().scale(x, y);
     this.setClearColor = color => clearColor = color;
     this.clear = () => clear(clearColor);
-    this.getWidth = () => width;
-    this.getHeight = () => height;
+    this.getWidth = () => canvasElement.width;
+    this.getHeight = () => canvasElement.height;
+    this.unregister = name => delete sprites[name];
     
     const RENDER_MODE_NONE = -1;
     const RENDER_MODE_SURFACES = 0;
@@ -1100,7 +1072,6 @@ let Myr = function(canvasElement) {
     const instances = gl.createBuffer();
     const vaoSprites = gl.createVertexArray();
     const vaoLines = gl.createVertexArray();
-    const vaoPoints = gl.createVertexArray();
     const vaoMesh = gl.createVertexArray();
     const ubo = gl.createBuffer();
     const uboContents = new Float32Array(12);
@@ -1109,15 +1080,15 @@ let Myr = function(canvasElement) {
     const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
     const shaderCoreSprites = new ShaderCore(
         "layout(location=0) in mediump vec2 vertex;" +
-        "layout(location=1) in mediump vec4 atlas;" +
-        "layout(location=2) in mediump vec4 matrix;" +
-        "layout(location=3) in mediump vec4 position;" +
+        "layout(location=1) in mediump vec4 a1;" +
+        "layout(location=2) in mediump vec4 a2;" +
+        "layout(location=3) in mediump vec4 a3;" +
         uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
-            "uv=atlas.xy+vertex*atlas.zw;" +
-            "mediump vec2 transformed=(((vertex-position.zw)*" + 
-                "mat2(matrix.xy,matrix.zw)+position.xy)*" + 
+            "uv=a1.zw+vertex*a2.xy;" +
+            "mediump vec2 transformed=(((vertex-a1.xy)*" + 
+                "mat2(a2.zw,a3.xy)+a3.zw)*" + 
                 "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
                 "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
@@ -1190,35 +1161,40 @@ let Myr = function(canvasElement) {
         new Shader(
             shaderCoreSprites,
             {
-                source: 1
+                source: {
+                    type: "1i",
+                    value: 1
+                }
             }),
         new Shader(
             shaderCoreSprites,
             {
-                source: 0
+                source: {
+                    type: "1i",
+                    value: 0
+                }
             }),
         new Shader(
             shaderCoreLines,
-            {
-                
-            }),
+            {}),
         new Shader(
             shaderCorePoints,
-            {
-                
-            }),
+            {}),
         new Shader(
             shaderCoreLines,
-            {
-                
-            }),
+            {}),
         new Shader(
             shaderCoreMesh,
             {
-                source: 2
+                source: {
+                    type: "1i",
+                    value: 2
+                }
             })
     ];
     
+    let currentShader, currentShaderCore, surface, currentTextureSurface, currentTextureAtlas, currentTextureMesh;
+    let meshUvLeft,  meshUvTop, meshUvWidth, meshUvHeight;
     let transformAt = 0;
     let transformDirty = true;
     let renderMode = RENDER_MODE_NONE;
@@ -1226,16 +1202,8 @@ let Myr = function(canvasElement) {
     let instanceBufferAt = -1;
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
-    let clearColor = new Color(0, 0, 0);
-    let width = canvasElement.width;
-    let height = canvasElement.height;
-    let currentShader = null;
-    let currentShaderCore = null;
-    let surface = null;
-    let currentTextureSurface = null;
-    let currentTextureAtlas = null;
-    let currentTextureMesh = null;
-
+    let clearColor = new this.Color(0, 0, 0);
+    
     uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
     
     gl.enable(gl.BLEND);
@@ -1274,13 +1242,6 @@ let Myr = function(canvasElement) {
     gl.enableVertexAttribArray(1);
     gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
     
-    gl.bindVertexArray(vaoPoints);
-    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
-    
     gl.bindVertexArray(vaoMesh);
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.enableVertexAttribArray(0);
@@ -1290,3 +1251,5 @@ let Myr = function(canvasElement) {
     
     this.bind();
 };
+
+if(typeof module !== 'undefined') module.exports = Myr;
