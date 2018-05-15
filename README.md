@@ -135,8 +135,8 @@ name|`String`|The name of the sprite to register
 Registering sprites usually happens when loading a sprite sheet. This sheet is first loaded onto a surface, after which all sprites on the sheet are registered to make them available for use. This will usually look like this:
 
 ```javascript
-// Load a sprite sheet of 512x512 pixels
-sheet = new myr.Surface("source.png", 512, 512);
+// Load a sprite sheet
+sheet = new myr.Surface("source.png");
 
 // Load information about the sprites in this sheet
 // This could be loaded from JSon exported by a sprite sheet tool
@@ -218,6 +218,7 @@ Function | Description
 -|-
 [`Surface(width, height)`](#surfacewidth-height)|Construct from size
 [`Surface(image)`](#surfaceimage)|Construct from image
+[`Surface(image, width, height)`](#surfaceimage-width-height)|Construct from image and size
 [`bind()`](#bind-1)|Bind the surface
 [`setClearColor(color)`](#setclearcolorcolor-1)|Set clear color
 [`clear()`](#clear-1)|Clear the surface
