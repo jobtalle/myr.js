@@ -1,6 +1,6 @@
 {
   "name": "myr.js",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A fast and lean WebGL 2 based 2D graphics renderer without external dependencies.",
   "main": "myr.js",
   "directories": {
@@ -27,8 +27,5 @@
   "bugs": {
     "url": "https://github.com/jobtalle/myr.js/issues"
   },
-  "homepage": "https://github.com/jobtalle/myr.js#myrjs",
-  "dependencies": {
-    "esdoc": "^1.1.0"
-  }
+  "homepage": "https://github.com/jobtalle/myr.js#myrjs"
 }
