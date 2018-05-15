@@ -110,7 +110,7 @@ Returns the width of the default render target
 Returns the height of the default render target
 
 ### `makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`
-Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function.
+Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function. If the time parameter is less than zero, [sprite animation](#animatetimestep) will stop at this frame.
 
 Parameter | Type | Description
 -|-|-
@@ -384,6 +384,8 @@ Function | Description
 [`animate(timeStep)`](#animatetimestep)|Animates the sprite
 [`setFrame(frame)`](#setframeframe)|Set the current frame
 [`getFrame()`](#getframe)|Returns the current frame
+[`isFinished()`](#isfinished)|Returns whether the animation is finished
+[`getFrameCount()`](#getframecount)|Returns the number of frames
 [`getWidth()`](#getwidth-2)|Returns the sprite width
 [`getHeight()`](#getheight-2)|Returns the sprite height
 [`getOriginX()`](#getoriginx)|Returns the X origin
@@ -406,7 +408,7 @@ Parameter | Type | Description
 name|`String`|The sprite source
 
 ### `animate(timeStep)`
-Advances the animation frame of this sprite according to its own frame rate. When the maximum frame has been reached, the animation rewinds. If a sprite only has one frame, this method does nothing.
+Advances the animation frame of this sprite according to its frame times. When the maximum frame has been reached, the animation rewinds. If a sprite only has one frame, this method does nothing. Note that the animation stops at any frame with a time value below zero.
 
 Parameter | Type | Description
 -|-|-
@@ -421,6 +423,12 @@ frame|`Number`|The frame index this sprite should be at, starting at zero
 
 ### `getFrame()`
 Returns the current frame index.
+
+### `isFinished()`
+Returns a boolean indicating whether the animation is finished. A sprite animation is finished when _any_ frame with a time value below zero is reached. If the frame is set to another frame using [`setFrame`](#setframeframe) after this, the animation will continue again.
+
+### `getFrameCount()`
+Returns the total number of frames for this sprite.
 
 ### `getWidth()`
 Returns the width of the sprite in pixels.

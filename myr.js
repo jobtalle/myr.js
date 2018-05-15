@@ -360,16 +360,11 @@ let Myr = function(canvasElement) {
     
     this.Sprite = function(name) {
         this.animate = timeStep => {
-            const currentFrame = getFrame();
-            
             frameCounter += timeStep;
             
-            while(frameCounter > getFrame()[9]) {
-                frameCounter -= getFrame()[9];
-
+            for(let frameTime; frameTime = getFrame()[9], frameTime >= 0 && frameCounter > frameTime; frameCounter -= frameTime)
                 if(++frame == frames.length)
                     frame = 0;
-            }
         };
         
         this._setMeshBounds = () => {
@@ -396,6 +391,8 @@ let Myr = function(canvasElement) {
         this._getUvHeight = () => getFrame()[8];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
+        this.isFinished = () => getFrame()[9] < 0;
+        this.getFrameCount = () => frames.length;
         this.getWidth = () => getFrame()[1];
         this.getHeight = () => getFrame()[2];
         this.getOriginX = () => getFrame()[3] * this.getWidth();
