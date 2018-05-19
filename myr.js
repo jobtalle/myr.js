@@ -72,13 +72,8 @@ let Myr = function(canvasElement) {
     };
 
     Color.prototype.copy = function() {
-<<<<<<< HEAD
         return new Color(this.r, this.g, this.b, this.a);
-    }
-=======
-        return new this.Color(this.r, this.g, this.b, this.a);
     };
->>>>>>> 3e83a58fd41ab7c849505b48371119fdb03a38ef
 
     Color.prototype.add = function(color) {
         this.r = Math.min(this.r + color.r, 1);
