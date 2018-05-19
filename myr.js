@@ -46,7 +46,7 @@ let Myr = function(canvasElement) {
         const cMin = Math.min(this.r, this.g, this.b);
         let h, s, l = (cMax + cMin) * 0.5;
 
-        if (cMax == cMin)
+        if (cMax === cMin)
             h = s = 0;
         else {
             let delta = cMax - cMin;
@@ -72,7 +72,7 @@ let Myr = function(canvasElement) {
     };
 
     Color.prototype.copy = function() {
-        return new this.Color(this.r, this.g, this.b, this.a);
+        return new Color(this.r, this.g, this.b, this.a);
     }
 
     Color.prototype.add = function(color) {
@@ -162,7 +162,7 @@ let Myr = function(canvasElement) {
     };
 
     const Transform = this.Transform = function(_00, _10, _20, _01, _11, _21) {
-        if(_00 == undefined)
+        if(_00 === undefined)
             this.identity();
         else {
             this._00 = _00;
@@ -313,7 +313,7 @@ let Myr = function(canvasElement) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         
-        if(arguments.length == 2) {
+        if(arguments.length === 2) {
             width = arguments[0];
             height = arguments[1];
             ready = true;
@@ -323,13 +323,13 @@ let Myr = function(canvasElement) {
         else {
             const image = document.createElement("img");
             
-            if(arguments[2] != undefined) {
+            if(arguments[2] !== undefined) {
                 width = arguments[1];
                 height = arguments[2];
             }
             
             image.onload = () => {
-                if(width == 0 || height == 0) {
+                if(width === 0 || height === 0) {
                     width = image.width;
                     height = image.height;
                 }
@@ -338,7 +338,7 @@ let Myr = function(canvasElement) {
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
-                for(let frame = frames.pop(); frame != undefined; frame = frames.pop()) {
+                for(let frame = frames.pop(); frame !== undefined; frame = frames.pop()) {
                     frame[5] /= width;
                     frame[6] /= height;
                     frame[7] /= width;
@@ -360,14 +360,17 @@ let Myr = function(canvasElement) {
     
     this.Sprite = function(name) {
         this.animate = timeStep => {
-            const currentFrame = getFrame();
-            
+            let frameTime;
+
             frameCounter += timeStep;
             
-            while(frameCounter > getFrame()[9]) {
-                frameCounter -= getFrame()[9];
+            while(frameTime = getFrame()[9], frameCounter > frameTime) {
+                if(frameTime <= 0)
+                    return;
 
-                if(++frame == frames.length)
+                frameCounter -= frameTime;
+
+                if(++frame === frames.length)
                     frame = 0;
             }
         };
@@ -400,6 +403,7 @@ let Myr = function(canvasElement) {
         this.getHeight = () => getFrame()[2];
         this.getOriginX = () => getFrame()[3] * this.getWidth();
         this.getOriginY = () => getFrame()[4] * this.getHeight();
+        this.finished = () => getFrame()[9] < 0;
                
         const getFrame = () => frames[frame];
         
@@ -687,7 +691,7 @@ let Myr = function(canvasElement) {
         else
             source._setMeshBounds();
         
-        if(currentTextureMesh == source._getTexture())
+        if(currentTextureMesh === source._getTexture())
             return;
         
         this.flush();
@@ -747,7 +751,7 @@ let Myr = function(canvasElement) {
         };
         
         this.bind = () => {
-            if(currentShaderCore == this)
+            if(currentShaderCore === this)
                 return;
             
             currentShaderCore = this;
@@ -776,7 +780,7 @@ let Myr = function(canvasElement) {
     
     const Shader = function(core, samplers) {
         this.bind = () => {
-            if(currentShader == this)
+            if(currentShader === this)
                 return;
             
             currentShader = this;
@@ -802,7 +806,7 @@ let Myr = function(canvasElement) {
     };
     
     const bind = target => {
-        if(surface == target)
+        if(surface === target)
             return;
         
         this.flush();
@@ -817,7 +821,7 @@ let Myr = function(canvasElement) {
     };
     
     const bindTextureSurface = texture => {
-        if(currentTextureSurface == texture)
+        if(currentTextureSurface === texture)
             return;
         
         this.flush();
@@ -829,7 +833,7 @@ let Myr = function(canvasElement) {
     };
     
     const bindTextureAtlas = texture => {
-        if(currentTextureAtlas == texture)
+        if(currentTextureAtlas === texture)
             return;
         
         this.flush();
@@ -848,7 +852,7 @@ let Myr = function(canvasElement) {
     };
     
     this.flush = () => {
-        if(instanceCount == 0)
+        if(instanceCount === 0)
             return;
         
         gl.bindBuffer(gl.ARRAY_BUFFER, instances);
@@ -911,7 +915,7 @@ let Myr = function(canvasElement) {
             sendUniformBuffer();
         }
         
-        if(renderMode != mode) {
+        if(renderMode !== mode) {
             this.flush();
             
             renderMode = mode;
@@ -935,7 +939,7 @@ let Myr = function(canvasElement) {
     };
     
     const pushIdentity = () => {
-        if(++transformAt == transformStack.length)
+        if(++transformAt === transformStack.length)
             transformStack.push(new Transform());
         else
             transformStack[transformAt].identity();
@@ -944,7 +948,7 @@ let Myr = function(canvasElement) {
     };
     
     this.push = () => {
-        if(++transformAt == transformStack.length)
+        if(++transformAt === transformStack.length)
             transformStack.push(transformStack[transformAt - 1].copy());
         else
             transformStack[transformAt].set(transformStack[transformAt - 1]);
@@ -979,7 +983,7 @@ let Myr = function(canvasElement) {
         }
     };
     
-    this.isRegistered = name => sprites[name] != undefined;
+    this.isRegistered = name => sprites[name] !== undefined;
 
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
         const frame = [
@@ -1014,10 +1018,10 @@ let Myr = function(canvasElement) {
     
     this.setColor = color => {
         if(
-            uboContents[8] == color.r &&
-            uboContents[9] == color.g &&
-            uboContents[10] == color.b &&
-            uboContents[11] == color.a)
+            uboContents[8] === color.r &&
+            uboContents[9] === color.g &&
+            uboContents[10] === color.b &&
+            uboContents[11] === color.a)
             return;
         
         this.flush();
@@ -1031,7 +1035,7 @@ let Myr = function(canvasElement) {
     };
     
     this.setAlpha = alpha => {
-        if(uboContents[11] == alpha)
+        if(uboContents[11] === alpha)
             return;
         
         this.flush();
