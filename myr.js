@@ -72,8 +72,13 @@ let Myr = function(canvasElement) {
     };
 
     Color.prototype.copy = function() {
+<<<<<<< HEAD
         return new Color(this.r, this.g, this.b, this.a);
     }
+=======
+        return new this.Color(this.r, this.g, this.b, this.a);
+    };
+>>>>>>> 3e83a58fd41ab7c849505b48371119fdb03a38ef
 
     Color.prototype.add = function(color) {
         this.r = Math.min(this.r + color.r, 1);
@@ -321,7 +326,7 @@ let Myr = function(canvasElement) {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
         }
         else {
-            const image = document.createElement("img");
+            const image = new Image();
             
             if(arguments[2] !== undefined) {
                 width = arguments[1];
@@ -360,19 +365,9 @@ let Myr = function(canvasElement) {
     
     this.Sprite = function(name) {
         this.animate = timeStep => {
-            let frameTime;
-
-            frameCounter += timeStep;
-            
-            while(frameTime = getFrame()[9], frameCounter > frameTime) {
-                if(frameTime <= 0)
-                    return;
-
-                frameCounter -= frameTime;
-
+            for(let frameTime; frameTime = getFrame()[9], frameTime >== 0 && frameCounter > frameTime; frameCounter -= frameTime)
                 if(++frame === frames.length)
                     frame = 0;
-            }
         };
         
         this._setMeshBounds = () => {
@@ -399,6 +394,8 @@ let Myr = function(canvasElement) {
         this._getUvHeight = () => getFrame()[8];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
+        this.isFinished = () => getFrame()[9] < 0;
+        this.getFrameCount = () => frames.length;
         this.getWidth = () => getFrame()[1];
         this.getHeight = () => getFrame()[2];
         this.getOriginX = () => getFrame()[3] * this.getWidth();

@@ -1,6 +1,6 @@
 # myr.js
 
-**myr.js** is a WebGL 2 based 2D graphics renderer. The engine is optimized for rendering large amounts of sprites, and also supports render targets, custom shaders, primitives and advanced transformations. There are no external dependencies. **myr.js** has been licensed under the [MIT license](LICENSE). All source code is contained in the [myr.js](myr.js) file.
+**myr.js** is a WebGL 2 based 2D graphics renderer. The engine is optimized for rendering large amounts of sprites, and also supports render targets, primitives and advanced transformations. There are no external dependencies. **myr.js** has been licensed under the [MIT license](LICENSE). All source code is contained in the [myr.js](myr.js) file.
 
 # Initialization
 **myr.js** can be initialized by calling the `Myr` function, which requires a canvas element as an argument. All global functions and objects are members of the returned object. The provided canvas must be able to provide a *WebGL 2* context.
@@ -110,7 +110,7 @@ Returns the width of the default render target
 Returns the height of the default render target
 
 ### `makeSpriteFrame(surface, x, y, width, height, xOrigin, yOrigin, time)`
-Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function.
+Returns a sprite frame. The result of this function should _only_ be passed to the [`register`](#registername-) function. If the time parameter is less than zero, [sprite animation](#animatetimestep) will stop at this frame.
 
 Parameter | Type | Description
 -|-|-
@@ -135,8 +135,8 @@ name|`String`|The name of the sprite to register
 Registering sprites usually happens when loading a sprite sheet. This sheet is first loaded onto a surface, after which all sprites on the sheet are registered to make them available for use. This will usually look like this:
 
 ```javascript
-// Load a sprite sheet of 512x512 pixels
-sheet = new myr.Surface("source.png", 512, 512);
+// Load a sprite sheet
+sheet = new myr.Surface("source.png");
 
 // Load information about the sprites in this sheet
 // This could be loaded from JSon exported by a sprite sheet tool
@@ -147,6 +147,7 @@ for(let i = 0; i < sprites.length; ++i)
     myr.register(
         sprites[i].name,
         myr.makeSpriteFrame(
+            sheet,
             sprites[i].x,
             sprites[i].y,
             sprites[i].width,
@@ -218,6 +219,7 @@ Function | Description
 -|-
 [`Surface(width, height)`](#surfacewidth-height)|Construct from size
 [`Surface(image)`](#surfaceimage)|Construct from image
+[`Surface(image, width, height)`](#surfaceimage-width-height)|Construct from image and size
 [`bind()`](#bind-1)|Bind the surface
 [`setClearColor(color)`](#setclearcolorcolor-1)|Set clear color
 [`clear()`](#clear-1)|Clear the surface
@@ -383,6 +385,8 @@ Function | Description
 [`animate(timeStep)`](#animatetimestep)|Animates the sprite
 [`setFrame(frame)`](#setframeframe)|Set the current frame
 [`getFrame()`](#getframe)|Returns the current frame
+[`isFinished()`](#isfinished)|Returns whether the animation is finished
+[`getFrameCount()`](#getframecount)|Returns the number of frames
 [`getWidth()`](#getwidth-2)|Returns the sprite width
 [`getHeight()`](#getheight-2)|Returns the sprite height
 [`getOriginX()`](#getoriginx)|Returns the X origin
@@ -405,7 +409,7 @@ Parameter | Type | Description
 name|`String`|The sprite source
 
 ### `animate(timeStep)`
-Advances the animation frame of this sprite according to its own frame rate. When the maximum frame has been reached, the animation rewinds. If a sprite only has one frame, this method does nothing.
+Advances the animation frame of this sprite according to its frame times. When the maximum frame has been reached, the animation rewinds. If a sprite only has one frame, this method does nothing. Note that the animation stops at any frame with a time value below zero.
 
 Parameter | Type | Description
 -|-|-
@@ -420,6 +424,12 @@ frame|`Number`|The frame index this sprite should be at, starting at zero
 
 ### `getFrame()`
 Returns the current frame index.
+
+### `isFinished()`
+Returns a boolean indicating whether the animation is finished. A sprite animation is finished when _any_ frame with a time value below zero is reached. If the frame is set to another frame using [`setFrame`](#setframeframe) after this, the animation will continue again.
+
+### `getFrameCount()`
+Returns the total number of frames for this sprite.
 
 ### `getWidth()`
 Returns the width of the sprite in pixels.
