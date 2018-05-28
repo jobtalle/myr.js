@@ -250,7 +250,7 @@ Constructs a surface from an existing image. The function `ready()` will return 
 
 Parameter | Type | Description
 -|-|-
-image|`String` | `Image`|A URL or Image object referring to a valid image file
+image|`String` or `Image`|A URL or Image object referring to a valid image file
 
 ### `Surface(image, width, height)`
 Construct a surface from an existing image. The width and height will be set from the beginning instead of after the image has been loaded.
