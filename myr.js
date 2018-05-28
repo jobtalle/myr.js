@@ -322,18 +322,13 @@ let Myr = function(canvasElement) {
         }
         else {
             const image = new Image();
-            
-            if(arguments[2] !== undefined) {
-                width = arguments[1];
-                height = arguments[2];
-            }
-            
+
             image.onload = () => {
                 if(width === 0 || height === 0) {
                     width = image.width;
                     height = image.height;
                 }
-                
+
                 gl.activeTexture(TEXTURE_EDITING);
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
@@ -344,13 +339,26 @@ let Myr = function(canvasElement) {
                     frame[7] /= width;
                     frame[8] /= height;
                 }
-                
+
                 ready = true;
             };
-            
-            image.crossOrigin = "Anonymous";
-            image.src = arguments[0];
-            
+
+            const source = arguments[0];
+            if (source instanceof Image) {
+                image.crossOrigin = source.crossOrigin;
+                image.src = source.src;
+                image.width = source.width;
+                image.height = source.height;
+            } else {
+                image.crossOrigin = "Anonymous";
+                image.src = source;
+            }
+
+            if (arguments[2] !== undefined) {
+                width = arguments[1];
+                height = arguments[2];
+            }
+
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
         }
         
