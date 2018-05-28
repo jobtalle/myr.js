@@ -250,14 +250,14 @@ Constructs a surface from an existing image. The function `ready()` will return 
 
 Parameter | Type | Description
 -|-|-
-image|`String`|A URL to a valid image file
+image|`String` or `Image`|A URL or Image object referring to a valid image file
 
 ### `Surface(image, width, height)`
 Construct a surface from an existing image. The width and height will be set from the beginning instead of after the image has been loaded.
 
 Parameter | Type | Description
 -|-|-
-image|`String`|A URL to a valid image file
+image|`String`|A URL or Image object referring to a valid image file
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
 
@@ -391,6 +391,10 @@ Function | Description
 [`getHeight()`](#getheight-2)|Returns the sprite height
 [`getOriginX()`](#getoriginx)|Returns the X origin
 [`getOriginY()`](#getoriginy)|Returns the Y origin
+[`getUvLeft()`](#getuvleft)| Returns the left UV coordinate.
+[`getUvTop()`](#getuvleft)| Returns the top UV coordinate.
+[`getUvWidth()`](#getuvwidth)| Returns the width of the sprite in UV space.
+[`getUvHeight()`](#getuvheight)| Returns the height of the sprite in UV space
 [`draw(x, y)`](#drawx-y-1)|Draws the sprite
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-1)|Draws the sprite
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-1)|Draws the sprite
@@ -442,6 +446,18 @@ Returns the X origin of this sprite's current frame.
 
 ### `getOriginY()`
 Returns the Y origin of this sprite's current frame.
+
+### `getUvLeft()`
+Returns the left UV coordinate.
+
+### `getUvRight()`
+Returns the top UV coordinate.
+
+### `getUvWidth()`
+Returns the width of the sprite in UV space.
+
+### `getUvHeight()` 
+Returns the height of the sprite in UV space
 
 ### `draw(x, y)`
 Draws this sprite on the currently bound target.
