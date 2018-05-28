@@ -391,6 +391,10 @@ Function | Description
 [`getHeight()`](#getheight-2)|Returns the sprite height
 [`getOriginX()`](#getoriginx)|Returns the X origin
 [`getOriginY()`](#getoriginy)|Returns the Y origin
+[`getUvLeft()`](#getuvleft)| Get the left UV coordinate.
+[`getUvTop()`](#getuvleft)| Get the top UV coordinate.
+[`getUvWidth()`](#getuvwidth)| Get the width of the sprite in UV space.
+[`getUvHeight()`](#getuvheight)| Get the height of the sprite in UV space
 [`draw(x, y)`](#drawx-y-1)|Draws the sprite
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-1)|Draws the sprite
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-1)|Draws the sprite
@@ -442,6 +446,18 @@ Returns the X origin of this sprite's current frame.
 
 ### `getOriginY()`
 Returns the Y origin of this sprite's current frame.
+
+### `getUvLeft()`
+Returns the left UV coordinate.
+
+### `getUvRight()`
+Returns the top UV coordinate.
+
+### `getUvWidth()`
+Returns the width of the sprite in UV space.
+
+### `getUvHeight()` 
+Returns the height of the sprite in UV space
 
 ### `draw(x, y)`
 Draws this sprite on the currently bound target.

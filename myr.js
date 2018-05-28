@@ -286,10 +286,10 @@ let Myr = function(canvasElement) {
         };
 
         this._getTexture = () => texture;
-        this._getUvLeft = () => 0;
-        this._getUvTop = () => 0;
-        this._getUvWidth = () => 1;
-        this._getUvHeight = () => 1;
+        this.getUvLeft = () => 0;
+        this.getUvTop = () => 0;
+        this.getUvWidth = () => 1;
+        this.getUvHeight = () => 1;
 
         this.getWidth = () => width;
         this.getHeight = () => height;
@@ -383,10 +383,10 @@ let Myr = function(canvasElement) {
         };
 
         this._getTexture = () => getFrame()[0];
-        this._getUvLeft = () => getFrame()[5];
-        this._getUvTop = () => getFrame()[6];
-        this._getUvWidth = () => getFrame()[7];
-        this._getUvHeight = () => getFrame()[8];
+        this.getUvLeft = () => getFrame()[5];
+        this.getUvTop = () => getFrame()[6];
+        this.getUvWidth = () => getFrame()[7];
+        this.getUvHeight = () => getFrame()[8];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
         this.isFinished = () => getFrame()[9] < 0;
@@ -471,49 +471,49 @@ let Myr = function(canvasElement) {
         draw: function(x, y) {
             this._prepareDraw();
 
-            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
             setAttributesDraw(x, y, this.getWidth(), this.getHeight());
         },
 
         drawScaled: function(x, y, xScale, yScale) {
             this._prepareDraw();
             
-            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
             setAttributesDraw(x, y, this.getWidth() * xScale, this.getHeight() * yScale);
         },
 
         drawSheared: function(x, y, xShear, yShear) {
             this._prepareDraw();
             
-            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
             setAttributesDrawSheared(x, y, this.getWidth(), this.getHeight(), xShear, yShear);
         },
 
         drawRotated: function(x, y, angle) {
             this._prepareDraw();
             
-            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
             setAttributesDrawRotated(x, y, this.getWidth(), this.getHeight(), angle);
         },
 
         drawScaledRotated: function(x, y, xScale, yScale, angle) {
             this._prepareDraw();
             
-            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
             setAttributesDrawRotated(x, y, this.getWidth() * xScale, this.getHeight() * yScale, angle);
         },
 
         drawTransformed: function(transform) {
             this._prepareDraw();
             
-            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
             setAttributesDrawTransform(transform, this.getWidth(), this.getHeight());
         },
 
         drawTransformedAt: function(x, y, transform) {
             this._prepareDraw();
             
-            setAttributesUv(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight());
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
             setAttributesDrawTransformAt(x, y, transform, this.getWidth(), this.getHeight());
         },
 
@@ -523,7 +523,7 @@ let Myr = function(canvasElement) {
             const wf = 1 / this.getWidth();
             const hf = 1 / this.getHeight();
             
-            setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
+            setAttributesUvPart(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight(), left * wf, top * hf, w * wf, h * hf);
             setAttributesDraw(x, y, w, h);
         },
 
@@ -533,7 +533,7 @@ let Myr = function(canvasElement) {
             const wf = 1 / this.getWidth();
             const hf = 1 / this.getHeight();
             
-            setAttributesUvPart(this._getUvLeft(), this._getUvTop(), this._getUvWidth(), this._getUvHeight(), left * wf, top * hf, w * wf, h * hf);
+            setAttributesUvPart(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight(), left * wf, top * hf, w * wf, h * hf);
             setAttributesDrawTransform(transform, w, h);
         }
     };
