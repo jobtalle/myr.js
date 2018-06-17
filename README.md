@@ -552,7 +552,7 @@ The transform object wraps a homogeneous 2D transformation matrix. Several diffe
 ## Functions
 Function | Description
 -|-
-[`Transform()`](#transform-1)|Constructs as idenity transform
+[`Transform()`](#transform-1)|Constructs as identity transform
 [`Transform(_00, _10, _20, _01, _11, _21)`](#transform_00-_10-_20-_01-_11-_21)|Constructs from matrix values
 [`apply(vector)`](#applyvector)|Apply to a vector
 [`copy()`](#copy)|Returns a copy
@@ -563,6 +563,7 @@ Function | Description
 [`shear(x, y)`](#shearx-y-1)|Shear
 [`translate(x, y)`](#translatex-y-1)|Translate
 [`scale(x, y)`](#scalex-y-1)|Scale
+[`invert()`](#invert)|Invert
 
 ### `Transform()`
 Constructs a `Transform` object, which is initialized as the identity matrix (no transform).
@@ -636,6 +637,9 @@ Parameter | Type | Description
 -|-|-
 x|`Number`|Horizontal scale
 y|`Number`|Vertical scale
+
+### `invert()`
+Invert this transformation.
 
 # Color
 This object represents a color with a red, green, blue and alpha component.
