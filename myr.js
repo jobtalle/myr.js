@@ -253,6 +253,21 @@ let Myr = function(canvasElement) {
         this._11 *= y;
     };
 
+    Transform.prototype.invert = function() {
+        const s11 = this._00;
+        const s02 = this._10 * this._21 - this._11 * this._20;
+        const s12 = -this._00 * this._21 + this._01 * this._20;
+
+        const d = 1.0 / (this._00 * this._11 - this._10 * this._01);
+
+        this._00 = this._11 * d;
+        this._10 = -this._10 * d;
+        this._20 = s02 * d;
+        this._01 = -this._01 * d;
+        this._11 = s11 * d;
+        this._21 = s12 * d;
+    };
+
     this.Surface = function() {
         this.free = () => {
             gl.deleteTexture(texture);
