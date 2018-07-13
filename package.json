@@ -1,6 +1,6 @@
 {
   "name": "myr.js",
-  "version": "0.3.3",
+  "version": "0.4",
   "description": "A fast and lean WebGL 2 based 2D graphics renderer without external dependencies.",
   "main": "myr.js",
   "directories": {
