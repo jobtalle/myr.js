@@ -1232,7 +1232,7 @@ let Myr = function(canvasElement) {
 
     gl.enable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, instances);
     gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
