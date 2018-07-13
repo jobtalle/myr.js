@@ -27,5 +27,8 @@
   "bugs": {
     "url": "https://github.com/jobtalle/myr.js/issues"
   },
-  "homepage": "https://github.com/jobtalle/myr.js#myrjs"
+  "homepage": "https://github.com/jobtalle/myr.js#myrjs",
+  "dependencies": {
+    "myr.js": "^0.4.0"
+  }
 }
