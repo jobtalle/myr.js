@@ -1,272 +1,8 @@
-let Myr = function(canvasElement) {
+export function Myr(canvasElement) {
     const gl = canvasElement.getContext("webgl2", {
         antialias: false,
         depth: false
     });
-
-    const Color = this.Color = function(r, g, b, a) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a === undefined?1:a;
-    };
-
-    Color.BLACK = new this.Color(0, 0, 0);
-    Color.BLUE = new this.Color(0, 0, 1);
-    Color.GREEN = new this.Color(0, 1, 0);
-    Color.CYAN = new this.Color(0, 1, 1);
-    Color.RED = new this.Color(1, 0, 0);
-    Color.MAGENTA = new this.Color(1, 0, 1);
-    Color.YELLOW = new this.Color(1, 1, 0);
-    Color.WHITE = new this.Color(1, 1, 1);
-
-    Color.fromHSV = (h, s, v) => {
-        const c = v * s;
-        const x = c * (1 - Math.abs((h * 6) % 2 - 1));
-        const m = v - c;
-
-        switch(Math.floor(h * 6)) {
-            case 1:
-                return new this.Color(x + m, c + m, m);
-            case 2:
-                return new this.Color(m, c + m, x + m);
-            case 3:
-                return new this.Color(m, x + m, c + m);
-            case 4:
-                return new this.Color(x + m, m, c + m);
-            case 5:
-                return new this.Color(c + m, m, x + m);
-            default:
-                return new this.Color(c + m, x + m, m);
-        }
-    };
-
-    Color.prototype.toHSV = function() {
-        const cMax = Math.max(this.r, this.g, this.b);
-        const cMin = Math.min(this.r, this.g, this.b);
-        let h, s, l = (cMax + cMin) * 0.5;
-
-        if (cMax === cMin)
-            h = s = 0;
-        else {
-            let delta = cMax - cMin;
-            s = l > 0.5 ? delta / (2 - delta) : delta / (cMax + cMin);
-
-            switch(cMax) {
-                case this.r:
-                    h = (this.g - this.b) / delta + (this.g < this.b ? 6 : 0);
-                    break;
-                case this.g:
-                    h = (this.b - this.r) / delta + 2;
-                    break;
-                case this.b:
-                    h = (this.r - this.g) / delta + 4;
-            }
-        }
-
-        return {
-            h: h / 6,
-            s: s,
-            v: cMax
-        };
-    };
-
-    Color.prototype.copy = function() {
-        return new Color(this.r, this.g, this.b, this.a);
-    };
-
-    Color.prototype.add = function(color) {
-        this.r = Math.min(this.r + color.r, 1);
-        this.g = Math.min(this.g + color.g, 1);
-        this.b = Math.min(this.b + color.b, 1);
-
-        return this;
-    };
-
-    Color.prototype.multiply = function(color) {
-        this.r *= color.r;
-        this.g *= color.g;
-        this.b *= color.b;
-
-        return this;
-    };
-
-    Color.prototype.equals = function(color) {
-        return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
-    };
-
-    const Vector = this.Vector = function(x, y) {
-        this.x = x;
-        this.y = y;
-    };
-
-    Vector.prototype.copy = function() {
-        return new Vector(this.x, this.y);
-    };
-
-    Vector.prototype.add = function(vector) {
-        this.x += vector.x;
-        this.y += vector.y;
-
-        return this;
-    };
-
-    Vector.prototype.subtract = function(vector) {
-        this.x -= vector.x;
-        this.y -= vector.y;
-
-        return this;
-    };
-
-    Vector.prototype.negate = function() {
-        this.x = -this.x;
-        this.y = -this.y;
-
-        return this;
-    };
-
-    Vector.prototype.dot = function(vector) {
-        return this.x * vector.x + this.y * vector.y;
-    };
-
-    Vector.prototype.length = function() {
-        return Math.sqrt(this.dot(this));
-    };
-
-    Vector.prototype.multiply = function(scalar) {
-        this.x *= scalar;
-        this.y *= scalar;
-
-        return this;
-    };
-
-    Vector.prototype.divide = function(scalar) {
-        if(scalar === 0)
-            this.x = this.y = 0;
-        else
-            return this.multiply(1.0 / scalar);
-
-        return this;
-    };
-
-    Vector.prototype.normalize = function() {
-        return this.divide(this.length());
-    };
-
-    Vector.prototype.angle = function() {
-        return Math.atan2(this.y, this.x);
-    };
-
-    Vector.prototype.equals = function(vector) {
-        return this.x === vector.x && this.y === vector.y;
-    };
-
-    const Transform = this.Transform = function(_00, _10, _20, _01, _11, _21) {
-        if(_00 === undefined)
-            this.identity();
-        else {
-            this._00 = _00;
-            this._10 = _10;
-            this._20 = _20;
-            this._01 = _01;
-            this._11 = _11;
-            this._21 = _21;
-        }
-    };
-
-    Transform.prototype.apply = function(vector) {
-        const x = vector.x;
-        const y = vector.y;
-
-        vector.x = this._00 * x + this._10 * y + this._20;
-        vector.y = this._01 * x + this._11 * y + this._21;
-    };
-
-    Transform.prototype.copy = function() {
-        return new Transform(this._00, this._10, this._20, this._01, this._11, this._21);
-    };
-
-    Transform.prototype.identity = function() {
-        this._00 = 1;
-        this._10 = 0;
-        this._20 = 0;
-        this._01 = 0;
-        this._11 = 1;
-        this._21 = 0;
-    };
-
-    Transform.prototype.set = function(transform) {
-        this._00 = transform._00;
-        this._10 = transform._10;
-        this._20 = transform._20;
-        this._01 = transform._01;
-        this._11 = transform._11;
-        this._21 = transform._21;
-    };
-
-    Transform.prototype.multiply = function(transform) {
-        const _00 = this._00;
-        const _10 = this._10;
-        const _01 = this._01;
-        const _11 = this._11;
-
-        this._00 = _00 * transform._00 + _10 * transform._01;
-        this._10 = _00 * transform._10 + _10 * transform._11;
-        this._20 += _00 * transform._20 + _10 * transform._21;
-        this._01 = _01 * transform._00 + _11 * transform._01;
-        this._11 = _01 * transform._10 + _11 * transform._11;
-        this._21 += _01 * transform._20 + _11 * transform._21;
-    };
-
-    Transform.prototype.rotate = function(angle) {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-
-        const _00 = this._00;
-        const _01 = this._01;
-
-        this._00 = _00 * cos - this._10 * sin;
-        this._10 = _00 * sin + this._10 * cos;
-        this._01 = _01 * cos - this._11 * sin;
-        this._11 = _01 * sin + this._11 * cos;
-    };
-
-    Transform.prototype.shear = function(x, y) {
-        const _00 = this._00;
-        const _01 = this._01;
-
-        this._00 += this._10 * y;
-        this._10 += _00 * x;
-        this._01 += this._11 * y;
-        this._11 += _01 * x;
-    };
-
-    Transform.prototype.translate = function(x, y) {
-        this._20 += this._00 * x + this._10 * y;
-        this._21 += this._01 * x + this._11 * y;
-    };
-
-    Transform.prototype.scale = function(x, y) {
-        this._00 *= x;
-        this._10 *= y;
-        this._01 *= x;
-        this._11 *= y;
-    };
-
-    Transform.prototype.invert = function() {
-        const s11 = this._00;
-        const s02 = this._10 * this._21 - this._11 * this._20;
-        const s12 = -this._00 * this._21 + this._01 * this._20;
-
-        const d = 1.0 / (this._00 * this._11 - this._10 * this._01);
-
-        this._00 = this._11 * d;
-        this._10 = -this._10 * d;
-        this._20 = s02 * d;
-        this._01 = -this._01 * d;
-        this._11 = s11 * d;
-        this._21 = s12 * d;
-    };
 
     this.Surface = function() {
         this.free = () => {
@@ -319,7 +55,7 @@ let Myr = function(canvasElement) {
         let ready = false;
         let width = 0;
         let height = 0;
-        let clearColor = new Color(0, 0, 0, 0);
+        let clearColor = new Myr.Color(0, 0, 0, 0);
 
         flush();
         
@@ -936,8 +672,7 @@ let Myr = function(canvasElement) {
             flush();
 
             renderMode = mode;
-
-            (shader = shaders[mode]).bind();
+            shaders[mode].bind();
         }
 
         if(instanceBufferAt + size >= instanceBufferCapacity) {
@@ -957,7 +692,7 @@ let Myr = function(canvasElement) {
 
     const pushIdentity = () => {
         if(++transformAt === transformStack.length)
-            transformStack.push(new Transform());
+            transformStack.push(new Myr.Transform());
         else
             transformStack[transformAt].identity();
 
@@ -1100,7 +835,7 @@ let Myr = function(canvasElement) {
     const ubo = gl.createBuffer();
     const uboContents = new Float32Array(12);
     const sprites = [];
-    const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
+    const transformStack = [new Myr.Transform(1, 0, 0, 0, -1, canvasElement.height)];
     const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
     const shaderCoreSprites = new ShaderCore(
         "layout(location=0) in mediump vec2 vertex;" +
@@ -1226,7 +961,7 @@ let Myr = function(canvasElement) {
     let instanceBufferAt = -1;
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
-    let clearColor = new this.Color(0, 0, 0);
+    let clearColor = new Myr.Color(0, 0, 0);
 
     uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
 
@@ -1276,4 +1011,266 @@ let Myr = function(canvasElement) {
     this.bind();
 };
 
-if(typeof module !== 'undefined') module.exports = Myr;
+Myr.Color = function(r, g, b, a) {
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.a = a === undefined?1:a;
+};
+
+Myr.Color.BLACK = new Myr.Color(0, 0, 0);
+Myr.Color.BLUE = new Myr.Color(0, 0, 1);
+Myr.Color.GREEN = new Myr.Color(0, 1, 0);
+Myr.Color.CYAN = new Myr.Color(0, 1, 1);
+Myr.Color.RED = new Myr.Color(1, 0, 0);
+Myr.Color.MAGENTA = new Myr.Color(1, 0, 1);
+Myr.Color.YELLOW = new Myr.Color(1, 1, 0);
+Myr.Color.WHITE = new Myr.Color(1, 1, 1);
+
+Myr.Color.fromHSV = (h, s, v) => {
+    const c = v * s;
+    const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+    const m = v - c;
+
+    switch(Math.floor(h * 6)) {
+        case 1:
+            return new Myr.Color(x + m, c + m, m);
+        case 2:
+            return new Myr.Color(m, c + m, x + m);
+        case 3:
+            return new Myr.Color(m, x + m, c + m);
+        case 4:
+            return new Myr.Color(x + m, m, c + m);
+        case 5:
+            return new Myr.Color(c + m, m, x + m);
+        default:
+            return new Myr.Color(c + m, x + m, m);
+    }
+};
+
+Myr.Color.prototype.toHSV = function() {
+    const cMax = Math.max(this.r, this.g, this.b);
+    const cMin = Math.min(this.r, this.g, this.b);
+    let h, s, l = (cMax + cMin) * 0.5;
+
+    if (cMax === cMin)
+        h = s = 0;
+    else {
+        let delta = cMax - cMin;
+        s = l > 0.5 ? delta / (2 - delta) : delta / (cMax + cMin);
+
+        switch(cMax) {
+            case this.r:
+                h = (this.g - this.b) / delta + (this.g < this.b ? 6 : 0);
+                break;
+            case this.g:
+                h = (this.b - this.r) / delta + 2;
+                break;
+            case this.b:
+                h = (this.r - this.g) / delta + 4;
+        }
+    }
+
+    return {
+        h: h / 6,
+        s: s,
+        v: cMax
+    };
+};
+
+Myr.Color.prototype.copy = function() {
+    return new Myr.Color(this.r, this.g, this.b, this.a);
+};
+
+Myr.Color.prototype.add = function(color) {
+    this.r = Math.min(this.r + color.r, 1);
+    this.g = Math.min(this.g + color.g, 1);
+    this.b = Math.min(this.b + color.b, 1);
+
+    return this;
+};
+
+Myr.Color.prototype.multiply = function(color) {
+    this.r *= color.r;
+    this.g *= color.g;
+    this.b *= color.b;
+
+    return this;
+};
+
+Myr.Color.prototype.equals = function(color) {
+    return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
+};
+
+Myr.Vector = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+
+Myr.Vector.prototype.copy = function() {
+    return new Myr.Vector(this.x, this.y);
+};
+
+Myr.Vector.prototype.add = function(vector) {
+    this.x += vector.x;
+    this.y += vector.y;
+
+    return this;
+};
+
+Myr.Vector.prototype.subtract = function(vector) {
+    this.x -= vector.x;
+    this.y -= vector.y;
+
+    return this;
+};
+
+Myr.Vector.prototype.negate = function() {
+    this.x = -this.x;
+    this.y = -this.y;
+
+    return this;
+};
+
+Myr.Vector.prototype.dot = function(vector) {
+    return this.x * vector.x + this.y * vector.y;
+};
+
+Myr.Vector.prototype.length = function() {
+    return Math.sqrt(this.dot(this));
+};
+
+Myr.Vector.prototype.multiply = function(scalar) {
+    this.x *= scalar;
+    this.y *= scalar;
+
+    return this;
+};
+
+Myr.Vector.prototype.divide = function(scalar) {
+    if(scalar === 0)
+        this.x = this.y = 0;
+    else
+        return this.multiply(1.0 / scalar);
+
+    return this;
+};
+
+Myr.Vector.prototype.normalize = function() {
+    return this.divide(this.length());
+};
+
+Myr.Vector.prototype.angle = function() {
+    return Math.atan2(this.y, this.x);
+};
+
+Myr.Vector.prototype.equals = function(vector) {
+    return this.x === vector.x && this.y === vector.y;
+};
+
+Myr.Transform = function(_00, _10, _20, _01, _11, _21) {
+    if(_00 === undefined)
+        this.identity();
+    else {
+        this._00 = _00;
+        this._10 = _10;
+        this._20 = _20;
+        this._01 = _01;
+        this._11 = _11;
+        this._21 = _21;
+    }
+};
+
+Myr.Transform.prototype.apply = function(vector) {
+    const x = vector.x;
+    const y = vector.y;
+
+    vector.x = this._00 * x + this._10 * y + this._20;
+    vector.y = this._01 * x + this._11 * y + this._21;
+};
+
+Myr.Transform.prototype.copy = function() {
+    return new Myr.Transform(this._00, this._10, this._20, this._01, this._11, this._21);
+};
+
+Myr.Transform.prototype.identity = function() {
+    this._00 = 1;
+    this._10 = 0;
+    this._20 = 0;
+    this._01 = 0;
+    this._11 = 1;
+    this._21 = 0;
+};
+
+Myr.Transform.prototype.set = function(transform) {
+    this._00 = transform._00;
+    this._10 = transform._10;
+    this._20 = transform._20;
+    this._01 = transform._01;
+    this._11 = transform._11;
+    this._21 = transform._21;
+};
+
+Myr.Transform.prototype.multiply = function(transform) {
+    const _00 = this._00;
+    const _10 = this._10;
+    const _01 = this._01;
+    const _11 = this._11;
+
+    this._00 = _00 * transform._00 + _10 * transform._01;
+    this._10 = _00 * transform._10 + _10 * transform._11;
+    this._20 += _00 * transform._20 + _10 * transform._21;
+    this._01 = _01 * transform._00 + _11 * transform._01;
+    this._11 = _01 * transform._10 + _11 * transform._11;
+    this._21 += _01 * transform._20 + _11 * transform._21;
+};
+
+Myr.Transform.prototype.rotate = function(angle) {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    const _00 = this._00;
+    const _01 = this._01;
+
+    this._00 = _00 * cos - this._10 * sin;
+    this._10 = _00 * sin + this._10 * cos;
+    this._01 = _01 * cos - this._11 * sin;
+    this._11 = _01 * sin + this._11 * cos;
+};
+
+Myr.Transform.prototype.shear = function(x, y) {
+    const _00 = this._00;
+    const _01 = this._01;
+
+    this._00 += this._10 * y;
+    this._10 += _00 * x;
+    this._01 += this._11 * y;
+    this._11 += _01 * x;
+};
+
+Myr.Transform.prototype.translate = function(x, y) {
+    this._20 += this._00 * x + this._10 * y;
+    this._21 += this._01 * x + this._11 * y;
+};
+
+Myr.Transform.prototype.scale = function(x, y) {
+    this._00 *= x;
+    this._10 *= y;
+    this._01 *= x;
+    this._11 *= y;
+};
+
+Myr.Transform.prototype.invert = function() {
+    const s11 = this._00;
+    const s02 = this._10 * this._21 - this._11 * this._20;
+    const s12 = -this._00 * this._21 + this._01 * this._20;
+
+    const d = 1.0 / (this._00 * this._11 - this._10 * this._01);
+
+    this._00 = this._11 * d;
+    this._10 = -this._10 * d;
+    this._20 = s02 * d;
+    this._01 = -this._01 * d;
+    this._11 = s11 * d;
+    this._21 = s12 * d;
+};
