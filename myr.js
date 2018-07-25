@@ -1,6 +1,6 @@
-export function Myr(canvasElement) {
+const Myr = function(canvasElement) {
     const gl = canvasElement.getContext("webgl2", {
-        antialias: false,
+        antialias: true,
         depth: false
     });
 
@@ -1264,3 +1264,5 @@ Myr.Transform.prototype.invert = function() {
     this._11 = s11 * d;
     this._21 = s12 * d;
 };
+
+if(typeof module !== 'undefined') module.exports = Myr;
