@@ -4,6 +4,79 @@ const Myr = function(canvasElement) {
         depth: false
     });
 
+    const Renderable = {};
+
+    Renderable.prototype = {
+        draw: function(x, y) {
+            this._prepareDraw();
+
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
+            setAttributesDraw(x, y, this.getWidth(), this.getHeight());
+        },
+
+        drawScaled: function(x, y, xScale, yScale) {
+            this._prepareDraw();
+
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
+            setAttributesDraw(x, y, this.getWidth() * xScale, this.getHeight() * yScale);
+        },
+
+        drawSheared: function(x, y, xShear, yShear) {
+            this._prepareDraw();
+
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
+            setAttributesDrawSheared(x, y, this.getWidth(), this.getHeight(), xShear, yShear);
+        },
+
+        drawRotated: function(x, y, angle) {
+            this._prepareDraw();
+
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
+            setAttributesDrawRotated(x, y, this.getWidth(), this.getHeight(), angle);
+        },
+
+        drawScaledRotated: function(x, y, xScale, yScale, angle) {
+            this._prepareDraw();
+
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
+            setAttributesDrawRotated(x, y, this.getWidth() * xScale, this.getHeight() * yScale, angle);
+        },
+
+        drawTransformed: function(transform) {
+            this._prepareDraw();
+
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
+            setAttributesDrawTransform(transform, this.getWidth(), this.getHeight());
+        },
+
+        drawTransformedAt: function(x, y, transform) {
+            this._prepareDraw();
+
+            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
+            setAttributesDrawTransformAt(x, y, transform, this.getWidth(), this.getHeight());
+        },
+
+        drawPart: function(x, y, left, top, w, h) {
+            this._prepareDraw();
+
+            const wf = 1 / this.getWidth();
+            const hf = 1 / this.getHeight();
+
+            setAttributesUvPart(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight(), left * wf, top * hf, w * wf, h * hf);
+            setAttributesDraw(x, y, w, h);
+        },
+
+        drawPartTransformed: function(transform, left, top, w, h) {
+            this._prepareDraw();
+
+            const wf = 1 / this.getWidth();
+            const hf = 1 / this.getHeight();
+
+            setAttributesUvPart(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight(), left * wf, top * hf, w * wf, h * hf);
+            setAttributesDrawTransform(transform, w, h);
+        }
+    };
+
     this.Surface = function() {
         this.free = () => {
             gl.deleteTexture(texture);
@@ -37,11 +110,6 @@ const Myr = function(canvasElement) {
         };
 
         this._getTexture = () => texture;
-        this.getUvLeft = () => 0;
-        this.getUvTop = () => 0;
-        this.getUvWidth = () => 1;
-        this.getUvHeight = () => 1;
-
         this.getWidth = () => width;
         this.getHeight = () => height;
         this.setClearColor = color => clearColor = color;
@@ -119,22 +187,34 @@ const Myr = function(canvasElement) {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
     };
 
+    this.Surface.prototype = Object.create(Renderable.prototype);
+
+    this.Surface.prototype.getUvLeft = () => 0;
+    this.Surface.prototype.getUvTop = () => 0;
+    this.Surface.prototype.getUvWidth = () => 1;
+    this.Surface.prototype.getUvHeight = () => 1;
+
     this.Sprite = function(name) {
         this.animate = timeStep => {
-            for(let frameTime; frameTime = getFrame()[9], frameTime >= 0 && frameCounter > frameTime; frameCounter -= frameTime)
-                if(++frame === frames.length)
+            frameCounter += timeStep;
+
+            while (frameCounter > this._getFrame()[9]) {
+                frameCounter -= this._getFrame()[9];
+
+                if (++frame === frames.length)
                     frame = 0;
+            }
         };
 
         this._setMeshBounds = () => {
-            meshUvLeft = getFrame()[5];
-            meshUvTop = getFrame()[6];
-            meshUvWidth = getFrame()[7];
-            meshUvHeight = getFrame()[8];
+            meshUvLeft = this._getFrame()[5];
+            meshUvTop = this._getFrame()[6];
+            meshUvWidth = this._getFrame()[7];
+            meshUvHeight = this._getFrame()[8];
         };
 
         this._prepareDraw = () => {
-            const frame = getFrame();
+            const frame = this._getFrame();
 
             bindTextureAtlas(frame[0]);
             prepareDraw(RENDER_MODE_SPRITES, 12);
@@ -143,26 +223,60 @@ const Myr = function(canvasElement) {
             instanceBuffer[++instanceBufferAt] = frame[4];
         };
 
-        this._getTexture = () => getFrame()[0];
-        this.getUvLeft = () => getFrame()[5];
-        this.getUvTop = () => getFrame()[6];
-        this.getUvWidth = () => getFrame()[7];
-        this.getUvHeight = () => getFrame()[8];
+        this._getFrame = () => frames[frame];
         this.setFrame = index => frame = index;
         this.getFrame = () => frame;
-        this.isFinished = () => getFrame()[9] < 0;
         this.getFrameCount = () => frames.length;
-        this.getWidth = () => getFrame()[1];
-        this.getHeight = () => getFrame()[2];
-        this.getOriginX = () => getFrame()[3] * this.getWidth();
-        this.getOriginY = () => getFrame()[4] * this.getHeight();
-        this.finished = () => getFrame()[9] < 0;
-
-        const getFrame = () => frames[frame];
 
         const frames = sprites[name];
         let frameCounter = 0;
         let frame = 0;
+    };
+
+    this.Sprite.prototype = Object.create(Renderable.prototype);
+
+    this.Sprite.prototype._getTexture = function() {
+        return this._getFrame()[0];
+    };
+
+    this.Sprite.prototype.getUvLeft = function() {
+        return this._getFrame()[5];
+    };
+
+    this.Sprite.prototype.getUvTop = function() {
+        return this._getFrame()[6];
+    };
+
+    this.Sprite.prototype.getUvWidth = function() {
+        return this._getFrame()[7];
+    };
+
+    this.Sprite.prototype.getUvHeight = function() {
+        return this._getFrame()[8];
+    };
+
+    this.Sprite.prototype.isFinished = function() {
+        return this._getFrame()[9] < 0;
+    };
+
+    this.Sprite.prototype.getWidth = function() {
+        return this._getFrame()[1];
+    };
+
+    this.Sprite.prototype.getHeight = function() {
+        return this._getFrame()[2];
+    };
+
+    this.Sprite.prototype.getOriginX = function() {
+        return this._getFrame()[3] * this.getWidth();
+    };
+
+    this.Sprite.prototype.getOriginY = function() {
+        return this._getFrame()[4] * this.getHeight();
+    };
+
+    this.Sprite.prototype.finished = function() {
+        return this._getFrame()[9] < 0;
     };
 
     const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
@@ -225,82 +339,6 @@ const Myr = function(canvasElement) {
         instanceBuffer[++instanceBufferAt] = transform._20 + x;
         instanceBuffer[++instanceBufferAt] = transform._21 + y;
     };
-
-    const Renderable = {};
-
-    Renderable.prototype = {
-        draw: function(x, y) {
-            this._prepareDraw();
-
-            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
-            setAttributesDraw(x, y, this.getWidth(), this.getHeight());
-        },
-
-        drawScaled: function(x, y, xScale, yScale) {
-            this._prepareDraw();
-
-            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
-            setAttributesDraw(x, y, this.getWidth() * xScale, this.getHeight() * yScale);
-        },
-
-        drawSheared: function(x, y, xShear, yShear) {
-            this._prepareDraw();
-
-            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
-            setAttributesDrawSheared(x, y, this.getWidth(), this.getHeight(), xShear, yShear);
-        },
-
-        drawRotated: function(x, y, angle) {
-            this._prepareDraw();
-
-            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
-            setAttributesDrawRotated(x, y, this.getWidth(), this.getHeight(), angle);
-        },
-
-        drawScaledRotated: function(x, y, xScale, yScale, angle) {
-            this._prepareDraw();
-
-            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
-            setAttributesDrawRotated(x, y, this.getWidth() * xScale, this.getHeight() * yScale, angle);
-        },
-
-        drawTransformed: function(transform) {
-            this._prepareDraw();
-
-            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
-            setAttributesDrawTransform(transform, this.getWidth(), this.getHeight());
-        },
-
-        drawTransformedAt: function(x, y, transform) {
-            this._prepareDraw();
-
-            setAttributesUv(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight());
-            setAttributesDrawTransformAt(x, y, transform, this.getWidth(), this.getHeight());
-        },
-
-        drawPart: function(x, y, left, top, w, h) {
-            this._prepareDraw();
-
-            const wf = 1 / this.getWidth();
-            const hf = 1 / this.getHeight();
-
-            setAttributesUvPart(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight(), left * wf, top * hf, w * wf, h * hf);
-            setAttributesDraw(x, y, w, h);
-        },
-
-        drawPartTransformed: function(transform, left, top, w, h) {
-            this._prepareDraw();
-
-            const wf = 1 / this.getWidth();
-            const hf = 1 / this.getHeight();
-
-            setAttributesUvPart(this.getUvLeft(), this.getUvTop(), this.getUvWidth(), this.getUvHeight(), left * wf, top * hf, w * wf, h * hf);
-            setAttributesDrawTransform(transform, w, h);
-        }
-    };
-
-    this.Surface.prototype = Object.create(Renderable.prototype);
-    this.Sprite.prototype = Object.create(Renderable.prototype);
 
     const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
