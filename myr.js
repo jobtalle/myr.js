@@ -1196,6 +1196,16 @@ Myr.Vector.prototype.equals = function(vector) {
     return this.x === vector.x && this.y === vector.y;
 };
 
+Myr.Vector.prototype.rotate = function(angle) {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const x = this.x;
+    const y = this.y;
+
+    this.x = x * cos - y * sin;
+    this.y = x * sin + y * cos;
+};
+
 Myr.Transform = function(_00, _10, _20, _01, _11, _21) {
     if(_00 === undefined)
         this.identity();
