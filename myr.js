@@ -1065,6 +1065,35 @@ Myr.Color.MAGENTA = new Myr.Color(1, 0, 1);
 Myr.Color.YELLOW = new Myr.Color(1, 1, 0);
 Myr.Color.WHITE = new Myr.Color(1, 1, 1);
 
+Myr.Color.fromHex = hex => {
+    let integer = parseInt(hex, 16);
+
+    if (hex.length === 6)
+        return new Myr.Color(
+            ((integer >> 16) & 0xFF) / 255,
+            ((integer >> 8) & 0xFF) / 255,
+            (integer & 0xFF) / 255);
+    else
+        return new Myr.Color(
+            ((integer >> 24) & 0xFF) / 255,
+            ((integer >> 16) & 0xFF) / 255,
+            ((integer >> 8) & 0xFF) / 255,
+            (integer & 0xFF) / 255);
+};
+
+Myr.Color.prototype.toHex = function() {
+    const componentToHex = component => {
+        let hex = component.toString(16);
+
+        return hex.length === 1?"0" + hex:hex;
+    };
+
+    return "#" +
+        componentToHex(Math.round(this.r * 255)) +
+        componentToHex(Math.round(this.g * 255)) +
+        componentToHex(Math.round(this.b * 255));
+};
+
 Myr.Color.fromHSV = (h, s, v) => {
     const c = v * s;
     const x = c * (1 - Math.abs((h * 6) % 2 - 1));

@@ -654,6 +654,7 @@ Function | Description
 [`Color(r, g, b)`](#colorr-g-b)|Construct from RGB
 [`Color(r, g, b, a)`](#colorr-g-b-a)|Construct from RGBA
 [`toHSV()`](#tohsv)|Convert to HSV values
+[`toHex()`](#tohex)|Convert to hexadecimal string
 [`add(color)`](#addcolor)|Adds another color to itself
 [`multiply(color)`](#multiplycolor)|Multiplies with another color
 
@@ -661,6 +662,7 @@ Function | Description
 Function | Description
 -|-
 [`fromHSV(h, s, v)`](#fromhsvh-s-v)|Constructs a color from hue, saturation and value
+[`fromHex(hex)`](#fromhexhex)|Constructs a color from a hexadecimal string
 
 ## Constants
 Constant | Description
@@ -696,14 +698,8 @@ a|`Number`|Alpha value in the range [0, 1]
 ### `toHSV()`
 Returns an object with the members `h`, `s` and `v`, representing this color's hue, saturation and value.
 
-### `fromHSV(h, s, v)`
-Constructs a color from hue, saturation and value.
-
-Parameter | Type | Description
--|-|-
-h|`Number`|Hue value in the range [0, 1]
-s|`Number`|Saturation value in the range [0, 1]
-v|`Number`|Value value in the range [0, 1]
+### `toHex()`
+Returns a hexadecimal string representing this color. Note that hexadecimal color representations don't include an alpha channel, so this information is lost after converting the color. 
 
 ### `add(color)`
 Adds another color to itself.
@@ -718,6 +714,18 @@ Multiplies this color with another color.
 Parameter | Type | Description
 -|-|-
 color|[`Color`](#Color)|A color object
+
+### `fromHSV(h, s, v)`
+Constructs a color from hue, saturation and value.
+
+Parameter | Type | Description
+-|-|-
+h|`Number`|Hue value in the range [0, 1]
+s|`Number`|Saturation value in the range [0, 1]
+v|`Number`|Value value in the range [0, 1]
+
+### `fromHex(hex)`
+Constructs a color from a hexadecimal string. The string must not contain a prefix like `0x` or `#`. If the string has six characters, the red, green and blue components will be read from it. If the string has eight characters, the alpha channel will also be read.
 
 # Vector
 This object represents a vector in 2D space. Several useful vector operation functions are provided.
