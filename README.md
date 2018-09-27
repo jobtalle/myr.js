@@ -46,7 +46,7 @@ Function | Description
 [`setClearColor(color)`](#setclearcolor)|Sets the clear color
 [`setColor(color)`](#setcolorcolor)|Sets the global color filter
 [`setAlpha(alpha)`](#setalphaalpha)|Sets the global transparency
-[`resize(width, height)`](#resizewidth)|Resize this renderer
+[`resize(width, height)`](#resizewidth-height)|Resize this renderer
 [`clear()`](#clear)|Clears the current target
 [`bind()`](#bind)|Binds the default render target
 [`flush()`](#flush)|Flush the draw calls
