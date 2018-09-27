@@ -1,494 +1,8 @@
-let Myr = function(canvasElement) {
+const Myr = function(canvasElement) {
     const gl = canvasElement.getContext("webgl2", {
-        antialias: false,
+        antialias: true,
         depth: false
     });
-
-    const Color = this.Color = function(r, g, b, a) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a === undefined?1:a;
-    };
-
-    Color.BLACK = new this.Color(0, 0, 0);
-    Color.BLUE = new this.Color(0, 0, 1);
-    Color.GREEN = new this.Color(0, 1, 0);
-    Color.CYAN = new this.Color(0, 1, 1);
-    Color.RED = new this.Color(1, 0, 0);
-    Color.MAGENTA = new this.Color(1, 0, 1);
-    Color.YELLOW = new this.Color(1, 1, 0);
-    Color.WHITE = new this.Color(1, 1, 1);
-
-    Color.fromHSV = (h, s, v) => {
-        const c = v * s;
-        const x = c * (1 - Math.abs((h * 6) % 2 - 1));
-        const m = v - c;
-
-        switch(Math.floor(h * 6)) {
-            case 1:
-                return new this.Color(x + m, c + m, m);
-            case 2:
-                return new this.Color(m, c + m, x + m);
-            case 3:
-                return new this.Color(m, x + m, c + m);
-            case 4:
-                return new this.Color(x + m, m, c + m);
-            case 5:
-                return new this.Color(c + m, m, x + m);
-            default:
-                return new this.Color(c + m, x + m, m);
-        }
-    };
-
-    Color.prototype.toHSV = function() {
-        const cMax = Math.max(this.r, this.g, this.b);
-        const cMin = Math.min(this.r, this.g, this.b);
-        let h, s, l = (cMax + cMin) * 0.5;
-
-        if (cMax === cMin)
-            h = s = 0;
-        else {
-            let delta = cMax - cMin;
-            s = l > 0.5 ? delta / (2 - delta) : delta / (cMax + cMin);
-
-            switch(cMax) {
-                case this.r:
-                    h = (this.g - this.b) / delta + (this.g < this.b ? 6 : 0);
-                    break;
-                case this.g:
-                    h = (this.b - this.r) / delta + 2;
-                    break;
-                case this.b:
-                    h = (this.r - this.g) / delta + 4;
-            }
-        }
-
-        return {
-            h: h / 6,
-            s: s,
-            v: cMax
-        };
-    };
-
-    Color.prototype.copy = function() {
-        return new Color(this.r, this.g, this.b, this.a);
-    };
-
-    Color.prototype.add = function(color) {
-        this.r = Math.min(this.r + color.r, 1);
-        this.g = Math.min(this.g + color.g, 1);
-        this.b = Math.min(this.b + color.b, 1);
-
-        return this;
-    };
-
-    Color.prototype.multiply = function(color) {
-        this.r *= color.r;
-        this.g *= color.g;
-        this.b *= color.b;
-
-        return this;
-    };
-
-    Color.prototype.equals = function(color) {
-        return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
-    };
-
-    const Vector = this.Vector = function(x, y) {
-        this.x = x;
-        this.y = y;
-    };
-
-    Vector.prototype.copy = function() {
-        return new Vector(this.x, this.y);
-    };
-
-    Vector.prototype.add = function(vector) {
-        this.x += vector.x;
-        this.y += vector.y;
-
-        return this;
-    };
-
-    Vector.prototype.subtract = function(vector) {
-        this.x -= vector.x;
-        this.y -= vector.y;
-
-        return this;
-    };
-
-    Vector.prototype.negate = function() {
-        this.x = -this.x;
-        this.y = -this.y;
-
-        return this;
-    };
-
-    Vector.prototype.dot = function(vector) {
-        return this.x * vector.x + this.y * vector.y;
-    };
-
-    Vector.prototype.length = function() {
-        return Math.sqrt(this.dot(this));
-    };
-
-    Vector.prototype.multiply = function(scalar) {
-        this.x *= scalar;
-        this.y *= scalar;
-
-        return this;
-    };
-
-    Vector.prototype.divide = function(scalar) {
-        if(scalar === 0)
-            this.x = this.y = 0;
-        else
-            return this.multiply(1.0 / scalar);
-
-        return this;
-    };
-
-    Vector.prototype.normalize = function() {
-        return this.divide(this.length());
-    };
-
-    Vector.prototype.angle = function() {
-        return Math.atan2(this.y, this.x);
-    };
-
-    Vector.prototype.equals = function(vector) {
-        return this.x === vector.x && this.y === vector.y;
-    };
-
-    const Transform = this.Transform = function(_00, _10, _20, _01, _11, _21) {
-        if(_00 === undefined)
-            this.identity();
-        else {
-            this._00 = _00;
-            this._10 = _10;
-            this._20 = _20;
-            this._01 = _01;
-            this._11 = _11;
-            this._21 = _21;
-        }
-    };
-
-    Transform.prototype.apply = function(vector) {
-        const x = vector.x;
-        const y = vector.y;
-
-        vector.x = this._00 * x + this._10 * y + this._20;
-        vector.y = this._01 * x + this._11 * y + this._21;
-    };
-
-    Transform.prototype.copy = function() {
-        return new Transform(this._00, this._10, this._20, this._01, this._11, this._21);
-    };
-
-    Transform.prototype.identity = function() {
-        this._00 = 1;
-        this._10 = 0;
-        this._20 = 0;
-        this._01 = 0;
-        this._11 = 1;
-        this._21 = 0;
-    };
-
-    Transform.prototype.set = function(transform) {
-        this._00 = transform._00;
-        this._10 = transform._10;
-        this._20 = transform._20;
-        this._01 = transform._01;
-        this._11 = transform._11;
-        this._21 = transform._21;
-    };
-
-    Transform.prototype.multiply = function(transform) {
-        const _00 = this._00;
-        const _10 = this._10;
-        const _01 = this._01;
-        const _11 = this._11;
-
-        this._00 = _00 * transform._00 + _10 * transform._01;
-        this._10 = _00 * transform._10 + _10 * transform._11;
-        this._20 += _00 * transform._20 + _10 * transform._21;
-        this._01 = _01 * transform._00 + _11 * transform._01;
-        this._11 = _01 * transform._10 + _11 * transform._11;
-        this._21 += _01 * transform._20 + _11 * transform._21;
-    };
-
-    Transform.prototype.rotate = function(angle) {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-
-        const _00 = this._00;
-        const _01 = this._01;
-
-        this._00 = _00 * cos - this._10 * sin;
-        this._10 = _00 * sin + this._10 * cos;
-        this._01 = _01 * cos - this._11 * sin;
-        this._11 = _01 * sin + this._11 * cos;
-    };
-
-    Transform.prototype.shear = function(x, y) {
-        const _00 = this._00;
-        const _01 = this._01;
-
-        this._00 += this._10 * y;
-        this._10 += _00 * x;
-        this._01 += this._11 * y;
-        this._11 += _01 * x;
-    };
-
-    Transform.prototype.translate = function(x, y) {
-        this._20 += this._00 * x + this._10 * y;
-        this._21 += this._01 * x + this._11 * y;
-    };
-
-    Transform.prototype.scale = function(x, y) {
-        this._00 *= x;
-        this._10 *= y;
-        this._01 *= x;
-        this._11 *= y;
-    };
-
-    Transform.prototype.invert = function() {
-        const s11 = this._00;
-        const s02 = this._10 * this._21 - this._11 * this._20;
-        const s12 = -this._00 * this._21 + this._01 * this._20;
-
-        const d = 1.0 / (this._00 * this._11 - this._10 * this._01);
-
-        this._00 = this._11 * d;
-        this._10 = -this._10 * d;
-        this._20 = s02 * d;
-        this._01 = -this._01 * d;
-        this._11 = s11 * d;
-        this._21 = s12 * d;
-    };
-
-    this.Surface = function() {
-        this.free = () => {
-            gl.deleteTexture(texture);
-            gl.deleteFramebuffer(framebuffer);
-        };
-
-        this.bind = () => {
-            bind(this);
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.viewport(0, 0, width, height);
-        };
-
-        this._prepareDraw = () => {
-            bindTextureSurface(texture);
-            prepareDraw(RENDER_MODE_SURFACES, 12);
-
-            instanceBuffer[++instanceBufferAt] = 0;
-            instanceBuffer[++instanceBufferAt] = 0;
-        };
-
-        this._addFrame = frame => {
-            if(ready) {
-                frame[5] /= width;
-                frame[6] /= height;
-                frame[7] /= width;
-                frame[8] /= height;
-            }
-            else
-                frames.push(frame);
-        };
-
-        this._getTexture = () => texture;
-        this.getUvLeft = () => 0;
-        this.getUvTop = () => 0;
-        this.getUvWidth = () => 1;
-        this.getUvHeight = () => 1;
-
-        this.getWidth = () => width;
-        this.getHeight = () => height;
-        this.setClearColor = color => clearColor = color;
-        this.clear = () => clear(clearColor);
-        this.ready = () => ready;
-
-        const texture = gl.createTexture();
-        const framebuffer = gl.createFramebuffer();
-        const frames = [];
-
-        let ready = false;
-        let width = 0;
-        let height = 0;
-        let clearColor = new Color(0, 0, 0, 0);
-
-        flush();
-        
-        gl.activeTexture(TEXTURE_EDITING);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-        if(arguments.length === 2) {
-            width = arguments[0];
-            height = arguments[1];
-            ready = true;
-
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
-        }
-        else {
-            const image = new Image();
-
-            image.onload = () => {
-                if(width === 0 || height === 0) {
-                    width = image.width;
-                    height = image.height;
-                }
-
-                gl.activeTexture(TEXTURE_EDITING);
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-
-                for(let frame = frames.pop(); frame !== undefined; frame = frames.pop()) {
-                    frame[5] /= width;
-                    frame[6] /= height;
-                    frame[7] /= width;
-                    frame[8] /= height;
-                }
-
-                ready = true;
-            };
-
-            const source = arguments[0];
-            if (source instanceof Image) {
-                image.crossOrigin = source.crossOrigin;
-                image.src = source.src;
-                image.width = source.width;
-                image.height = source.height;
-            } else {
-                image.crossOrigin = "Anonymous";
-                image.src = source;
-            }
-
-            if (arguments[2] !== undefined) {
-                width = arguments[1];
-                height = arguments[2];
-            }
-
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
-        }
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-    };
-
-    this.Sprite = function(name) {
-        this.animate = timeStep => {
-            for(let frameTime; frameTime = getFrame()[9], frameTime >= 0 && frameCounter > frameTime; frameCounter -= frameTime)
-                if(++frame === frames.length)
-                    frame = 0;
-        };
-
-        this._setMeshBounds = () => {
-            meshUvLeft = getFrame()[5];
-            meshUvTop = getFrame()[6];
-            meshUvWidth = getFrame()[7];
-            meshUvHeight = getFrame()[8];
-        };
-
-        this._prepareDraw = () => {
-            const frame = getFrame();
-
-            bindTextureAtlas(frame[0]);
-            prepareDraw(RENDER_MODE_SPRITES, 12);
-
-            instanceBuffer[++instanceBufferAt] = frame[3];
-            instanceBuffer[++instanceBufferAt] = frame[4];
-        };
-
-        this._getTexture = () => getFrame()[0];
-        this.getUvLeft = () => getFrame()[5];
-        this.getUvTop = () => getFrame()[6];
-        this.getUvWidth = () => getFrame()[7];
-        this.getUvHeight = () => getFrame()[8];
-        this.setFrame = index => frame = index;
-        this.getFrame = () => frame;
-        this.isFinished = () => getFrame()[9] < 0;
-        this.getFrameCount = () => frames.length;
-        this.getWidth = () => getFrame()[1];
-        this.getHeight = () => getFrame()[2];
-        this.getOriginX = () => getFrame()[3] * this.getWidth();
-        this.getOriginY = () => getFrame()[4] * this.getHeight();
-        this.finished = () => getFrame()[9] < 0;
-
-        const getFrame = () => frames[frame];
-
-        const frames = sprites[name];
-        let frameCounter = 0;
-        let frame = 0;
-    };
-
-    const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
-        instanceBuffer[++instanceBufferAt] = uvLeft;
-        instanceBuffer[++instanceBufferAt] = uvTop;
-        instanceBuffer[++instanceBufferAt] = uvWidth;
-        instanceBuffer[++instanceBufferAt] = uvHeight;
-    };
-
-    const setAttributesUvPart = (uvLeft, uvTop, uvWidth, uvHeight, left, top, width, height) => {
-        instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * left;
-        instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * top;
-        instanceBuffer[++instanceBufferAt] = uvWidth * width;
-        instanceBuffer[++instanceBufferAt] = uvHeight * height;
-    };
-
-    const setAttributesDraw = (x, y, width, height) => {
-        instanceBuffer[++instanceBufferAt] = width;
-        instanceBuffer[++instanceBufferAt] = instanceBuffer[++instanceBufferAt] = 0;
-        instanceBuffer[++instanceBufferAt] = height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
-    };
-
-    const setAttributesDrawSheared = (x, y, width, height, xShear, yShear) => {
-        instanceBuffer[++instanceBufferAt] = width;
-        instanceBuffer[++instanceBufferAt] = width * xShear;
-        instanceBuffer[++instanceBufferAt] = height * yShear;
-        instanceBuffer[++instanceBufferAt] = height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
-    };
-
-    const setAttributesDrawRotated = (x, y, width, height, angle) => {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-
-        instanceBuffer[++instanceBufferAt] = cos * width;
-        instanceBuffer[++instanceBufferAt] = sin * height;
-        instanceBuffer[++instanceBufferAt] = -sin * width;
-        instanceBuffer[++instanceBufferAt] = cos * height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
-    };
-
-    const setAttributesDrawTransform = (transform, width, height) => {
-        instanceBuffer[++instanceBufferAt] = transform._00 * width;
-        instanceBuffer[++instanceBufferAt] = transform._10 * height;
-        instanceBuffer[++instanceBufferAt] = transform._01 * width;
-        instanceBuffer[++instanceBufferAt] = transform._11 * height;
-        instanceBuffer[++instanceBufferAt] = transform._20;
-        instanceBuffer[++instanceBufferAt] = transform._21;
-    };
-
-    const setAttributesDrawTransformAt = (x, y, transform, width, height) => {
-        instanceBuffer[++instanceBufferAt] = transform._00 * width;
-        instanceBuffer[++instanceBufferAt] = transform._10 * height;
-        instanceBuffer[++instanceBufferAt] = transform._01 * width;
-        instanceBuffer[++instanceBufferAt] = transform._11 * height;
-        instanceBuffer[++instanceBufferAt] = transform._20 + x;
-        instanceBuffer[++instanceBufferAt] = transform._21 + y;
-    };
 
     const Renderable = {};
 
@@ -563,8 +77,268 @@ let Myr = function(canvasElement) {
         }
     };
 
+    this.Surface = function() {
+        this.free = () => {
+            gl.deleteTexture(texture);
+            gl.deleteFramebuffer(framebuffer);
+        };
+
+        this.bind = () => {
+            bind(this);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.viewport(0, 0, width, height);
+        };
+
+        this._prepareDraw = () => {
+            bindTextureSurface(texture);
+            prepareDraw(RENDER_MODE_SURFACES, 12);
+
+            instanceBuffer[++instanceBufferAt] = 0;
+            instanceBuffer[++instanceBufferAt] = 0;
+        };
+
+        this._addFrame = frame => {
+            if(ready) {
+                frame[5] /= width;
+                frame[6] /= height;
+                frame[7] /= width;
+                frame[8] /= height;
+            }
+            else
+                frames.push(frame);
+        };
+
+        this._getTexture = () => texture;
+        this.getWidth = () => width;
+        this.getHeight = () => height;
+        this.setClearColor = color => clearColor = color;
+        this.clear = () => clear(clearColor);
+        this.ready = () => ready;
+
+        const texture = gl.createTexture();
+        const framebuffer = gl.createFramebuffer();
+        const frames = [];
+
+        let ready = false;
+        let width = 0;
+        let height = 0;
+        let clearColor = new Myr.Color(0, 0, 0, 0);
+
+        flush();
+        
+        gl.activeTexture(TEXTURE_EDITING);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        if(arguments.length === 2) {
+            width = arguments[0];
+            height = arguments[1];
+            ready = true;
+
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
+        }
+        else {
+            const image = new Image();
+
+            image.onload = () => {
+                if(width === 0 || height === 0) {
+                    width = image.width;
+                    height = image.height;
+                }
+
+                gl.activeTexture(TEXTURE_EDITING);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+                for(let frame = frames.pop(); frame !== undefined; frame = frames.pop()) {
+                    frame[5] /= width;
+                    frame[6] /= height;
+                    frame[7] /= width;
+                    frame[8] /= height;
+                }
+
+                ready = true;
+            };
+
+            const source = arguments[0];
+            if (source instanceof Image) {
+                image.crossOrigin = source.crossOrigin;
+                image.src = source.src;
+                image.width = source.width;
+                image.height = source.height;
+            } else {
+                image.crossOrigin = "Anonymous";
+                image.src = source;
+            }
+
+            if (arguments[2] !== undefined) {
+                width = arguments[1];
+                height = arguments[2];
+            }
+
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+        }
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    };
+
     this.Surface.prototype = Object.create(Renderable.prototype);
+
+    this.Surface.prototype.getUvLeft = () => 0;
+    this.Surface.prototype.getUvTop = () => 0;
+    this.Surface.prototype.getUvWidth = () => 1;
+    this.Surface.prototype.getUvHeight = () => 1;
+
+    this.Sprite = function(name) {
+        this.animate = timeStep => {
+            frameCounter += timeStep;
+
+            while (frameCounter > this._getFrame()[9]) {
+                frameCounter -= this._getFrame()[9];
+
+                if (++frame === frames.length)
+                    frame = 0;
+            }
+        };
+
+        this._setMeshBounds = () => {
+            meshUvLeft = this._getFrame()[5];
+            meshUvTop = this._getFrame()[6];
+            meshUvWidth = this._getFrame()[7];
+            meshUvHeight = this._getFrame()[8];
+        };
+
+        this._prepareDraw = () => {
+            const frame = this._getFrame();
+
+            bindTextureAtlas(frame[0]);
+            prepareDraw(RENDER_MODE_SPRITES, 12);
+
+            instanceBuffer[++instanceBufferAt] = frame[3];
+            instanceBuffer[++instanceBufferAt] = frame[4];
+        };
+
+        this._getFrame = () => frames[frame];
+        this.setFrame = index => frame = index;
+        this.getFrame = () => frame;
+        this.getFrameCount = () => frames.length;
+
+        const frames = sprites[name];
+        let frameCounter = 0;
+        let frame = 0;
+    };
+
     this.Sprite.prototype = Object.create(Renderable.prototype);
+
+    this.Sprite.prototype._getTexture = function() {
+        return this._getFrame()[0];
+    };
+
+    this.Sprite.prototype.getUvLeft = function() {
+        return this._getFrame()[5];
+    };
+
+    this.Sprite.prototype.getUvTop = function() {
+        return this._getFrame()[6];
+    };
+
+    this.Sprite.prototype.getUvWidth = function() {
+        return this._getFrame()[7];
+    };
+
+    this.Sprite.prototype.getUvHeight = function() {
+        return this._getFrame()[8];
+    };
+
+    this.Sprite.prototype.isFinished = function() {
+        return this._getFrame()[9] < 0;
+    };
+
+    this.Sprite.prototype.getWidth = function() {
+        return this._getFrame()[1];
+    };
+
+    this.Sprite.prototype.getHeight = function() {
+        return this._getFrame()[2];
+    };
+
+    this.Sprite.prototype.getOriginX = function() {
+        return this._getFrame()[3] * this.getWidth();
+    };
+
+    this.Sprite.prototype.getOriginY = function() {
+        return this._getFrame()[4] * this.getHeight();
+    };
+
+    this.Sprite.prototype.finished = function() {
+        return this._getFrame()[9] < 0;
+    };
+
+    const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
+        instanceBuffer[++instanceBufferAt] = uvLeft;
+        instanceBuffer[++instanceBufferAt] = uvTop;
+        instanceBuffer[++instanceBufferAt] = uvWidth;
+        instanceBuffer[++instanceBufferAt] = uvHeight;
+    };
+
+    const setAttributesUvPart = (uvLeft, uvTop, uvWidth, uvHeight, left, top, width, height) => {
+        instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * left;
+        instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * top;
+        instanceBuffer[++instanceBufferAt] = uvWidth * width;
+        instanceBuffer[++instanceBufferAt] = uvHeight * height;
+    };
+
+    const setAttributesDraw = (x, y, width, height) => {
+        instanceBuffer[++instanceBufferAt] = width;
+        instanceBuffer[++instanceBufferAt] = instanceBuffer[++instanceBufferAt] = 0;
+        instanceBuffer[++instanceBufferAt] = height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
+
+    const setAttributesDrawSheared = (x, y, width, height, xShear, yShear) => {
+        instanceBuffer[++instanceBufferAt] = width;
+        instanceBuffer[++instanceBufferAt] = width * xShear;
+        instanceBuffer[++instanceBufferAt] = height * yShear;
+        instanceBuffer[++instanceBufferAt] = height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
+
+    const setAttributesDrawRotated = (x, y, width, height, angle) => {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        instanceBuffer[++instanceBufferAt] = cos * width;
+        instanceBuffer[++instanceBufferAt] = sin * height;
+        instanceBuffer[++instanceBufferAt] = -sin * width;
+        instanceBuffer[++instanceBufferAt] = cos * height;
+        instanceBuffer[++instanceBufferAt] = x;
+        instanceBuffer[++instanceBufferAt] = y;
+    };
+
+    const setAttributesDrawTransform = (transform, width, height) => {
+        instanceBuffer[++instanceBufferAt] = transform._00 * width;
+        instanceBuffer[++instanceBufferAt] = transform._10 * height;
+        instanceBuffer[++instanceBufferAt] = transform._01 * width;
+        instanceBuffer[++instanceBufferAt] = transform._11 * height;
+        instanceBuffer[++instanceBufferAt] = transform._20;
+        instanceBuffer[++instanceBufferAt] = transform._21;
+    };
+
+    const setAttributesDrawTransformAt = (x, y, transform, width, height) => {
+        instanceBuffer[++instanceBufferAt] = transform._00 * width;
+        instanceBuffer[++instanceBufferAt] = transform._10 * height;
+        instanceBuffer[++instanceBufferAt] = transform._01 * width;
+        instanceBuffer[++instanceBufferAt] = transform._11 * height;
+        instanceBuffer[++instanceBufferAt] = transform._20 + x;
+        instanceBuffer[++instanceBufferAt] = transform._21 + y;
+    };
 
     const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
@@ -936,8 +710,7 @@ let Myr = function(canvasElement) {
             flush();
 
             renderMode = mode;
-
-            (shader = shaders[mode]).bind();
+            shaders[mode].bind();
         }
 
         if(instanceBufferAt + size >= instanceBufferCapacity) {
@@ -957,7 +730,7 @@ let Myr = function(canvasElement) {
 
     const pushIdentity = () => {
         if(++transformAt === transformStack.length)
-            transformStack.push(new Transform());
+            transformStack.push(new Myr.Transform());
         else
             transformStack[transformAt].identity();
 
@@ -1051,6 +824,15 @@ let Myr = function(canvasElement) {
         gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
     };
 
+    this.resize = (width, height) => {
+        canvasElement.width = width;
+        canvasElement.height = height;
+
+        transformStack[0]._21 = height;
+
+        sendUniformBuffer();
+    };
+
     this.setAlpha = alpha => {
         if(uboContents[11] === alpha)
             return;
@@ -1100,7 +882,7 @@ let Myr = function(canvasElement) {
     const ubo = gl.createBuffer();
     const uboContents = new Float32Array(12);
     const sprites = [];
-    const transformStack = [new Transform(1, 0, 0, 0, -1, canvasElement.height)];
+    const transformStack = [new Myr.Transform(1, 0, 0, 0, -1, canvasElement.height)];
     const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
     const shaderCoreSprites = new ShaderCore(
         "layout(location=0) in mediump vec2 vertex;" +
@@ -1226,7 +1008,7 @@ let Myr = function(canvasElement) {
     let instanceBufferAt = -1;
     let instanceBuffer = new Float32Array(instanceBufferCapacity);
     let instanceCount = 0;
-    let clearColor = new this.Color(0, 0, 0);
+    let clearColor = new Myr.Color(0, 0, 0);
 
     uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
 
@@ -1274,6 +1056,299 @@ let Myr = function(canvasElement) {
     gl.bindVertexArray(null);
 
     this.bind();
+};
+
+Myr.Color = function(r, g, b, a) {
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.a = a === undefined?1:a;
+};
+
+Myr.Color.BLACK = new Myr.Color(0, 0, 0);
+Myr.Color.BLUE = new Myr.Color(0, 0, 1);
+Myr.Color.GREEN = new Myr.Color(0, 1, 0);
+Myr.Color.CYAN = new Myr.Color(0, 1, 1);
+Myr.Color.RED = new Myr.Color(1, 0, 0);
+Myr.Color.MAGENTA = new Myr.Color(1, 0, 1);
+Myr.Color.YELLOW = new Myr.Color(1, 1, 0);
+Myr.Color.WHITE = new Myr.Color(1, 1, 1);
+
+Myr.Color.fromHex = hex => {
+    let integer = parseInt(hex, 16);
+
+    if (hex.length === 6)
+        return new Myr.Color(
+            ((integer >> 16) & 0xFF) / 255,
+            ((integer >> 8) & 0xFF) / 255,
+            (integer & 0xFF) / 255);
+    else
+        return new Myr.Color(
+            ((integer >> 24) & 0xFF) / 255,
+            ((integer >> 16) & 0xFF) / 255,
+            ((integer >> 8) & 0xFF) / 255,
+            (integer & 0xFF) / 255);
+};
+
+Myr.Color.prototype.toHex = function() {
+    const componentToHex = component => {
+        let hex = component.toString(16);
+
+        return hex.length === 1?"0" + hex:hex;
+    };
+
+    return "#" +
+        componentToHex(Math.round(this.r * 255)) +
+        componentToHex(Math.round(this.g * 255)) +
+        componentToHex(Math.round(this.b * 255));
+};
+
+Myr.Color.fromHSV = (h, s, v) => {
+    const c = v * s;
+    const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+    const m = v - c;
+
+    switch(Math.floor(h * 6)) {
+        case 1:
+            return new Myr.Color(x + m, c + m, m);
+        case 2:
+            return new Myr.Color(m, c + m, x + m);
+        case 3:
+            return new Myr.Color(m, x + m, c + m);
+        case 4:
+            return new Myr.Color(x + m, m, c + m);
+        case 5:
+            return new Myr.Color(c + m, m, x + m);
+        default:
+            return new Myr.Color(c + m, x + m, m);
+    }
+};
+
+Myr.Color.prototype.toHSV = function() {
+    const cMax = Math.max(this.r, this.g, this.b);
+    const cMin = Math.min(this.r, this.g, this.b);
+    let h, s, l = (cMax + cMin) * 0.5;
+
+    if (cMax === cMin)
+        h = s = 0;
+    else {
+        let delta = cMax - cMin;
+        s = l > 0.5 ? delta / (2 - delta) : delta / (cMax + cMin);
+
+        switch(cMax) {
+            case this.r:
+                h = (this.g - this.b) / delta + (this.g < this.b ? 6 : 0);
+                break;
+            case this.g:
+                h = (this.b - this.r) / delta + 2;
+                break;
+            case this.b:
+                h = (this.r - this.g) / delta + 4;
+        }
+    }
+
+    return {
+        h: h / 6,
+        s: s,
+        v: cMax
+    };
+};
+
+Myr.Color.prototype.copy = function() {
+    return new Myr.Color(this.r, this.g, this.b, this.a);
+};
+
+Myr.Color.prototype.add = function(color) {
+    this.r = Math.min(this.r + color.r, 1);
+    this.g = Math.min(this.g + color.g, 1);
+    this.b = Math.min(this.b + color.b, 1);
+
+    return this;
+};
+
+Myr.Color.prototype.multiply = function(color) {
+    this.r *= color.r;
+    this.g *= color.g;
+    this.b *= color.b;
+
+    return this;
+};
+
+Myr.Color.prototype.equals = function(color) {
+    return this.r === color.r && this.g === color.g && this.b === color.b && this.a === color.a;
+};
+
+Myr.Vector = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+
+Myr.Vector.prototype.copy = function() {
+    return new Myr.Vector(this.x, this.y);
+};
+
+Myr.Vector.prototype.add = function(vector) {
+    this.x += vector.x;
+    this.y += vector.y;
+};
+
+Myr.Vector.prototype.subtract = function(vector) {
+    this.x -= vector.x;
+    this.y -= vector.y;
+};
+
+Myr.Vector.prototype.negate = function() {
+    this.x = -this.x;
+    this.y = -this.y;
+};
+
+Myr.Vector.prototype.dot = function(vector) {
+    return this.x * vector.x + this.y * vector.y;
+};
+
+Myr.Vector.prototype.length = function() {
+    return Math.sqrt(this.dot(this));
+};
+
+Myr.Vector.prototype.multiply = function(scalar) {
+    this.x *= scalar;
+    this.y *= scalar;
+};
+
+Myr.Vector.prototype.divide = function(scalar) {
+    if(scalar === 0)
+        this.x = this.y = 0;
+    else
+        this.multiply(1.0 / scalar);
+};
+
+Myr.Vector.prototype.normalize = function() {
+    this.divide(this.length());
+};
+
+Myr.Vector.prototype.angle = function() {
+    return Math.atan2(this.y, this.x);
+};
+
+Myr.Vector.prototype.equals = function(vector) {
+    return this.x === vector.x && this.y === vector.y;
+};
+
+Myr.Vector.prototype.rotate = function(angle) {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const x = this.x;
+    const y = this.y;
+
+    this.x = x * cos - y * sin;
+    this.y = x * sin + y * cos;
+};
+
+Myr.Transform = function(_00, _10, _20, _01, _11, _21) {
+    if(_00 === undefined)
+        this.identity();
+    else {
+        this._00 = _00;
+        this._10 = _10;
+        this._20 = _20;
+        this._01 = _01;
+        this._11 = _11;
+        this._21 = _21;
+    }
+};
+
+Myr.Transform.prototype.apply = function(vector) {
+    const x = vector.x;
+    const y = vector.y;
+
+    vector.x = this._00 * x + this._10 * y + this._20;
+    vector.y = this._01 * x + this._11 * y + this._21;
+};
+
+Myr.Transform.prototype.copy = function() {
+    return new Myr.Transform(this._00, this._10, this._20, this._01, this._11, this._21);
+};
+
+Myr.Transform.prototype.identity = function() {
+    this._00 = 1;
+    this._10 = 0;
+    this._20 = 0;
+    this._01 = 0;
+    this._11 = 1;
+    this._21 = 0;
+};
+
+Myr.Transform.prototype.set = function(transform) {
+    this._00 = transform._00;
+    this._10 = transform._10;
+    this._20 = transform._20;
+    this._01 = transform._01;
+    this._11 = transform._11;
+    this._21 = transform._21;
+};
+
+Myr.Transform.prototype.multiply = function(transform) {
+    const _00 = this._00;
+    const _10 = this._10;
+    const _01 = this._01;
+    const _11 = this._11;
+
+    this._00 = _00 * transform._00 + _10 * transform._01;
+    this._10 = _00 * transform._10 + _10 * transform._11;
+    this._20 += _00 * transform._20 + _10 * transform._21;
+    this._01 = _01 * transform._00 + _11 * transform._01;
+    this._11 = _01 * transform._10 + _11 * transform._11;
+    this._21 += _01 * transform._20 + _11 * transform._21;
+};
+
+Myr.Transform.prototype.rotate = function(angle) {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    const _00 = this._00;
+    const _01 = this._01;
+
+    this._00 = _00 * cos - this._10 * sin;
+    this._10 = _00 * sin + this._10 * cos;
+    this._01 = _01 * cos - this._11 * sin;
+    this._11 = _01 * sin + this._11 * cos;
+};
+
+Myr.Transform.prototype.shear = function(x, y) {
+    const _00 = this._00;
+    const _01 = this._01;
+
+    this._00 += this._10 * y;
+    this._10 += _00 * x;
+    this._01 += this._11 * y;
+    this._11 += _01 * x;
+};
+
+Myr.Transform.prototype.translate = function(x, y) {
+    this._20 += this._00 * x + this._10 * y;
+    this._21 += this._01 * x + this._11 * y;
+};
+
+Myr.Transform.prototype.scale = function(x, y) {
+    this._00 *= x;
+    this._10 *= y;
+    this._01 *= x;
+    this._11 *= y;
+};
+
+Myr.Transform.prototype.invert = function() {
+    const s11 = this._00;
+    const s02 = this._10 * this._21 - this._11 * this._20;
+    const s12 = -this._00 * this._21 + this._01 * this._20;
+
+    const d = 1.0 / (this._00 * this._11 - this._10 * this._01);
+
+    this._00 = this._11 * d;
+    this._10 = -this._10 * d;
+    this._20 = s02 * d;
+    this._01 = -this._01 * d;
+    this._11 = s11 * d;
+    this._21 = s12 * d;
 };
 
 if(typeof module !== 'undefined') module.exports = Myr;
