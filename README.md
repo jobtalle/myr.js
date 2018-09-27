@@ -46,6 +46,7 @@ Function | Description
 [`setClearColor(color)`](#setclearcolor)|Sets the clear color
 [`setColor(color)`](#setcolorcolor)|Sets the global color filter
 [`setAlpha(alpha)`](#setalphaalpha)|Sets the global transparency
+[`resize(width, height)`](#resizewidth)|Resize this renderer
 [`clear()`](#clear)|Clears the current target
 [`bind()`](#bind)|Binds the default render target
 [`flush()`](#flush)|Flush the draw calls
@@ -85,6 +86,14 @@ Sets the global alpha (transparency). Every drawn color will be multiplied by th
 Parameter | Type | Description
 -|-|-
 alpha|`Number`|A transparency in the range [0, 1]
+
+### `resize(width, height)`
+Resize the renderer and the canvas used by this Myriad instance.
+
+Parameter | Type | Description
+-|-|-
+width|`Number`|The width in pixels
+height|`Number`|The height in pixels
 
 ### `clear()`
 Clears the canvas to the currently set clear color.
