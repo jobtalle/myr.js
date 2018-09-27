@@ -824,6 +824,15 @@ const Myr = function(canvasElement) {
         gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
     };
 
+    this.resize = (width, height) => {
+        canvasElement.width = width;
+        canvasElement.height = height;
+
+        transformStack[0]._21 = height;
+
+        sendUniformBuffer();
+    };
+
     this.setAlpha = alpha => {
         if(uboContents[11] === alpha)
             return;
