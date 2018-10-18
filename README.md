@@ -664,6 +664,7 @@ Function | Description
 [`Color(r, g, b, a)`](#colorr-g-b-a)|Construct from RGBA
 [`toHSV()`](#tohsv)|Convert to HSV values
 [`toHex()`](#tohex)|Convert to hexadecimal string
+[`copy()`](#copy-1)|Copy this color
 [`add(color)`](#addcolor)|Adds another color to itself
 [`multiply(color)`](#multiplycolor)|Multiplies with another color
 
@@ -710,6 +711,9 @@ Returns an object with the members `h`, `s` and `v`, representing this color's h
 ### `toHex()`
 Returns a hexadecimal string representing this color. Note that hexadecimal color representations don't include an alpha channel, so this information is lost after converting the color. 
 
+### `copy()`
+Returns a copy of this color.
+
 ### `add(color)`
 Adds another color to itself.
 
@@ -743,7 +747,7 @@ This object represents a vector in 2D space. Several useful vector operation fun
 Function | Description
 -|-
 [`Vector(x, y)`](#vectorx-y)|Construct from x and y
-[`copy()`](#copy-1)|Returns a copy
+[`copy()`](#copy-2)|Returns a copy
 [`add(vector)`](#addvector)|Add
 [`subtract(vector)`](#subtractvector)|Subtract
 [`negate()`](#negate)|Negate
