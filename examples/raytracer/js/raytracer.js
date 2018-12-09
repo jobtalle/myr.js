@@ -1,6 +1,6 @@
 const Raytracer = function(myr) {
     const NUM_REFLECTIONS = 4;
-    const COLOR_WORLD = myr.Color.BLACK;
+    const COLOR_WORLD = Myr.Color.BLACK;
     const TIME_STEP_MAX = 0.5;
 
     let lastDate = null;
@@ -8,12 +8,12 @@ const Raytracer = function(myr) {
     const eye   = new Vector3(0.5, 0.5, 1.5);
     const light = new Vector3(0.5, 0.5, -100);
 
-    const spheres= [new Sphere(new Vector3(0.5, 0.5, -100), 1, 10, myr.Color.BLUE),
-                    new Sphere(new Vector3(0.5, 0.5, -100), 2, 5, myr.Color.RED),
-                    new Sphere(new Vector3(0.5, 0.5, -100), 3, 10, myr.Color.GREEN),
-                    new Sphere(new Vector3(0.5, 0.5, -100), 4, 5, myr.Color.YELLOW)];
+    const spheres= [new Sphere(new Vector3(0.5, 0.5, -100), 1, 10, Myr.Color.BLUE),
+                    new Sphere(new Vector3(0.5, 0.5, -100), 2, 5, Myr.Color.RED),
+                    new Sphere(new Vector3(0.5, 0.5, -100), 3, 10, Myr.Color.GREEN),
+                    new Sphere(new Vector3(0.5, 0.5, -100), 4, 5, Myr.Color.YELLOW)];
 
-    let upScaling = 64;
+    let upScaling = 16;
 
     const createScaleSurface = () => {
         let width = myr.getWidth() / upScaling;
@@ -26,24 +26,24 @@ const Raytracer = function(myr) {
     const getTimeStep = () => {
         const date = new Date();
         let timeStep = (date - lastDate) / 1000;
-        
+
         if(timeStep < 0)
             timeStep += 1.0;
         else if(timeStep > TIME_STEP_MAX)
             timeStep = TIME_STEP_MAX;
-        
+
         lastDate = date;
-        
+
         return timeStep;
     };
-    
+
     const update = timeStep => {
         for(let i = 0; i < spheres.length; ++i)
             spheres[i].update(timeStep);
     };
 
     const scaleColor = scalar => {
-        return new myr.Color(scalar, scalar, scalar);
+        return new Myr.Color(scalar, scalar, scalar);
     };
 
     const shade = (sphere, ray, hit, recursionDepth) => {
@@ -114,10 +114,10 @@ const Raytracer = function(myr) {
         renderSurface.drawScaled(0, 0, myr.getWidth()/(width-1), (myr.getHeight()-1)/(height-1));
         myr.flush();
     };
-    
+
     const animate = () => {
         requestAnimationFrame(animate.bind());
-        
+
         update(getTimeStep());
         render();
     };
