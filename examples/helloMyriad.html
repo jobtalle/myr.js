@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello Myriad</title>
+    <script src="../myr.js"></script>
+</head>
+<body>
+    <canvas id="renderer" width=800 height=600></canvas>
+    <script>
+        // Create a myriad object.
+        const myr = new Myr(document.getElementById("renderer"));
+
+        // Set the clear color to which the render target is cleared.
+        myr.setClearColor(new Myr.Color(0.5, 0.6, 0.7));
+
+        // Bind the Myriad object to enable rendering to it.
+        myr.bind();
+
+        // Clear the currently bound object.
+        myr.clear();
+
+        // Flushing applies all buffered render commands to the currently
+        // bound render object.
+        myr.flush();
+    </script>
+</body>
+</html>

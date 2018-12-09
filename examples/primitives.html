@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Primitives</title>
+    <script src="../myr.js"></script>
+</head>
+<body>
+    <canvas id="renderer" width=800 height=600></canvas>
+    <script>
+        const myr = new Myr(document.getElementById("renderer"));
+
+        myr.setClearColor(new Myr.Color(0.5, 0.6, 0.7));
+        myr.bind();
+        myr.clear();
+
+        // Draw a circle with an outline.
+        myr.primitives.fillCircle(
+            new Myr.Color(0.3, 0.6, 0.3),
+            300, 200, 150);
+        myr.primitives.drawCircle(
+            Myr.Color.BLACK,
+            300, 200, 150);
+
+        // Draw a gradient triangle.
+        myr.primitives.drawTriangleGradient(
+            Myr.Color.RED, 500, 300,
+            Myr.Color.GREEN, 700, 300,
+            Myr.Color.BLUE, 600, 450);
+
+        myr.flush();
+    </script>
+</body>
+</html>
