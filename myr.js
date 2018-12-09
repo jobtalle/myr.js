@@ -623,6 +623,7 @@ const Myr = function(canvasElement) {
         this.getProgram = () => program;
         this.free = () => gl.deleteProgram(program);
         this.getVertex = () => vertex;
+        this.getFragment = () => fragment;
 
         const program = gl.createProgram();
         const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
@@ -1027,13 +1028,7 @@ const Myr = function(canvasElement) {
         "gl_Position=vec4(transformed-vec2(1),0,1);" +
         "uv = vertex.zw;" +
         "}",
-        "uniform sampler2D source;" +
-        uniformBlock +
-        "in mediump vec2 uv;" +
-        "layout(location=0) out lowp vec4 color;" +
-        "void main() {" +
-        "color=texture(source,uv)*c;" +
-        "}"
+        shaderCoreSprites.getFragment()
     );
     const shaders = [
         new Shader(
