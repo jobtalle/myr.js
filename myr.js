@@ -130,7 +130,7 @@ const Myr = function(canvasElement) {
         gl.activeTexture(TEXTURE_EDITING);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -305,6 +305,9 @@ const Myr = function(canvasElement) {
             for (let source = 0; source < sourceCount; ++source)
                 result += "uniform sampler2D source" + source + ";";
 
+            for (const variable of variables)
+                result += "uniform mediump float " + variable + ";";
+
             return result;
         };
 
@@ -331,8 +334,7 @@ const Myr = function(canvasElement) {
             (fragment || "color=texture(source0,uv)*c;") +
             "}"
         );
-        console.log(makeUniformsDeclaration());
-        console.log(makeUniformsObject());
+
         const shader = new Shader(core, makeUniformsObject());
 
         let surfaces = [];
@@ -344,8 +346,8 @@ const Myr = function(canvasElement) {
             }
         };
 
+        this.setVariable = (name, value) => shader.setUniform(name, value);
         this.setSources = sources => surfaces = sources;
-
         this.draw = (x, y, width, height) => {
             prepareDraw(RENDER_MODE_SHADER, 12, shader);
 

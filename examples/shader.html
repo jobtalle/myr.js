@@ -12,7 +12,9 @@
         const surface = new myr.Surface(myr.getWidth(), myr.getHeight());
         const shader = new myr.Shader(
             null,
-            "color=texture(source0, vec2(1, 1) - uv) + texture(source0, uv);",
+            "mediump vec2 movedUV = uv + vec2(cos(time + uv.y * 12.0) * 0.05, cos(-time + uv.x * 12.0) * 0.05);" +
+            "mediump vec4 result = texture(source0, vec2(1, 1) - movedUV) + texture(source0, movedUV);" +
+            "color=vec4(result.rgb, result.a);",
             3,
             ["time"]);
         let moved = false;
@@ -21,6 +23,8 @@
         let mouseX = 0;
         let mouseY = 0;
         let time = 0;
+
+        shader.setSources([surface]);
 
         canvas.addEventListener("mousemove", function(event) {
             const rect = canvas.getBoundingClientRect();
@@ -63,7 +67,7 @@
 
             time += timeStep;
 
-            shader.setSources([surface]);
+            shader.setVariable("time", time);
             shader.draw(0, 0, surface.getWidth(), surface.getHeight());
 
             myr.flush();
