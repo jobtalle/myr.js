@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Surface</title>
+    <script src="../myr.js"></script>
+</head>
+<body>
+    <canvas id="renderer" width=800 height=600></canvas>
+    <script>
+        const canvas = document.getElementById("renderer");
+        const myr = new Myr(canvas);
+        const surface = new myr.Surface(myr.getWidth(), myr.getHeight());
+        let moved = false;
+        let mouseXPrevious = 0;
+        let mouseYPrevious = 0;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        canvas.addEventListener("mousemove", function(event) {
+            const rect = canvas.getBoundingClientRect();
+
+            if (!moved) {
+                mouseXPrevious = event.clientX - rect.left;
+                mouseYPrevious = event.clientY - rect.top;
+            }
+            else {
+                mouseXPrevious = mouseX;
+                mouseYPrevious = mouseY;
+            }
+            mouseX = event.clientX - rect.left;
+            mouseY = event.clientY - rect.top;
+
+            moved = true;
+        });
+
+        canvas.addEventListener("click", function() {
+            surface.bind();
+            surface.clear();
+        });
+
+        myr.setClearColor(new Myr.Color(0.5, 0.6, 0.7));
+
+        myr.utils.loop(function(timeStep) {
+            surface.bind();
+
+            if (moved)
+                myr.primitives.drawLine(
+                    Myr.Color.WHITE,
+                    mouseXPrevious,
+                    mouseYPrevious,
+                    mouseX,
+                    mouseY);
+
+            myr.bind();
+            myr.clear();
+
+            surface.draw(0, 0);
+
+            myr.flush();
+
+            return true;
+        });
+    </script>
+</body>
+</html>
