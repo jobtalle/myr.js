@@ -10,12 +10,17 @@
         const canvas = document.getElementById("renderer");
         const myr = new Myr(canvas);
         const surface = new myr.Surface(myr.getWidth(), myr.getHeight());
-        const shader = new myr.Shader("", "");
+        const shader = new myr.Shader(
+            null,
+            "color=texture(source0, vec2(1, 1) - uv) + texture(source0, uv);",
+            3,
+            ["time"]);
         let moved = false;
         let mouseXPrevious = 0;
         let mouseYPrevious = 0;
         let mouseX = 0;
         let mouseY = 0;
+        let time = 0;
 
         canvas.addEventListener("mousemove", function(event) {
             const rect = canvas.getBoundingClientRect();
@@ -55,6 +60,8 @@
 
             myr.bind();
             myr.clear();
+
+            time += timeStep;
 
             shader.setSources([surface]);
             shader.draw(0, 0, surface.getWidth(), surface.getHeight());

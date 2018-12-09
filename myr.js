@@ -280,7 +280,34 @@ const Myr = function(canvasElement) {
         return this._getFrame()[9] < 0;
     };
 
-    this.Shader = function(vertex, fragment) {
+    this.Shader = function(vertex, fragment, sourceCount, variables) {
+        const makeUniformsObject = () => {
+            const uniforms = {};
+
+            for (let source = 0; source < sourceCount; ++source)
+                uniforms["source" + source] = {
+                    type: "1i",
+                    value: 4 + source
+                };
+
+            for (const variable of variables)
+                uniforms[variable] = {
+                    type: "1f",
+                    value: 0
+                };
+
+            return uniforms;
+        };
+
+        const makeUniformsDeclaration = () => {
+            let result = "";
+
+            for (let source = 0; source < sourceCount; ++source)
+                result += "uniform sampler2D source" + source + ";";
+
+            return result;
+        };
+
         const core = new ShaderCore(
             "layout(location=0) in mediump vec2 vertex;" +
             "layout(location=1) in mediump vec4 a1;" +
@@ -296,24 +323,17 @@ const Myr = function(canvasElement) {
             "vec2(tw.w,th.w)*2.0;" +
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
             "}",
-            "uniform sampler2D source;" +
+            makeUniformsDeclaration() +
             uniformBlock +
             "in mediump vec2 uv;" +
             "layout(location=0) out lowp vec4 color;" +
             "void main() {" +
-            "color=texture(source,uv)*c*vec4(1, 0, 0, 1);" +
+            (fragment || "color=texture(source0,uv)*c;") +
             "}"
         );
-
-        const shader = new Shader(
-            core,
-            {
-                source: {
-                    type: "1i",
-                    value: 4
-                }
-            }
-        );
+        console.log(makeUniformsDeclaration());
+        console.log(makeUniformsObject());
+        const shader = new Shader(core, makeUniformsObject());
 
         let surfaces = [];
 
