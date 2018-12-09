@@ -165,6 +165,7 @@ const Myr = function(canvasElement) {
             };
 
             const source = arguments[0];
+
             if (source instanceof Image) {
                 image.crossOrigin = source.crossOrigin;
                 image.src = source.src;
@@ -180,7 +181,7 @@ const Myr = function(canvasElement) {
                 height = arguments[2];
             }
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, emptyPixel);
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -277,6 +278,66 @@ const Myr = function(canvasElement) {
 
     this.Sprite.prototype.finished = function() {
         return this._getFrame()[9] < 0;
+    };
+
+    this.Shader = function(vertex, fragment) {
+        const core = new ShaderCore(
+            "layout(location=0) in mediump vec2 vertex;" +
+            "layout(location=1) in mediump vec4 a1;" +
+            "layout(location=2) in mediump vec4 a2;" +
+            "layout(location=3) in mediump vec4 a3;" +
+            uniformBlock +
+            "out mediump vec2 uv;" +
+            "void main() {" +
+            "uv=a1.zw+vertex*a2.xy;" +
+            "mediump vec2 transformed=(((vertex-a1.xy)*" +
+            "mat2(a2.zw,a3.xy)+a3.zw)*" +
+            "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+            "vec2(tw.w,th.w)*2.0;" +
+            "gl_Position=vec4(transformed-vec2(1),0,1);" +
+            "}",
+            "uniform sampler2D source;" +
+            uniformBlock +
+            "in mediump vec2 uv;" +
+            "layout(location=0) out lowp vec4 color;" +
+            "void main() {" +
+            "color=texture(source,uv)*c*vec4(1, 0, 0, 1);" +
+            "}"
+        );
+
+        const shader = new Shader(
+            core,
+            {
+                source: {
+                    type: "1i",
+                    value: 4
+                }
+            }
+        );
+
+        let surfaces = [];
+
+        const bindTextures = () => {
+            for (let i = 0; i < surfaces.length; ++i) {
+                gl.activeTexture(TEXTURE_SHADER_FIRST + i);
+                gl.bindTexture(gl.TEXTURE_2D, surfaces[i]._getTexture());
+            }
+        };
+
+        this.setSources = sources => surfaces = sources;
+
+        this.draw = (x, y, width, height) => {
+            prepareDraw(RENDER_MODE_SHADER, 12, shader);
+
+            instanceBuffer[++instanceBufferAt] = 0;
+            instanceBuffer[++instanceBufferAt] = 0;
+
+            setAttributesUv(0, 0, 1, 1);
+            setAttributesDraw(x, y, width, height);
+
+            bindTextures();
+            shader.bind();
+        };
     };
 
     const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
@@ -516,10 +577,10 @@ const Myr = function(canvasElement) {
 
     this.utils.loop = update => {
         let lastDate = new Date();
-        let loopFunction = function(step) {
+        const loopFunction = function(step) {
             const date = new Date();
 
-            if(update((date - lastDate) / 1000))
+            if(update((date - lastDate) * 0.001))
                 requestAnimationFrame(loopFunction);
 
             lastDate = date;
@@ -649,6 +710,7 @@ const Myr = function(canvasElement) {
         switch(renderMode) {
             case RENDER_MODE_SURFACES:
             case RENDER_MODE_SPRITES:
+            case RENDER_MODE_SHADER:
                 gl.bindVertexArray(vaoSprites);
                 gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, instanceCount);
                 break;
@@ -696,7 +758,7 @@ const Myr = function(canvasElement) {
         transformDirty = false;
     };
 
-    const prepareDraw = (mode, size) => {
+    const prepareDraw = (mode, size, shader) => {
         if(transformDirty) {
             flush();
 
@@ -707,7 +769,7 @@ const Myr = function(canvasElement) {
             flush();
 
             renderMode = mode;
-            shaders[mode].bind();
+            (shader || shaders[mode]).bind();
         }
 
         if(instanceBufferAt + size >= instanceBufferCapacity) {
@@ -866,10 +928,12 @@ const Myr = function(canvasElement) {
     const RENDER_MODE_POINTS = 3;
     const RENDER_MODE_TRIANGLES = 4;
     const RENDER_MODE_MESH = 5;
+    const RENDER_MODE_SHADER = 6;
     const TEXTURE_ATLAS = gl.TEXTURE0;
     const TEXTURE_SURFACE = gl.TEXTURE1;
     const TEXTURE_MESH = gl.TEXTURE2;
     const TEXTURE_EDITING = gl.TEXTURE3;
+    const TEXTURE_SHADER_FIRST = gl.TEXTURE4;
 
     const quad = gl.createBuffer();
     const instances = gl.createBuffer();
@@ -878,6 +942,7 @@ const Myr = function(canvasElement) {
     const vaoMesh = gl.createVertexArray();
     const ubo = gl.createBuffer();
     const uboContents = new Float32Array(12);
+    const emptyPixel = new Uint8Array(4);
     const sprites = [];
     const transformStack = [new Myr.Transform(1, 0, 0, 0, -1, canvasElement.height)];
     const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
