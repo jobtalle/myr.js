@@ -24,11 +24,23 @@
             x += xSpeed * timeStep;
             y += ySpeed * timeStep;
 
-            if (x + width > myr.getWidth() || x < 0)
+            if (x < 0) {
+                x = 0;
                 xSpeed = -xSpeed;
+            }
+            else if (x + width > myr.getWidth()) {
+                x = myr.getWidth() - width;
+                xSpeed = -xSpeed;
+            }
 
-            if (y + height > myr.getHeight() || y < 0)
+            if (y < 0) {
+                y = 0;
                 ySpeed = -ySpeed;
+            }
+            else if (y + height > myr.getHeight()) {
+                y = myr.getHeight() - height;
+                ySpeed = -ySpeed;
+            }
 
             myr.primitives.fillRectangle(Myr.Color.BLACK, x, y, width, height);
 

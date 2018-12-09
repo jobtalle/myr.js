@@ -126,7 +126,7 @@ const Myr = function(canvasElement) {
         let clearColor = new Myr.Color(0, 0, 0, 0);
 
         flush();
-        
+
         gl.activeTexture(TEXTURE_EDITING);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -551,14 +551,7 @@ const Myr = function(canvasElement) {
         };
 
         this.getProgram = () => program;
-
-        this.free = () => {
-            gl.detachShader(program, shaderVertex);
-            gl.detachShader(program, shaderFragment);
-            gl.deleteShader(shaderVertex);
-            gl.deleteShader(shaderFragment);
-            gl.deleteProgram(program);
-        };
+        this.free = () => gl.deleteProgram(program);
 
         const program = gl.createProgram();
         const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
@@ -567,6 +560,10 @@ const Myr = function(canvasElement) {
         gl.attachShader(program, shaderVertex);
         gl.attachShader(program, shaderFragment);
         gl.linkProgram(program);
+        gl.detachShader(program, shaderVertex);
+        gl.detachShader(program, shaderFragment);
+        gl.deleteShader(shaderVertex);
+        gl.deleteShader(shaderFragment);
     };
 
     const Shader = function(core, samplers) {

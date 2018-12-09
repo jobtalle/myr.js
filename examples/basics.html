@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hello Myriad</title>
+    <title>Myriad basics</title>
     <script src="../myr.js"></script>
 </head>
 <body>
@@ -22,6 +22,9 @@
         // Flushing applies all buffered render commands to the currently
         // bound render object.
         myr.flush();
+
+        // Free the Myriad object if it will no longer be used.
+        myr.free();
     </script>
 </body>
 </html>
