@@ -280,7 +280,7 @@ const Myr = function(canvasElement) {
         return this._getFrame()[9] < 0;
     };
 
-    this.Shader = function(vertex, fragment, sourceCount, variables) {
+    this.Shader = function(fragment, sourceCount, variables) {
         const makeUniformsObject = () => {
             const uniforms = {};
 
@@ -312,20 +312,7 @@ const Myr = function(canvasElement) {
         };
 
         const core = new ShaderCore(
-            "layout(location=0) in mediump vec2 vertex;" +
-            "layout(location=1) in mediump vec4 a1;" +
-            "layout(location=2) in mediump vec4 a2;" +
-            "layout(location=3) in mediump vec4 a3;" +
-            uniformBlock +
-            "out mediump vec2 uv;" +
-            "void main() {" +
-            "uv=a1.zw+vertex*a2.xy;" +
-            "mediump vec2 transformed=(((vertex-a1.xy)*" +
-            "mat2(a2.zw,a3.xy)+a3.zw)*" +
-            "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
-            "vec2(tw.w,th.w)*2.0;" +
-            "gl_Position=vec4(transformed-vec2(1),0,1);" +
-            "}",
+            shaderCoreSprites.getVertex(),
             makeUniformsDeclaration() +
             uniformBlock +
             "in mediump vec2 uv;" +
@@ -635,6 +622,7 @@ const Myr = function(canvasElement) {
 
         this.getProgram = () => program;
         this.free = () => gl.deleteProgram(program);
+        this.getVertex = () => vertex;
 
         const program = gl.createProgram();
         const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);

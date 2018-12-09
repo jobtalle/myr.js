@@ -11,8 +11,7 @@
         const myr = new Myr(canvas);
         const surface = new myr.Surface(myr.getWidth(), myr.getHeight());
         const shader = new myr.Shader(
-            null,
-            "mediump vec2 movedUV = uv + vec2(sin(time * 5.0 + uv.y * 45.0) * 0.01, cos(-time * 5.0 + uv.x * 45.0) * 0.01);" +
+            "mediump vec2 movedUV = uv + vec2(sin(time * 5.0 + uv.y * 45.0) * 0.01, cos(-time * 4.0 + uv.x * 45.0) * 0.01);" +
             "mediump vec4 result = texture(source0, uv) + texture(source0, movedUV);" +
             "color=vec4(result.rgb, result.a);",
             3,
