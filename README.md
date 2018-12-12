@@ -19,7 +19,7 @@ myr.setClearColor(new Myr.Color(0.2, 0.5, 0.7));
 ```
 
 # Objects
-Two types of **myr.js** objects exist. There are objects that are exposed through a **myr.js** context. These objects can only be used by that context. They can be initialized as follows:
+Two types of **myr.js** objects exist. There are objects that are exposed through a **myr.js** context. These objects can only be used for that context. They can be initialized as follows:
 
 ```javascript
 // Create a Myriad context
@@ -591,7 +591,7 @@ height|`Number`|The height of the region to draw
 # Shader
 A shader in **myr.js** is a renderable image that is rendered using a custom pixel shader written by the user. Shaders can be provided with one or more [surfaces](#surface) to read from, and one or more variables can be provided to the shader. Pixel shaders must be written in WebGL 2 compliant GLSL.
 
-The size of the rendered result is equal to the first surface provided to it, or alternatively (or when no surfaces are provided) to a size set by the user.
+The size of the rendered result is equal to the size of the first surface provided to it, or alternatively (or when no surfaces are provided) to a size set by the user.
 
 ## Functions
 Function | Description
@@ -637,6 +637,11 @@ The GLSL code that should be provided to the custom shader is the code inside th
 color = vec4(1, 0, 0, 1);
 ```
 
+Inside the GLSL code, several variables are accessible for the user besides the `surfaces` and `variables`. These are:
+
+* `uv`, the UV coordinates of the current pixel inside the drawing area of this shader.
+* `pixelSize`, a `vec2` containing the UV size of one pixel. Sampling a pixel to the right for example can be done using `texture(source, vec2(uv.x + pixelSize.x, uv.y))`.
+
 Before drawing a shader, ensure that all variables and surfaces have been set using the [`setSurface()`](#setsurfacename-surface) and [`setVariable()`](#setvariablename-value) functions. Not doing this may and probably will result in undefined behavior.
 
 ### `getWidth()`
@@ -646,7 +651,7 @@ Returns the width of the shader in pixels. If [`setSurface()`](#setsurfacename-s
 Returns the height of the shader in pixels. If [`setSurface()`](#setsurfacename-surface) was called on the first surface in this shader's `surfaces` array, the height will be equal to that surface's height. Otherwise, the height will be equal to the height given to this shader by the [`setSize()`](#setSizewidth-height) function.
 
 ### `setVariable(name, value)`
-Set the value of one of this shader's variables. The variable name should have been declared by passing it to the `variables` array when the shader was created. The value must be a number, and will be accessible inside the GLSL code under its name with the `mediump float` type.
+Set the value of one of this shader's variables. The variable name should have been declared by passing it to the `variables` array [when the shader was created](#shadershader-surfaces-variables). The value must be a number, and will be accessible inside the GLSL code under its name with the `mediump float` type.
 
 Parameter | Type | Description
 -|-|-
@@ -654,7 +659,7 @@ name|`String`|The variable name
 value|`Number`|The value
 
 ### `setSurface(name, surface)`
-Set the surface of one of this shader's surfaces. The surface name should have been declared by passing it to the `surfaces` array when the shader was created. The value must be a [`Surface`](#surface), and will be accessible inside the GLSL code under its name with the `sampler2D` type.
+Set the surface of one of this shader's surfaces. The surface name should have been declared by passing it to the `surfaces` array [when the shader was created](#shadershader-surfaces-variables). The value must be a [`Surface`](#surface), and will be accessible inside the GLSL code under its name with the `sampler2D` type.
 
 Parameter | Type | Description
 -|-|-
