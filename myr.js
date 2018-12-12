@@ -280,14 +280,14 @@ const Myr = function(canvasElement) {
         return this._getFrame()[9] < 0;
     };
 
-    this.Shader = function(fragment, sourceCount, variables) {
+    this.Shader = function(fragment, surfaces, variables) {
         const makeUniformsObject = () => {
             const uniforms = {};
 
-            for (let source = 0; source < sourceCount; ++source)
-                uniforms["source" + source] = {
+            for (let i = 0; i < surfaces.length; ++i)
+                uniforms[surfaces[i]] = {
                     type: "1i",
-                    value: 4 + source
+                    value: 4 + i
                 };
 
             for (const variable of variables)
@@ -302,8 +302,8 @@ const Myr = function(canvasElement) {
         const makeUniformsDeclaration = () => {
             let result = "";
 
-            for (let source = 0; source < sourceCount; ++source)
-                result += "uniform sampler2D source" + source + ";";
+            for (const surface of surfaces)
+                result += "uniform sampler2D " + surface + ";";
 
             for (const variable of variables)
                 result += "uniform mediump float " + variable + ";";
@@ -323,18 +323,17 @@ const Myr = function(canvasElement) {
         );
 
         const shader = new Shader(core, makeUniformsObject());
-
-        let surfaces = [];
+        const surfaceTextures = new Array(surfaces.length);
 
         const bindTextures = () => {
             for (let i = 0; i < surfaces.length; ++i) {
                 gl.activeTexture(TEXTURE_SHADER_FIRST + i);
-                gl.bindTexture(gl.TEXTURE_2D, surfaces[i]._getTexture());
+                gl.bindTexture(gl.TEXTURE_2D, surfaceTextures[i]);
             }
         };
 
         this.setVariable = (name, value) => shader.setUniform(name, value);
-        this.setSources = sources => surfaces = sources;
+        this.setSurface = (name, surface) => surfaceTextures[surfaces.indexOf(name)] = surface._getTexture();
         this.draw = (x, y, width, height) => {
             prepareDraw(RENDER_MODE_SHADER, 12, shader);
 

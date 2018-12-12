@@ -10,11 +10,12 @@
         const canvas = document.getElementById("renderer");
         const myr = new Myr(canvas);
         const surface = new myr.Surface(myr.getWidth(), myr.getHeight());
+
         const shader = new myr.Shader(
-            "mediump vec2 movedUV = uv + vec2(sin(time * 5.0 + uv.y * 45.0) * 0.01, cos(-time * 4.0 + uv.x * 45.0) * 0.01);" +
-            "mediump vec4 result = texture(source0, uv) + texture(source0, movedUV);" +
+            "mediump vec2 movedUV = uv + vec2(sin(time * 5.0 + uv.y * 80.0), cos(-time * 4.0 + uv.x * 80.0)) * 0.005;" +
+            "mediump vec4 result = texture(source, movedUV);" +
             "color=vec4(result.rgb, result.a);",
-            3,
+            ["source"],
             ["time"]);
         let moved = false;
         let mouseXPrevious = 0;
@@ -23,7 +24,7 @@
         let mouseY = 0;
         let time = 0;
 
-        shader.setSources([surface]);
+        shader.setSurface("source", surface);
 
         canvas.addEventListener("mousemove", function(event) {
             const rect = canvas.getBoundingClientRect();
