@@ -588,6 +588,169 @@ top|`Number`|The Y position on the sprite to draw from
 width|`Number`|The width of the region to draw
 height|`Number`|The height of the region to draw
 
+# Shader
+A shader in **myr.js** is a renderable image that is rendered using a custom pixel shader written by the user. Shaders can be provided with one or more [surfaces](#surface) to read from, and one or more variables can be provided to the shader. Pixel shaders must be written in WebGL 2 compliant GLSL.
+
+The size of the rendered result is equal to the first surface provided to it, or alternatively (or when no surfaces are provided) to a size set by the user.
+
+## Functions
+Function | Description
+-|-
+[`Shader(shader, surfaces, variables)`](#shadershader-surfaces-variables)|Constructs a shader
+[`getWidth()`](#getwidth-3)|Returns the shader width
+[`getHeight()`](#getheight-3)|Returns the shader height
+[`setVariable(name, value)`](#setvariablename-value)|Set one of the variables' values
+[`setSurface(name, surface)`](#setsurfacename-surface)|Set one of the input surfaces' surface
+[`setSize(width, height)`](#setsizewidth-height)|Set the size of this shader
+[`draw(x, y)`](#drawx-y-2)|Draws the shader
+[`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-2)|Draws the shader
+[`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-2)|Draws the shader
+[`drawRotated(x, y, angle)`](#drawrotatedx-y-angle-2)|Draws the shader
+[`drawScaledRotated(x, y, xScale, yScale, angle)`](#drawscaledrotatedx-y-xscale-yscale-angle-2)|Draws the shader
+[`drawTransformed(transform)`](#drawtransformedtransform-2)|Draws the shader
+[`drawTransformedAt(x, y, transform)`](#drawtransformedatx-y-transform-2)|Draws the shader
+[`drawPart(x, y, left, top, width, height)`](#drawpartx-y-left-top-width-height-2)|Draws the shader
+[`drawPartTransformed(transform, left, top, width, height)`](#drawparttransformedtransform-left-top-width-height-2)|Draws the shader
+
+### `Shader(shader, surfaces, variables)`
+Constructs a shader using WebGL 2 compliant GLSL code, and optionally, [surface](#surface) and variable inputs. The `surfaces` and `variables` arrays are arrays of strings. Inside the shader code, their values are accessible by these strings as names. To assign surfaces and values to these, the functions [`setSurface()`](#setsurfacename-surface) and [`setVariable()`](#setvariablename-value) are used.
+
+Parameter | Type | Description
+-|-|-
+shader|`String`|The GLSL code to execute when this shader runs
+surfaces|`Array`|An array of names for surface inputs
+variables|`Array`|An array of variables to create in this shader
+
+The GLSL code to provide is *not* the entire shader. A simple complete GLSL pixel shader that renders red pixels could look like this:
+
+```GLSL
+layout(location = 0) out lowp vec4 color;
+
+void main() {
+    color = vec4(1, 0, 0, 1);
+}
+```
+
+The GLSL code that should be provided to the custom shader is the code inside the `main` function of the shader. In this case, the string to construct the shader object with would simply be:
+
+```GLSL
+color = vec4(1, 0, 0, 1);
+```
+
+Before drawing a shader, ensure that all variables and surfaces have been set using the [`setSurface()`](#setsurfacename-surface) and [`setVariable()`](#setvariablename-value) functions. Not doing this may and probably will result in undefined behavior.
+
+### `getWidth()`
+Returns the width of the shader in pixels. If [`setSurface()`](#setsurfacename-surface) was called on the first surface in this shader's `surfaces` array, the width will be equal to that surface's width. Otherwise, the width will be equal to the width given to this shader by the [`setSize()`](#setSizewidth-height) function.
+
+### `getHeight()`
+Returns the height of the shader in pixels. If [`setSurface()`](#setsurfacename-surface) was called on the first surface in this shader's `surfaces` array, the height will be equal to that surface's height. Otherwise, the height will be equal to the height given to this shader by the [`setSize()`](#setSizewidth-height) function.
+
+### `setVariable(name, value)`
+Set the value of one of this shader's variables. The variable name should have been declared by passing it to the `variables` array when the shader was created. The value must be a number, and will be accessible inside the GLSL code under its name with the `mediump float` type.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The variable name
+value|`Number`|The value
+
+### `setSurface(name, surface)`
+Set the surface of one of this shader's surfaces. The surface name should have been declared by passing it to the `surfaces` array when the shader was created. The value must be a [`Surface`](#surface), and will be accessible inside the GLSL code under its name with the `sampler2D` type.
+
+Parameter | Type | Description
+-|-|-
+name|`String`|The surface name
+surface|[`Surface`](#surface)|The surface
+
+### `setSize(width, height)`
+Sets the size of this shader. This should not be used when the the `surfaces` list was not empty when constructing this shader; in that case, the shader size will be equal to the size of its first surface. If no surfaces are provided, the shader size should be set using this function.
+
+### `draw(x, y)`
+Draws this shader on the currently bound target.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+
+### `drawScaled(x, y, xScale, yScale)`
+Draws this shader on the currently bound target after applying scaling.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+xScale|`Number`|The horizontal scale factor
+yScale|`Number`|The vertical scale factor
+
+### `drawSheared(x, y, xShear, yShear)`
+Draws this shader on the currently bound target after applying shearing.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+xShear|`Number`|Horizontal shearing
+yShear|`Number`|Vertical shearing
+
+### `drawRotated(x, y, angle)`
+Draws this shader on the currently bound target after applying rotation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+angle|`Number`|The rotation in radians
+
+### `drawScaledRotated(x, y, xScale, yScale, angle)`
+Draws this shader on the currently bound target after applying both scaling and rotation.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+xScale|`Number`|The horizontal scale factor
+yScale|`Number`|The vertical scale factor
+angle|`Number`|The rotation in radians
+
+### `drawTransformed(transform)`
+Draws this shader on the currently bound target after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this shader
+
+### `drawTransformedAt(x, y, transform)`
+Draws this shader on the currently bound target at a certain position after applying a transformation to it.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+transform|[`Transform`](#transform)|A transformation to apply to this shader
+
+### `drawPart(x, y, left, top, width, height)`
+Draws a part of this shader on the currently bound render target. Make sure the specified region is part of the shader; rendering parts that fall outside this shader results in undefined behavior.
+
+Parameter | Type | Description
+-|-|-
+x|`Number`|The X position to draw to
+y|`Number`|The Y position to draw to
+left|`Number`|The X position on the shader to draw from
+top|`Number`|The Y position on the shader to draw from
+width|`Number`|The width of the region to draw
+height|`Number`|The height of the region to draw
+
+### `drawPartTransformed(transform, left, top, width, height)`
+Draws a part of this shader on the currently bound render target.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transformation to apply to this shader
+left|`Number`|The X position on the shader to draw from
+top|`Number`|The Y position on the shader to draw from
+width|`Number`|The width of the region to draw
+height|`Number`|The height of the region to draw
+
 # Transform
 The transform object wraps a homogeneous 2D transformation matrix. Several different transform functions are provided, but the matrix can also be filled by hand. Transform objects are used in the global transformation stack to transform everything that is being rendered.
 

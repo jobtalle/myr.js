@@ -375,8 +375,8 @@ const Myr = function(canvasElement) {
 
         const shader = new Shader(core, makeUniformsObject());
         const surfaceTextures = new Array(surfaces.length);
-        let width = 0;
-        let height = 0;
+        let _width = -1;
+        let _height = 0;
 
         const bindTextures = () => {
             for (let i = 0; i < surfaces.length; ++i) {
@@ -385,18 +385,23 @@ const Myr = function(canvasElement) {
             }
         };
 
-        this.getWidth = () => width;
-        this.getHeight = () => height;
+        this.getWidth = () => _width;
+        this.getHeight = () => _height;
         this.setVariable = (name, value) => shader.setUniform(name, value);
         this.setSurface = (name, surface) => {
             const index = surfaces.indexOf(name);
 
-            if (index === 0) {
-                width = surface.getWidth();
-                height = surface.getHeight();
+            if (width === -1 && index === 0) {
+                _width = surface.getWidth();
+                _height = surface.getHeight();
             }
 
             surfaceTextures[index] = surface._getTexture();
+        };
+
+        this.setSize = (width, height) => {
+            _width = width;
+            _height = height;
         };
 
         this._prepareDraw = () => {
