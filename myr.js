@@ -1,5 +1,5 @@
 const Myr = function(canvasElement) {
-    const gl = canvasElement.getContext("webgl2", {
+    const _gl = canvasElement.getContext("webgl2", {
         antialias: true,
         depth: false
     });
@@ -79,89 +79,89 @@ const Myr = function(canvasElement) {
 
     this.Surface = function() {
         this.free = () => {
-            gl.deleteTexture(texture);
-            gl.deleteFramebuffer(framebuffer);
+            _gl.deleteTexture(_texture);
+            _gl.deleteFramebuffer(_framebuffer);
         };
 
         this.bind = () => {
             bind(this);
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.viewport(0, 0, width, height);
+            _gl.bindFramebuffer(_gl.FRAMEBUFFER, _framebuffer);
+            _gl.viewport(0, 0, _width, _height);
         };
 
         this._prepareDraw = () => {
-            bindTextureSurface(texture);
+            bindTextureSurface(_texture);
             prepareDraw(RENDER_MODE_SURFACES, 12);
 
-            instanceBuffer[++instanceBufferAt] = 0;
-            instanceBuffer[++instanceBufferAt] = 0;
+            _instanceBuffer[++_instanceBufferAt] = 0;
+            _instanceBuffer[++_instanceBufferAt] = 0;
         };
 
         this._addFrame = frame => {
-            if(ready) {
-                frame[5] /= width;
-                frame[6] /= height;
-                frame[7] /= width;
-                frame[8] /= height;
+            if(_ready) {
+                frame[5] /= _width;
+                frame[6] /= _height;
+                frame[7] /= _width;
+                frame[8] /= _height;
             }
             else
-                frames.push(frame);
+                _frames.push(frame);
         };
 
-        this._getTexture = () => texture;
-        this.getWidth = () => width;
-        this.getHeight = () => height;
-        this.setClearColor = color => clearColor = color;
-        this.clear = () => clear(clearColor);
-        this.ready = () => ready;
+        this._getTexture = () => _texture;
+        this.getWidth = () => _width;
+        this.getHeight = () => _height;
+        this.setClearColor = color => _clearColor = color;
+        this.clear = () => clear(_clearColor);
+        this.ready = () => _ready;
 
-        const texture = gl.createTexture();
-        const framebuffer = gl.createFramebuffer();
-        const frames = [];
+        const _texture = _gl.createTexture();
+        const _framebuffer = _gl.createFramebuffer();
+        const _frames = [];
 
-        let ready = false;
-        let width = 0;
-        let height = 0;
-        let clearColor = new Myr.Color(0, 0, 0, 0);
+        let _ready = false;
+        let _width = 0;
+        let _height = 0;
+        let _clearColor = new Myr.Color(0, 0, 0, 0);
 
         flush();
 
-        gl.activeTexture(TEXTURE_EDITING);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        _gl.activeTexture(TEXTURE_EDITING);
+        _gl.bindTexture(_gl.TEXTURE_2D, _texture);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.NEAREST);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.NEAREST);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
 
         if(arguments.length === 2) {
-            width = arguments[0];
-            height = arguments[1];
-            ready = true;
+            _width = arguments[0];
+            _height = arguments[1];
+            _ready = true;
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(width * height * 4));
+            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _width, _height, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, new Uint8Array(_width * _height * 4));
         }
         else {
             const image = new Image();
 
             image.onload = () => {
-                if(width === 0 || height === 0) {
-                    width = image.width;
-                    height = image.height;
+                if(_width === 0 || _height === 0) {
+                    _width = image.width;
+                    _height = image.height;
                 }
 
-                gl.activeTexture(TEXTURE_EDITING);
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                _gl.activeTexture(TEXTURE_EDITING);
+                _gl.bindTexture(_gl.TEXTURE_2D, _texture);
+                _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _gl.RGBA, _gl.UNSIGNED_BYTE, image);
 
-                for(let frame = frames.pop(); frame !== undefined; frame = frames.pop()) {
-                    frame[5] /= width;
-                    frame[6] /= height;
-                    frame[7] /= width;
-                    frame[8] /= height;
+                for(let frame = _frames.pop(); frame !== undefined; frame = _frames.pop()) {
+                    frame[5] /= _width;
+                    frame[6] /= _height;
+                    frame[7] /= _width;
+                    frame[8] /= _height;
                 }
 
-                ready = true;
+                _ready = true;
             };
 
             const source = arguments[0];
@@ -177,15 +177,15 @@ const Myr = function(canvasElement) {
             }
 
             if (arguments[2] !== undefined) {
-                width = arguments[1];
-                height = arguments[2];
+                _width = arguments[1];
+                _height = arguments[2];
             }
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, emptyPixel);
+            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, 1, 1, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, _emptyPixel);
         }
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        _gl.bindFramebuffer(_gl.FRAMEBUFFER, _framebuffer);
+        _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, _texture, 0);
     };
 
     this.Surface.prototype = Object.create(Renderable.prototype);
@@ -196,21 +196,21 @@ const Myr = function(canvasElement) {
 
     this.Sprite = function(name) {
         this.animate = timeStep => {
-            frameCounter += timeStep;
+            _frameCounter += timeStep;
 
-            while (frameCounter > this._getFrame()[9]) {
-                frameCounter -= this._getFrame()[9];
+            while (_frameCounter > this._getFrame()[9]) {
+                _frameCounter -= this._getFrame()[9];
 
-                if (++frame === frames.length)
-                    frame = 0;
+                if (++_frame === _frames.length)
+                    _frame = 0;
             }
         };
 
         this._setMeshBounds = () => {
-            meshUvLeft = this._getFrame()[5];
-            meshUvTop = this._getFrame()[6];
-            meshUvWidth = this._getFrame()[7];
-            meshUvHeight = this._getFrame()[8];
+            _meshUvLeft = this._getFrame()[5];
+            _meshUvTop = this._getFrame()[6];
+            _meshUvWidth = this._getFrame()[7];
+            _meshUvHeight = this._getFrame()[8];
         };
 
         this._prepareDraw = () => {
@@ -219,18 +219,18 @@ const Myr = function(canvasElement) {
             bindTextureAtlas(frame[0]);
             prepareDraw(RENDER_MODE_SPRITES, 12);
 
-            instanceBuffer[++instanceBufferAt] = frame[3];
-            instanceBuffer[++instanceBufferAt] = frame[4];
+            _instanceBuffer[++_instanceBufferAt] = frame[3];
+            _instanceBuffer[++_instanceBufferAt] = frame[4];
         };
 
-        this._getFrame = () => frames[frame];
-        this.setFrame = index => frame = index;
-        this.getFrame = () => frame;
-        this.getFrameCount = () => frames.length;
+        this._getFrame = () => _frames[_frame];
+        this.setFrame = index => _frame = index;
+        this.getFrame = () => _frame;
+        this.getFrameCount = () => _frames.length;
 
-        const frames = sprites[name];
-        let frameCounter = 0;
-        let frame = 0;
+        const _frames = _sprites[name];
+        let _frameCounter = 0;
+        let _frame = 0;
     };
 
     this.Sprite.prototype = Object.create(Renderable.prototype);
@@ -279,7 +279,7 @@ const Myr = function(canvasElement) {
         return this._getFrame()[9] < 0;
     };
 
-    const shaderVariables = [
+    const _shaderVariables = [
         {
             name: "pixelSize",
             type: "mediump vec2",
@@ -321,7 +321,7 @@ const Myr = function(canvasElement) {
         const makeVariablesOut = () => {
             let result = "";
 
-            for (const variable of shaderVariables) if (fragment.includes(variable.name))
+            for (const variable of _shaderVariables) if (fragment.includes(variable.name))
                 result += "out " + variable.type + " " + variable.name + ";";
 
             return result;
@@ -330,7 +330,7 @@ const Myr = function(canvasElement) {
         const makeVariablesOutAssignments = () => {
             let result = "";
 
-            for (const variable of shaderVariables) if (fragment.includes(variable.name))
+            for (const variable of _shaderVariables) if (fragment.includes(variable.name))
                 result += variable.name + "=" + variable.value + ";";
 
             return result;
@@ -339,18 +339,25 @@ const Myr = function(canvasElement) {
         const makeVariablesIn = () => {
             let result = "";
 
-            for (const variable of shaderVariables) if (fragment.includes(variable.name))
+            for (const variable of _shaderVariables) if (fragment.includes(variable.name))
                 result += "in " + variable.type + " " + variable.name + ";";
 
             return result;
         };
 
-        const core = new ShaderCore(
+        const bindTextures = () => {
+            for (let i = 0; i < surfaces.length; ++i) {
+                _gl.activeTexture(TEXTURE_SHADER_FIRST + i);
+                _gl.bindTexture(_gl.TEXTURE_2D, _surfaceTextures[i]);
+            }
+        };
+
+        const _core = new ShaderCore(
             "layout(location=0) in mediump vec2 vertex;" +
             "layout(location=1) in mediump vec4 a1;" +
             "layout(location=2) in mediump vec4 a2;" +
             "layout(location=3) in mediump vec4 a3;" +
-            uniformBlock +
+            _uniformBlock +
             "out mediump vec2 uv;" +
             makeVariablesOut() +
             "void main() {" +
@@ -363,7 +370,7 @@ const Myr = function(canvasElement) {
             "gl_Position=vec4(transformed-vec2(1),0,1);" +
             "}",
             makeUniformsDeclaration() +
-            uniformBlock +
+            _uniformBlock +
             "in mediump vec2 uv;" +
             makeVariablesIn() +
             "layout(location=0) out lowp vec4 color;" +
@@ -373,30 +380,23 @@ const Myr = function(canvasElement) {
             "}"
         );
 
-        const shader = new Shader(core, makeUniformsObject());
-        const surfaceTextures = new Array(surfaces.length);
+        const _shader = new Shader(_core, makeUniformsObject());
+        const _surfaceTextures = new Array(surfaces.length);
         let _width = -1;
         let _height = 0;
 
-        const bindTextures = () => {
-            for (let i = 0; i < surfaces.length; ++i) {
-                gl.activeTexture(TEXTURE_SHADER_FIRST + i);
-                gl.bindTexture(gl.TEXTURE_2D, surfaceTextures[i]);
-            }
-        };
-
         this.getWidth = () => _width;
         this.getHeight = () => _height;
-        this.setVariable = (name, value) => shader.setUniform(name, value);
+        this.setVariable = (name, value) => _shader.setUniform(name, value);
         this.setSurface = (name, surface) => {
             const index = surfaces.indexOf(name);
 
-            if (width === -1 && index === 0) {
+            if (_width === -1 && index === 0) {
                 _width = surface.getWidth();
                 _height = surface.getHeight();
             }
 
-            surfaceTextures[index] = surface._getTexture();
+            _surfaceTextures[index] = surface._getTexture();
         };
 
         this.setSize = (width, height) => {
@@ -406,10 +406,10 @@ const Myr = function(canvasElement) {
 
         this._prepareDraw = () => {
             bindTextures();
-            prepareDraw(RENDER_MODE_SHADER, 12, shader);
+            prepareDraw(RENDER_MODE_SHADER, 12, _shader);
 
-            instanceBuffer[++instanceBufferAt] = 0;
-            instanceBuffer[++instanceBufferAt] = 0;
+            _instanceBuffer[++_instanceBufferAt] = 0;
+            _instanceBuffer[++_instanceBufferAt] = 0;
         };
     };
 
@@ -420,75 +420,75 @@ const Myr = function(canvasElement) {
     this.Shader.prototype.getUvHeight = () => 1;
 
     const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
-        instanceBuffer[++instanceBufferAt] = uvLeft;
-        instanceBuffer[++instanceBufferAt] = uvTop;
-        instanceBuffer[++instanceBufferAt] = uvWidth;
-        instanceBuffer[++instanceBufferAt] = uvHeight;
+        _instanceBuffer[++_instanceBufferAt] = uvLeft;
+        _instanceBuffer[++_instanceBufferAt] = uvTop;
+        _instanceBuffer[++_instanceBufferAt] = uvWidth;
+        _instanceBuffer[++_instanceBufferAt] = uvHeight;
     };
 
     const setAttributesUvPart = (uvLeft, uvTop, uvWidth, uvHeight, left, top, width, height) => {
-        instanceBuffer[++instanceBufferAt] = uvLeft + uvWidth * left;
-        instanceBuffer[++instanceBufferAt] = uvTop + uvHeight * top;
-        instanceBuffer[++instanceBufferAt] = uvWidth * width;
-        instanceBuffer[++instanceBufferAt] = uvHeight * height;
+        _instanceBuffer[++_instanceBufferAt] = uvLeft + uvWidth * left;
+        _instanceBuffer[++_instanceBufferAt] = uvTop + uvHeight * top;
+        _instanceBuffer[++_instanceBufferAt] = uvWidth * width;
+        _instanceBuffer[++_instanceBufferAt] = uvHeight * height;
     };
 
     const setAttributesDraw = (x, y, width, height) => {
-        instanceBuffer[++instanceBufferAt] = width;
-        instanceBuffer[++instanceBufferAt] = instanceBuffer[++instanceBufferAt] = 0;
-        instanceBuffer[++instanceBufferAt] = height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
+        _instanceBuffer[++_instanceBufferAt] = width;
+        _instanceBuffer[++_instanceBufferAt] = _instanceBuffer[++_instanceBufferAt] = 0;
+        _instanceBuffer[++_instanceBufferAt] = height;
+        _instanceBuffer[++_instanceBufferAt] = x;
+        _instanceBuffer[++_instanceBufferAt] = y;
     };
 
     const setAttributesDrawSheared = (x, y, width, height, xShear, yShear) => {
-        instanceBuffer[++instanceBufferAt] = width;
-        instanceBuffer[++instanceBufferAt] = width * xShear;
-        instanceBuffer[++instanceBufferAt] = height * yShear;
-        instanceBuffer[++instanceBufferAt] = height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
+        _instanceBuffer[++_instanceBufferAt] = width;
+        _instanceBuffer[++_instanceBufferAt] = width * xShear;
+        _instanceBuffer[++_instanceBufferAt] = height * yShear;
+        _instanceBuffer[++_instanceBufferAt] = height;
+        _instanceBuffer[++_instanceBufferAt] = x;
+        _instanceBuffer[++_instanceBufferAt] = y;
     };
 
     const setAttributesDrawRotated = (x, y, width, height, angle) => {
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
 
-        instanceBuffer[++instanceBufferAt] = cos * width;
-        instanceBuffer[++instanceBufferAt] = sin * height;
-        instanceBuffer[++instanceBufferAt] = -sin * width;
-        instanceBuffer[++instanceBufferAt] = cos * height;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
+        _instanceBuffer[++_instanceBufferAt] = cos * width;
+        _instanceBuffer[++_instanceBufferAt] = sin * height;
+        _instanceBuffer[++_instanceBufferAt] = -sin * width;
+        _instanceBuffer[++_instanceBufferAt] = cos * height;
+        _instanceBuffer[++_instanceBufferAt] = x;
+        _instanceBuffer[++_instanceBufferAt] = y;
     };
 
     const setAttributesDrawTransform = (transform, width, height) => {
-        instanceBuffer[++instanceBufferAt] = transform._00 * width;
-        instanceBuffer[++instanceBufferAt] = transform._10 * height;
-        instanceBuffer[++instanceBufferAt] = transform._01 * width;
-        instanceBuffer[++instanceBufferAt] = transform._11 * height;
-        instanceBuffer[++instanceBufferAt] = transform._20;
-        instanceBuffer[++instanceBufferAt] = transform._21;
+        _instanceBuffer[++_instanceBufferAt] = transform._00 * width;
+        _instanceBuffer[++_instanceBufferAt] = transform._10 * height;
+        _instanceBuffer[++_instanceBufferAt] = transform._01 * width;
+        _instanceBuffer[++_instanceBufferAt] = transform._11 * height;
+        _instanceBuffer[++_instanceBufferAt] = transform._20;
+        _instanceBuffer[++_instanceBufferAt] = transform._21;
     };
 
     const setAttributesDrawTransformAt = (x, y, transform, width, height) => {
-        instanceBuffer[++instanceBufferAt] = transform._00 * width;
-        instanceBuffer[++instanceBufferAt] = transform._10 * height;
-        instanceBuffer[++instanceBufferAt] = transform._01 * width;
-        instanceBuffer[++instanceBufferAt] = transform._11 * height;
-        instanceBuffer[++instanceBufferAt] = transform._20 + x;
-        instanceBuffer[++instanceBufferAt] = transform._21 + y;
+        _instanceBuffer[++_instanceBufferAt] = transform._00 * width;
+        _instanceBuffer[++_instanceBufferAt] = transform._10 * height;
+        _instanceBuffer[++_instanceBufferAt] = transform._01 * width;
+        _instanceBuffer[++_instanceBufferAt] = transform._11 * height;
+        _instanceBuffer[++_instanceBufferAt] = transform._20 + x;
+        _instanceBuffer[++_instanceBufferAt] = transform._21 + y;
     };
 
     const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
 
-        instanceBuffer[++instanceBufferAt] = color.r;
-        instanceBuffer[++instanceBufferAt] = color.g;
-        instanceBuffer[++instanceBufferAt] = color.b;
-        instanceBuffer[++instanceBufferAt] = color.a;
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
+        _instanceBuffer[++_instanceBufferAt] = color.r;
+        _instanceBuffer[++_instanceBufferAt] = color.g;
+        _instanceBuffer[++_instanceBufferAt] = color.b;
+        _instanceBuffer[++_instanceBufferAt] = color.a;
+        _instanceBuffer[++_instanceBufferAt] = x;
+        _instanceBuffer[++_instanceBufferAt] = y;
     };
 
     const primitivesCirclePoints = new Array(1024);
@@ -616,8 +616,8 @@ const Myr = function(canvasElement) {
 
     const meshBindSource = source => {
         if(source instanceof this.Surface) {
-            meshUvLeft = meshUvTop = 0;
-            meshUvWidth = meshUvHeight = 1;
+            _meshUvLeft = _meshUvTop = 0;
+            _meshUvWidth = _meshUvHeight = 1;
         }
         else
             source._setMeshBounds();
@@ -627,8 +627,8 @@ const Myr = function(canvasElement) {
 
         flush();
 
-        gl.activeTexture(TEXTURE_MESH);
-        gl.bindTexture(gl.TEXTURE_2D, source._getTexture());
+        _gl.activeTexture(TEXTURE_MESH);
+        _gl.bindTexture(_gl.TEXTURE_2D, source._getTexture());
 
         currentTextureMesh = source._getTexture();
     };
@@ -636,10 +636,10 @@ const Myr = function(canvasElement) {
     const pushVertexMesh = (mode, x, y, u, v) => {
         prepareDraw(mode, 4);
 
-        instanceBuffer[++instanceBufferAt] = x;
-        instanceBuffer[++instanceBufferAt] = y;
-        instanceBuffer[++instanceBufferAt] = u * meshUvWidth + meshUvLeft;
-        instanceBuffer[++instanceBufferAt] = v * meshUvHeight + meshUvTop;
+        _instanceBuffer[++_instanceBufferAt] = x;
+        _instanceBuffer[++_instanceBufferAt] = y;
+        _instanceBuffer[++_instanceBufferAt] = u * _meshUvWidth + _meshUvLeft;
+        _instanceBuffer[++_instanceBufferAt] = v * _meshUvHeight + _meshUvTop;
     };
 
     this.mesh = {};
@@ -670,13 +670,13 @@ const Myr = function(canvasElement) {
 
     const ShaderCore = function(vertex, fragment) {
         const createShader = (type, source) => {
-            const shader = gl.createShader(type);
+            const shader = _gl.createShader(type);
 
-            gl.shaderSource(shader, "#version 300 es\n" + source);
-            gl.compileShader(shader);
+            _gl.shaderSource(shader, "#version 300 es\n" + source);
+            _gl.compileShader(shader);
 
-            if(!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-                console.log(gl.getShaderInfoLog(shader));
+            if(!_gl.getShaderParameter(shader, _gl.COMPILE_STATUS))
+                console.log(_gl.getShaderInfoLog(shader));
 
             return shader;
         };
@@ -687,51 +687,51 @@ const Myr = function(canvasElement) {
 
             currentShaderCore = this;
 
-            gl.useProgram(program);
+            _gl.useProgram(_program);
         };
 
-        this.getProgram = () => program;
-        this.free = () => gl.deleteProgram(program);
+        this.getProgram = () => _program;
+        this.free = () => _gl.deleteProgram(_program);
         this.getVertex = () => vertex;
         this.getFragment = () => fragment;
 
-        const program = gl.createProgram();
-        const shaderVertex = createShader(gl.VERTEX_SHADER, vertex);
-        const shaderFragment = createShader(gl.FRAGMENT_SHADER, fragment);
+        const _program = _gl.createProgram();
+        const _shaderVertex = createShader(_gl.VERTEX_SHADER, vertex);
+        const _shaderFragment = createShader(_gl.FRAGMENT_SHADER, fragment);
 
-        gl.attachShader(program, shaderVertex);
-        gl.attachShader(program, shaderFragment);
-        gl.linkProgram(program);
-        gl.detachShader(program, shaderVertex);
-        gl.detachShader(program, shaderFragment);
-        gl.deleteShader(shaderVertex);
-        gl.deleteShader(shaderFragment);
+        _gl.attachShader(_program, _shaderVertex);
+        _gl.attachShader(_program, _shaderFragment);
+        _gl.linkProgram(_program);
+        _gl.detachShader(_program, _shaderVertex);
+        _gl.detachShader(_program, _shaderFragment);
+        _gl.deleteShader(_shaderVertex);
+        _gl.deleteShader(_shaderFragment);
     };
 
     const Shader = function(core, samplers) {
         this.bind = () => {
-            if(currentShader === this)
+            if(_currentShader === this)
                 return;
 
-            currentShader = this;
+            _currentShader = this;
 
             core.bind();
 
-            for(let i = 0; i < samplerCalls.length; ++i)
-                samplerCalls[i][0](samplerCalls[i][1], samplerCalls[i][2].value);
+            for(let i = 0; i < _samplerCalls.length; ++i)
+                _samplerCalls[i][0](_samplerCalls[i][1], _samplerCalls[i][2].value);
         };
 
         this.setUniform = (name, value) => samplers[name].value = value;
         this.free = () => core.free();
 
-        const samplerCalls = [];
-        const samplerNames = Object.keys(samplers);
+        const _samplerCalls = [];
+        const _samplerNames = Object.keys(samplers);
 
-        for(let i = 0; i < samplerNames.length; ++i)
-            samplerCalls.push([
-                gl["uniform" + samplers[samplerNames[i]].type].bind(gl),
-                gl.getUniformLocation(core.getProgram(), samplerNames[i]),
-                samplers[samplerNames[i]]
+        for(let i = 0; i < _samplerNames.length; ++i)
+            _samplerCalls.push([
+                _gl["uniform" + samplers[_samplerNames[i]].type].bind(_gl),
+                _gl.getUniformLocation(core.getProgram(), _samplerNames[i]),
+                samplers[_samplerNames[i]]
             ]);
     };
 
@@ -756,8 +756,8 @@ const Myr = function(canvasElement) {
 
         flush();
 
-        gl.activeTexture(TEXTURE_SURFACE);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        _gl.activeTexture(TEXTURE_SURFACE);
+        _gl.bindTexture(_gl.TEXTURE_2D, texture);
 
         currentTextureSurface = texture;
     };
@@ -768,8 +768,8 @@ const Myr = function(canvasElement) {
 
         flush();
 
-        gl.activeTexture(TEXTURE_ATLAS);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        _gl.activeTexture(TEXTURE_ATLAS);
+        _gl.bindTexture(_gl.TEXTURE_2D, texture);
 
         currentTextureAtlas = texture;
     };
@@ -777,124 +777,124 @@ const Myr = function(canvasElement) {
     const clear = color => {
         flush();
 
-        gl.clearColor(color.r * uboContents[8], color.g * uboContents[9], color.b * uboContents[10], color.a * uboContents[11]);
-        gl.clear(gl.COLOR_BUFFER_BIT);
+        _gl.clearColor(color.r * _uboContents[8], color.g * _uboContents[9], color.b * _uboContents[10], color.a * _uboContents[11]);
+        _gl.clear(_gl.COLOR_BUFFER_BIT);
     };
 
     const flush = this.flush = () => {
-        if(instanceCount === 0)
+        if(_instanceCount === 0)
             return;
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, instanceBuffer, 0, instanceBufferAt + 1);
+        _gl.bindBuffer(_gl.ARRAY_BUFFER, _instances);
+        _gl.bufferSubData(_gl.ARRAY_BUFFER, 0, _instanceBuffer, 0, _instanceBufferAt + 1);
 
-        switch(renderMode) {
+        switch(_renderMode) {
             case RENDER_MODE_SURFACES:
             case RENDER_MODE_SPRITES:
             case RENDER_MODE_SHADER:
-                gl.bindVertexArray(vaoSprites);
-                gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, instanceCount);
+                _gl.bindVertexArray(_vaoSprites);
+                _gl.drawArraysInstanced(_gl.TRIANGLE_FAN, 0, 4, _instanceCount);
                 break;
             case RENDER_MODE_LINES:
-                gl.bindVertexArray(vaoLines);
-                gl.drawArrays(gl.LINES, 0, instanceCount);
+                _gl.bindVertexArray(_vaoLines);
+                _gl.drawArrays(_gl.LINES, 0, _instanceCount);
                 break;
             case RENDER_MODE_POINTS:
-                gl.bindVertexArray(vaoLines);
-                gl.drawArrays(gl.POINTS, 0, instanceCount);
+                _gl.bindVertexArray(_vaoLines);
+                _gl.drawArrays(_gl.POINTS, 0, _instanceCount);
                 break;
             case RENDER_MODE_TRIANGLES:
-                gl.bindVertexArray(vaoLines);
-                gl.drawArrays(gl.TRIANGLES, 0, instanceCount);
+                _gl.bindVertexArray(_vaoLines);
+                _gl.drawArrays(_gl.TRIANGLES, 0, _instanceCount);
                 break;
             case RENDER_MODE_MESH:
-                gl.bindVertexArray(vaoMesh);
-                gl.drawArrays(gl.TRIANGLES, 0, instanceCount);
+                _gl.bindVertexArray(_vaoMesh);
+                _gl.drawArrays(_gl.TRIANGLES, 0, _instanceCount);
                 break;
         }
 
-        instanceBufferAt = -1;
-        instanceCount = 0;
+        _instanceBufferAt = -1;
+        _instanceCount = 0;
     };
 
     const sendUniformBuffer = () => {
         if(surface == null) {
-            uboContents[3] = canvasElement.width;
-            uboContents[7] = canvasElement.height;
+            _uboContents[3] = canvasElement.width;
+            _uboContents[7] = canvasElement.height;
         }
         else {
-            uboContents[3] = surface.getWidth();
-            uboContents[7] = surface.getHeight();
+            _uboContents[3] = surface.getWidth();
+            _uboContents[7] = surface.getHeight();
         }
 
-        uboContents[0] = transformStack[transformAt]._00;
-        uboContents[1] = transformStack[transformAt]._10;
-        uboContents[2] = transformStack[transformAt]._20;
-        uboContents[4] = transformStack[transformAt]._01;
-        uboContents[5] = transformStack[transformAt]._11;
-        uboContents[6] = transformStack[transformAt]._21;
+        _uboContents[0] = _transformStack[_transformAt]._00;
+        _uboContents[1] = _transformStack[_transformAt]._10;
+        _uboContents[2] = _transformStack[_transformAt]._20;
+        _uboContents[4] = _transformStack[_transformAt]._01;
+        _uboContents[5] = _transformStack[_transformAt]._11;
+        _uboContents[6] = _transformStack[_transformAt]._21;
 
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
+        _gl.bufferSubData(_gl.UNIFORM_BUFFER, 0, _uboContents);
 
-        transformDirty = false;
+        _transformDirty = false;
     };
 
     const prepareDraw = (mode, size, shader) => {
-        if(transformDirty) {
+        if(_transformDirty) {
             flush();
 
             sendUniformBuffer();
         }
 
-        if(renderMode !== mode || renderMode === RENDER_MODE_SHADER) {
+        if(_renderMode !== mode || _renderMode === RENDER_MODE_SHADER) {
             flush();
 
-            renderMode = mode;
-            (shader || shaders[mode]).bind();
+            _renderMode = mode;
+            (shader || _shaders[mode]).bind();
         }
 
-        if(instanceBufferAt + size >= instanceBufferCapacity) {
-            const oldBuffer = instanceBuffer;
+        if(_instanceBufferAt + size >= _instanceBufferCapacity) {
+            const oldBuffer = _instanceBuffer;
 
-            instanceBuffer = new Float32Array(instanceBufferCapacity *= 2);
+            _instanceBuffer = new Float32Array(_instanceBufferCapacity *= 2);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-            gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
+            _gl.bindBuffer(_gl.ARRAY_BUFFER, _instances);
+            _gl.bufferData(_gl.ARRAY_BUFFER, _instanceBufferCapacity * 4, _gl.DYNAMIC_DRAW);
 
             for(let i = 0; i < oldBuffer.byteLength; ++i)
-                instanceBuffer[i] = oldBuffer[i];
+                _instanceBuffer[i] = oldBuffer[i];
         }
 
-        ++instanceCount;
+        ++_instanceCount;
     };
 
     const pushIdentity = () => {
-        if(++transformAt === transformStack.length)
-            transformStack.push(new Myr.Transform());
+        if(++_transformAt === _transformStack.length)
+            _transformStack.push(new Myr.Transform());
         else
-            transformStack[transformAt].identity();
+            _transformStack[_transformAt].identity();
 
-        transformDirty = true;
+        _transformDirty = true;
     };
 
     this.push = () => {
-        if(++transformAt === transformStack.length)
-            transformStack.push(transformStack[transformAt - 1].copy());
+        if(++_transformAt === _transformStack.length)
+            _transformStack.push(_transformStack[_transformAt - 1].copy());
         else
-            transformStack[transformAt].set(transformStack[transformAt - 1]);
+            _transformStack[_transformAt].set(_transformStack[_transformAt - 1]);
     };
 
     this.pop = () => {
-        --transformAt;
+        --_transformAt;
 
-        transformDirty = true;
+        _transformDirty = true;
     };
 
     this.bind = () => {
         bind(null);
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, canvasElement.width, canvasElement.height);
+        _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
+        _gl.viewport(0, 0, canvasElement.width, canvasElement.height);
     };
 
     this.register = function() {
@@ -903,17 +903,17 @@ const Myr = function(canvasElement) {
         for(let i = 1; i < arguments.length; ++i)
             frames.push(arguments[i]);
 
-        if(sprites[arguments[0]] === undefined)
-            sprites[arguments[0]] = frames;
+        if(_sprites[arguments[0]] === undefined)
+            _sprites[arguments[0]] = frames;
         else {
-            sprites[arguments[0]].length = 0;
+            _sprites[arguments[0]].length = 0;
 
             for(let i = 0; i < frames.length; ++i)
-                sprites[arguments[0]].push(frames[i]);
+                _sprites[arguments[0]].push(frames[i]);
         }
     };
 
-    this.isRegistered = name => sprites[name] !== undefined;
+    this.isRegistered = name => _sprites[name] !== undefined;
 
     this.makeSpriteFrame = (sheet, x, y, width, height, xOrigin, yOrigin, time) => {
         const frame = [
@@ -935,72 +935,72 @@ const Myr = function(canvasElement) {
     };
 
     this.free = () => {
-        for(let i = 0; i < shaders.length; ++i)
-            shaders[i].free();
+        for(let i = 0; i < _shaders.length; ++i)
+            _shaders[i].free();
 
-        gl.deleteVertexArray(vaoSprites);
-        gl.deleteVertexArray(vaoLines);
-        gl.deleteVertexArray(vaoMesh);
-        gl.deleteBuffer(quad);
-        gl.deleteBuffer(instances);
-        gl.deleteBuffer(ubo);
+        _gl.deleteVertexArray(_vaoSprites);
+        _gl.deleteVertexArray(_vaoLines);
+        _gl.deleteVertexArray(_vaoMesh);
+        _gl.deleteBuffer(_quad);
+        _gl.deleteBuffer(_instances);
+        _gl.deleteBuffer(_ubo);
     };
 
     this.setColor = color => {
         if(
-            uboContents[8] === color.r &&
-            uboContents[9] === color.g &&
-            uboContents[10] === color.b &&
-            uboContents[11] === color.a)
+            _uboContents[8] === color.r &&
+            _uboContents[9] === color.g &&
+            _uboContents[10] === color.b &&
+            _uboContents[11] === color.a)
             return;
 
         flush();
 
-        uboContents[8] = color.r;
-        uboContents[9] = color.g;
-        uboContents[10] = color.b;
-        uboContents[11] = color.a;
+        _uboContents[8] = color.r;
+        _uboContents[9] = color.g;
+        _uboContents[10] = color.b;
+        _uboContents[11] = color.a;
 
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
+        _gl.bufferSubData(_gl.UNIFORM_BUFFER, 0, _uboContents);
     };
 
     this.resize = (width, height) => {
         canvasElement.width = width;
         canvasElement.height = height;
 
-        transformStack[0]._21 = height;
+        _transformStack[0]._21 = height;
 
         sendUniformBuffer();
     };
 
     this.setAlpha = alpha => {
-        if(uboContents[11] === alpha)
+        if(_uboContents[11] === alpha)
             return;
 
         flush();
 
-        uboContents[11] = alpha;
+        _uboContents[11] = alpha;
 
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboContents);
+        _gl.bufferSubData(_gl.UNIFORM_BUFFER, 0, _uboContents);
     };
 
     const touchTransform = () => {
-        transformDirty = true;
+        _transformDirty = true;
 
-        return transformStack[transformAt];
+        return _transformStack[_transformAt];
     };
 
-    this.getTransform = () => transformStack[transformAt];
+    this.getTransform = () => _transformStack[_transformAt];
     this.transform = transform => touchTransform().multiply(transform);
     this.translate = (x, y) => touchTransform().translate(x, y);
     this.rotate = angle => touchTransform().rotate(angle);
     this.shear = (x, y) => touchTransform().shear(x, y);
     this.scale = (x, y) => touchTransform().scale(x, y);
-    this.setClearColor = color => clearColor = color;
-    this.clear = () => clear(clearColor);
+    this.setClearColor = color => _clearColor = color;
+    this.clear = () => clear(_clearColor);
     this.getWidth = () => canvasElement.width;
     this.getHeight = () => canvasElement.height;
-    this.unregister = name => delete sprites[name];
+    this.unregister = name => delete _sprites[name];
 
     const RENDER_MODE_NONE = -1;
     const RENDER_MODE_SURFACES = 0;
@@ -1010,29 +1010,29 @@ const Myr = function(canvasElement) {
     const RENDER_MODE_TRIANGLES = 4;
     const RENDER_MODE_MESH = 5;
     const RENDER_MODE_SHADER = 6;
-    const TEXTURE_ATLAS = gl.TEXTURE0;
-    const TEXTURE_SURFACE = gl.TEXTURE1;
-    const TEXTURE_MESH = gl.TEXTURE2;
-    const TEXTURE_EDITING = gl.TEXTURE3;
-    const TEXTURE_SHADER_FIRST = gl.TEXTURE4;
+    const TEXTURE_ATLAS = _gl.TEXTURE0;
+    const TEXTURE_SURFACE = _gl.TEXTURE1;
+    const TEXTURE_MESH = _gl.TEXTURE2;
+    const TEXTURE_EDITING = _gl.TEXTURE3;
+    const TEXTURE_SHADER_FIRST = _gl.TEXTURE4;
 
-    const quad = gl.createBuffer();
-    const instances = gl.createBuffer();
-    const vaoSprites = gl.createVertexArray();
-    const vaoLines = gl.createVertexArray();
-    const vaoMesh = gl.createVertexArray();
-    const ubo = gl.createBuffer();
-    const uboContents = new Float32Array(12);
-    const emptyPixel = new Uint8Array(4);
-    const sprites = [];
-    const transformStack = [new Myr.Transform(1, 0, 0, 0, -1, canvasElement.height)];
-    const uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
-    const shaderCoreSprites = new ShaderCore(
+    const _quad = _gl.createBuffer();
+    const _instances = _gl.createBuffer();
+    const _vaoSprites = _gl.createVertexArray();
+    const _vaoLines = _gl.createVertexArray();
+    const _vaoMesh = _gl.createVertexArray();
+    const _ubo = _gl.createBuffer();
+    const _uboContents = new Float32Array(12);
+    const _emptyPixel = new Uint8Array(4);
+    const _sprites = [];
+    const _transformStack = [new Myr.Transform(1, 0, 0, 0, -1, canvasElement.height)];
+    const _uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
+    const _shaderCoreSprites = new ShaderCore(
         "layout(location=0) in mediump vec2 vertex;" +
         "layout(location=1) in mediump vec4 a1;" +
         "layout(location=2) in mediump vec4 a2;" +
         "layout(location=3) in mediump vec4 a3;" +
-        uniformBlock +
+        _uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
         "uv=a1.zw+vertex*a2.xy;" +
@@ -1043,17 +1043,17 @@ const Myr = function(canvasElement) {
         "gl_Position=vec4(transformed-vec2(1),0,1);" +
         "}",
         "uniform sampler2D source;" +
-        uniformBlock +
+        _uniformBlock +
         "in mediump vec2 uv;" +
         "layout(location=0) out lowp vec4 color;" +
         "void main() {" +
         "color=texture(source,uv)*c;" +
         "}"
     );
-    const shaderCoreLines = new ShaderCore(
+    const _shaderCoreLines = new ShaderCore(
         "layout(location=0) in mediump vec4 color;" +
         "layout(location=1) in mediump vec2 vertex;" +
-        uniformBlock +
+        _uniformBlock +
         "out lowp vec4 colori;" +
         "void main() {" +
         "mediump vec2 transformed=(vertex*" +
@@ -1068,10 +1068,10 @@ const Myr = function(canvasElement) {
         "color=colori;" +
         "}"
     );
-    const shaderCorePoints = new ShaderCore(
+    const _shaderCorePoints = new ShaderCore(
         "layout(location=0) in mediump vec4 color;" +
         "layout(location=1) in mediump vec2 vertex;" +
-        uniformBlock +
+        _uniformBlock +
         "flat out lowp vec4 colorf;" +
         "void main() {" +
         "mediump vec2 transformed=(vertex*" +
@@ -1087,9 +1087,9 @@ const Myr = function(canvasElement) {
         "color=colorf;" +
         "}"
     );
-    const shaderCoreMesh = new ShaderCore(
+    const _shaderCoreMesh = new ShaderCore(
         "layout(location=0) in mediump vec4 vertex;" +
-        uniformBlock +
+        _uniformBlock +
         "out mediump vec2 uv;" +
         "void main() {" +
         "mediump vec2 transformed=(vertex.xy*" +
@@ -1098,11 +1098,11 @@ const Myr = function(canvasElement) {
         "gl_Position=vec4(transformed-vec2(1),0,1);" +
         "uv = vertex.zw;" +
         "}",
-        shaderCoreSprites.getFragment()
+        _shaderCoreSprites.getFragment()
     );
-    const shaders = [
+    const _shaders = [
         new Shader(
-            shaderCoreSprites,
+            _shaderCoreSprites,
             {
                 source: {
                     type: "1i",
@@ -1110,7 +1110,7 @@ const Myr = function(canvasElement) {
                 }
             }),
         new Shader(
-            shaderCoreSprites,
+            _shaderCoreSprites,
             {
                 source: {
                     type: "1i",
@@ -1118,16 +1118,16 @@ const Myr = function(canvasElement) {
                 }
             }),
         new Shader(
-            shaderCoreLines,
+            _shaderCoreLines,
             {}),
         new Shader(
-            shaderCorePoints,
+            _shaderCorePoints,
             {}),
         new Shader(
-            shaderCoreLines,
+            _shaderCoreLines,
             {}),
         new Shader(
-            shaderCoreMesh,
+            _shaderCoreMesh,
             {
                 source: {
                     type: "1i",
@@ -1136,61 +1136,61 @@ const Myr = function(canvasElement) {
             })
     ];
 
-    let currentShader, currentShaderCore, surface, currentTextureSurface, currentTextureAtlas, currentTextureMesh;
-    let meshUvLeft,  meshUvTop, meshUvWidth, meshUvHeight;
-    let transformAt = 0;
-    let transformDirty = true;
-    let renderMode = RENDER_MODE_NONE;
-    let instanceBufferCapacity = 1024;
-    let instanceBufferAt = -1;
-    let instanceBuffer = new Float32Array(instanceBufferCapacity);
-    let instanceCount = 0;
-    let clearColor = new Myr.Color(0, 0, 0);
+    let _currentShader, currentShaderCore, surface, currentTextureSurface, currentTextureAtlas, currentTextureMesh;
+    let _meshUvLeft, _meshUvTop, _meshUvWidth, _meshUvHeight;
+    let _transformAt = 0;
+    let _transformDirty = true;
+    let _renderMode = RENDER_MODE_NONE;
+    let _instanceBufferCapacity = 1024;
+    let _instanceBufferAt = -1;
+    let _instanceBuffer = new Float32Array(_instanceBufferCapacity);
+    let _instanceCount = 0;
+    let _clearColor = new Myr.Color(0, 0, 0);
 
-    uboContents[8] = uboContents[9] = uboContents[10] = uboContents[11] = 1;
+    _uboContents[8] = _uboContents[9] = _uboContents[10] = _uboContents[11] = 1;
 
-    gl.enable(gl.BLEND);
-    gl.disable(gl.DEPTH_TEST);
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    _gl.enable(_gl.BLEND);
+    _gl.disable(_gl.DEPTH_TEST);
+    _gl.blendFuncSeparate(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA, _gl.ONE, _gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-    gl.bufferData(gl.ARRAY_BUFFER, instanceBufferCapacity * 4, gl.DYNAMIC_DRAW);
+    _gl.bindBuffer(_gl.ARRAY_BUFFER, _instances);
+    _gl.bufferData(_gl.ARRAY_BUFFER, _instanceBufferCapacity * 4, _gl.DYNAMIC_DRAW);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 1, 1, 0]), gl.STATIC_DRAW);
+    _gl.bindBuffer(_gl.ARRAY_BUFFER, _quad);
+    _gl.bufferData(_gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 1, 1, 0]), _gl.STATIC_DRAW);
 
-    gl.bindBuffer(gl.UNIFORM_BUFFER, ubo);
-    gl.bufferData(gl.UNIFORM_BUFFER, 48, gl.DYNAMIC_DRAW);
-    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, ubo);
+    _gl.bindBuffer(_gl.UNIFORM_BUFFER, _ubo);
+    _gl.bufferData(_gl.UNIFORM_BUFFER, 48, _gl.DYNAMIC_DRAW);
+    _gl.bindBufferBase(_gl.UNIFORM_BUFFER, 0, _ubo);
 
-    gl.bindVertexArray(vaoSprites);
-    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribDivisor(1, 1);
-    gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 48, 0);
-    gl.enableVertexAttribArray(2);
-    gl.vertexAttribDivisor(2, 1);
-    gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 48, 16);
-    gl.enableVertexAttribArray(3);
-    gl.vertexAttribDivisor(3, 1);
-    gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 48, 32);
+    _gl.bindVertexArray(_vaoSprites);
+    _gl.bindBuffer(_gl.ARRAY_BUFFER, _quad);
+    _gl.enableVertexAttribArray(0);
+    _gl.vertexAttribPointer(0, 2, _gl.FLOAT, false, 8, 0);
+    _gl.bindBuffer(_gl.ARRAY_BUFFER, _instances);
+    _gl.enableVertexAttribArray(1);
+    _gl.vertexAttribDivisor(1, 1);
+    _gl.vertexAttribPointer(1, 4, _gl.FLOAT, false, 48, 0);
+    _gl.enableVertexAttribArray(2);
+    _gl.vertexAttribDivisor(2, 1);
+    _gl.vertexAttribPointer(2, 4, _gl.FLOAT, false, 48, 16);
+    _gl.enableVertexAttribArray(3);
+    _gl.vertexAttribDivisor(3, 1);
+    _gl.vertexAttribPointer(3, 4, _gl.FLOAT, false, 48, 32);
 
-    gl.bindVertexArray(vaoLines);
-    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
+    _gl.bindVertexArray(_vaoLines);
+    _gl.bindBuffer(_gl.ARRAY_BUFFER, _instances);
+    _gl.enableVertexAttribArray(0);
+    _gl.vertexAttribPointer(0, 4, _gl.FLOAT, false, 24, 0);
+    _gl.enableVertexAttribArray(1);
+    _gl.vertexAttribPointer(1, 2, _gl.FLOAT, false, 24, 16);
 
-    gl.bindVertexArray(vaoMesh);
-    gl.bindBuffer(gl.ARRAY_BUFFER, instances);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 16, 0);
+    _gl.bindVertexArray(_vaoMesh);
+    _gl.bindBuffer(_gl.ARRAY_BUFFER, _instances);
+    _gl.enableVertexAttribArray(0);
+    _gl.vertexAttribPointer(0, 4, _gl.FLOAT, false, 16, 0);
 
-    gl.bindVertexArray(null);
+    _gl.bindVertexArray(null);
 
     this.bind();
 };
