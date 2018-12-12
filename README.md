@@ -7,30 +7,59 @@ The [myr.js](myr.js) file can be included in any ES6 compatible javascript proje
 Alternatively, **myr.js** can be installed as an NPM package using `npm install myr.js`.
 
 # Initialization
-**myr.js** can be initialized by calling the `Myr` function, which requires a canvas element as an argument. All global functions and objects are members of the returned object. The provided canvas must be able to provide a *WebGL 2* context.
+**myr.js** can be initialized by calling the `Myr` function, which requires a canvas element as an argument. All global functions and objects are members of the returned object. I call this object a **myr.js** context. The provided canvas must support *WebGL 2*.
 
 Initialization would typically look like this:
 ```javascript
-// Create a myr.js object
+// Create a myr.js context
 let myr = new Myr(document.getElementById("some-canvas-id"));
 
 // Access myr.js functions and classes from here on
-myr.setClearColor(new myr.Color(0.2, 0.5, 0.7));
+myr.setClearColor(new Myr.Color(0.2, 0.5, 0.7));
 ```
 
 # Objects
-The **myr.js** object exposes several objects:
+Two types of **myr.js** objects exist. There are objects that are exposed through a **myr.js** context. These objects can only be used by that context. They can be initialized as follows:
+
+```javascript
+// Create a Myriad context
+let myr = new Myr(document.getElementById("some-canvas-id"));
+
+// Create a surface to be used in the previously created context
+let surface = new myr.Surface(800, 600);
+```
+
+The other type of objects can be accessed directly through the `Myr` object, and can be shared by multiple contexts. The example below shows using the [`Color`](#color) object which is not linked to a specific context:
+
+```javascript
+// Create a Myriad context
+let myr = new Myr(document.getElementById("some-canvas-id"));
+
+// Create a color object
+let color = new Myr.Color(0.3, 0.5, 0.7);
+
+// Set the created color object as the clear color for the context
+myr.setClearColor(color);
+```
+
+The following objects are exposed by a **myr.js** context.
 
 Object | Description
 -|-
 [`Surface`](#surface)|A render target which can be rendered to, which may be initialized to an existing image
 [`Sprite`](#sprite)|A renderable sprite consisting of one or more frames
+[`Shader`](#shader)|A shader
+
+The next objects accessible through the `Myr` object itself:
+
+Object | Description
+-|-
 [`Transform`](#transform)|A 2D transformation
 [`Color`](#color)|A color containing a red, green, blue and alpha channel
 [`Vector`](#vector)|A 2D vector
 
 # Namespaces
-The **myr.js** object exposes several namespaces which provide access to specific functions:
+A **myr.js** context exposes several namespaces which provide access to specific functions:
 
 Namespace | Description
 -|-
@@ -469,7 +498,7 @@ Returns the top UV coordinate.
 ### `getUvWidth()`
 Returns the width of the sprite in UV space.
 
-### `getUvHeight()` 
+### `getUvHeight()`
 Returns the height of the sprite in UV space
 
 ### `draw(x, y)`
@@ -709,7 +738,7 @@ a|`Number`|Alpha value in the range [0, 1]
 Returns an object with the members `h`, `s` and `v`, representing this color's hue, saturation and value.
 
 ### `toHex()`
-Returns a hexadecimal string representing this color. Note that hexadecimal color representations don't include an alpha channel, so this information is lost after converting the color. 
+Returns a hexadecimal string representing this color. Note that hexadecimal color representations don't include an alpha channel, so this information is lost after converting the color.
 
 ### `copy()`
 Returns a copy of this color.
@@ -944,7 +973,7 @@ width|`Number`|The rectangle width
 height|`Number`|The rectangle height
 
 ### `fillRectangleGradient(color1, color2, color3, color4, x, y, width, height)`
-Draws a rectangle with a gradient fill. Each point has a color, and the colors are interpolated along the rectangle. 
+Draws a rectangle with a gradient fill. Each point has a color, and the colors are interpolated along the rectangle.
 
 Parameter | Type | Description
 -|-|-

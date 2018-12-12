@@ -189,7 +189,6 @@ const Myr = function(canvasElement) {
     };
 
     this.Surface.prototype = Object.create(Renderable.prototype);
-
     this.Surface.prototype.getUvLeft = () => 0;
     this.Surface.prototype.getUvTop = () => 0;
     this.Surface.prototype.getUvWidth = () => 1;
@@ -376,6 +375,8 @@ const Myr = function(canvasElement) {
 
         const shader = new Shader(core, makeUniformsObject());
         const surfaceTextures = new Array(surfaces.length);
+        let width = 0;
+        let height = 0;
 
         const bindTextures = () => {
             for (let i = 0; i < surfaces.length; ++i) {
@@ -384,21 +385,34 @@ const Myr = function(canvasElement) {
             }
         };
 
+        this.getWidth = () => width;
+        this.getHeight = () => height;
         this.setVariable = (name, value) => shader.setUniform(name, value);
-        this.setSurface = (name, surface) => surfaceTextures[surfaces.indexOf(name)] = surface._getTexture();
-        this.draw = (x, y, width, height) => {
+        this.setSurface = (name, surface) => {
+            const index = surfaces.indexOf(name);
+
+            if (index === 0) {
+                width = surface.getWidth();
+                height = surface.getHeight();
+            }
+
+            surfaceTextures[index] = surface._getTexture();
+        };
+
+        this._prepareDraw = () => {
+            bindTextures();
             prepareDraw(RENDER_MODE_SHADER, 12, shader);
 
             instanceBuffer[++instanceBufferAt] = 0;
             instanceBuffer[++instanceBufferAt] = 0;
-
-            setAttributesUv(0, 0, 1, 1);
-            setAttributesDraw(x, y, width, height);
-
-            bindTextures();
-            shader.bind();
         };
     };
+
+    this.Shader.prototype = Object.create(Renderable.prototype);
+    this.Shader.prototype.getUvLeft = () => 0;
+    this.Shader.prototype.getUvTop = () => 0;
+    this.Shader.prototype.getUvWidth = () => 1;
+    this.Shader.prototype.getUvHeight = () => 1;
 
     const setAttributesUv = (uvLeft, uvTop, uvWidth, uvHeight) => {
         instanceBuffer[++instanceBufferAt] = uvLeft;
@@ -827,7 +841,7 @@ const Myr = function(canvasElement) {
             sendUniformBuffer();
         }
 
-        if(renderMode !== mode) {
+        if(renderMode !== mode || renderMode === RENDER_MODE_SHADER) {
             flush();
 
             renderMode = mode;
