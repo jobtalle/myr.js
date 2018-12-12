@@ -280,6 +280,14 @@ const Myr = function(canvasElement) {
         return this._getFrame()[9] < 0;
     };
 
+    const shaderVariables = [
+        {
+            name: "pixelSize",
+            type: "mediump vec2",
+            value: "1.0/vec2(a2.z,a3.y)"
+        }
+    ];
+
     this.Shader = function(fragment, surfaces, variables) {
         const makeUniformsObject = () => {
             const uniforms = {};
@@ -311,13 +319,57 @@ const Myr = function(canvasElement) {
             return result;
         };
 
+        const makeVariablesOut = () => {
+            let result = "";
+
+            for (const variable of shaderVariables) if (fragment.includes(variable.name))
+                result += "out " + variable.type + " " + variable.name + ";";
+
+            return result;
+        };
+
+        const makeVariablesOutAssignments = () => {
+            let result = "";
+
+            for (const variable of shaderVariables) if (fragment.includes(variable.name))
+                result += variable.name + "=" + variable.value + ";";
+
+            return result;
+        };
+
+        const makeVariablesIn = () => {
+            let result = "";
+
+            for (const variable of shaderVariables) if (fragment.includes(variable.name))
+                result += "in " + variable.type + " " + variable.name + ";";
+
+            return result;
+        };
+
         const core = new ShaderCore(
-            shaderCoreSprites.getVertex(),
+            "layout(location=0) in mediump vec2 vertex;" +
+            "layout(location=1) in mediump vec4 a1;" +
+            "layout(location=2) in mediump vec4 a2;" +
+            "layout(location=3) in mediump vec4 a3;" +
+            uniformBlock +
+            "out mediump vec2 uv;" +
+            makeVariablesOut() +
+            "void main() {" +
+            "uv=a1.zw+vertex*a2.xy;" +
+            "mediump vec2 transformed=(((vertex-a1.xy)*" +
+            "mat2(a2.zw,a3.xy)+a3.zw)*" +
+            "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
+            "vec2(tw.w,th.w)*2.0;" +
+            makeVariablesOutAssignments() +
+            "gl_Position=vec4(transformed-vec2(1),0,1);" +
+            "}",
             makeUniformsDeclaration() +
             uniformBlock +
             "in mediump vec2 uv;" +
+            makeVariablesIn() +
             "layout(location=0) out lowp vec4 color;" +
             "void main() {" +
+            "lowp vec4 colorFilter=c;" +
             (fragment || "color=texture(source0,uv)*c;") +
             "}"
         );

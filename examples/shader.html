@@ -12,9 +12,11 @@
         const surface = new myr.Surface(myr.getWidth(), myr.getHeight());
 
         const shader = new myr.Shader(
-            "mediump vec2 movedUV = uv + vec2(sin(time * 5.0 + uv.y * 80.0), cos(-time * 4.0 + uv.x * 80.0)) * 0.005;" +
+            "mediump vec2 sampleOffset = uv * 80.0;" +
+            "mediump vec2 shift = pixelSize * 3.0;" +
+            "mediump vec2 movedUV = uv + vec2(sin(time * 5.0 + sampleOffset.y), cos(time * 4.0 + sampleOffset.x)) * shift;" +
             "mediump vec4 result = texture(source, movedUV);" +
-            "color=vec4(result.rgb, result.a);",
+            "color = vec4(result.rgb, result.a) * colorFilter;",
             ["source"],
             ["time"]);
         let moved = false;
@@ -50,7 +52,6 @@
         });
 
         myr.setClearColor(new Myr.Color(0.5, 0.6, 0.7));
-
         myr.utils.loop(function(timeStep) {
             surface.bind();
 
