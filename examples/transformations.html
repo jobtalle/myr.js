@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Animation</title>
+    <script src="../myr.js"></script>
+</head>
+<body>
+    <canvas id="renderer" width=800 height=600></canvas>
+    <script>
+        const canvas = document.getElementById("renderer");
+        const myr = new Myr(canvas);
+        const width = 100;
+        const height = 60;
+        const radius = Math.sqrt(width * width / 4 + height * height / 4);
+        const rectangle = new myr.Surface(width, height);
+        const transform = new Myr.Transform();
+        let x = 0;
+        let y = 0;
+        let angle = 0;
+        let xSpeed = 300;
+        let ySpeed = 200;
+        let angleSpeed = 4;
+        let mouseX = myr.getWidth();
+        let mouseY = myr.getHeight();
+
+        rectangle.setClearColor(Myr.Color.WHITE);
+        rectangle.bind();
+        rectangle.clear();
+
+        canvas.addEventListener("mousemove", function(event) {
+            const rect = canvas.getBoundingClientRect();
+
+            mouseX = event.clientX - rect.left;
+            mouseY = event.clientY - rect.top;
+        });
+
+        myr.setClearColor(new Myr.Color(0.5, 0.6, 0.7));
+
+        myr.utils.loop(function(timeStep) {
+            myr.bind();
+            myr.clear();
+
+            x += xSpeed * timeStep;
+            y += ySpeed * timeStep;
+            angle += angleSpeed * timeStep;
+
+            if (angle > Math.PI * 2)
+                angle -= Math.PI * 2;
+
+            if (x < radius) {
+                x = radius;
+                xSpeed = -xSpeed;
+            }
+            else if (x + radius > myr.getWidth()) {
+                x = myr.getWidth() - radius;
+                xSpeed = -xSpeed;
+            }
+
+            if (y < radius) {
+                y = radius;
+                ySpeed = -ySpeed;
+            }
+            else if (y + radius > myr.getHeight()) {
+                y = myr.getHeight() - radius;
+                ySpeed = -ySpeed;
+            }
+
+            // Prepare the transform object to use in conjuction with the
+            // rectangle. I set it to identity first, clearing all previous
+            // transformations.
+            transform.identity();
+
+            // Translate the rectangle to its coordinates.
+            transform.translate(x, y);
+
+            // Rotate the rectangle.
+            transform.rotate(angle);
+
+            // Translate the rectangle to its origin, so the rotation rotates
+            // the rectangle around its center.
+            transform.translate(-width / 2, -height / 2);
+
+            // Push the current transform state onto the stack, so I can revert
+            // to it later.
+            myr.push();
+
+            // Scale the entire scene to fit to the left and top of the mouse.
+            // Everything drawn after this will conform to this transformation.
+            myr.scale(mouseX / myr.getWidth(), mouseY / myr.getHeight());
+
+            // Draw a background for the rectangle. This background will scale
+            // with the previously set scale, so it will show the size of the
+            // scaled scene.
+            myr.primitives.fillRectangle(
+                Myr.Color.BLACK,
+                0, 0, myr.getWidth(), myr.getHeight());
+
+            // Draw the rectangle using the previously set transformation. Note
+            // that transformations stack, so the rectangle will also respect
+            // the scaled scene.
+            rectangle.drawTransformed(transform);
+
+            // Restore the transform state I pushed earlier, discarding all
+            // transformations made since that push. I don't want old
+            // transformations to influence the next frame.
+            myr.pop();
+
+            myr.flush();
+
+            return true;
+        });
+    </script>
+</body>
+</html>
