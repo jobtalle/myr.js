@@ -385,6 +385,7 @@ const Myr = function(canvasElement) {
         let _width = -1;
         let _height = 0;
 
+        this.free = () => _shader.free();
         this.getWidth = () => _width;
         this.getHeight = () => _height;
         this.setVariable = (name, value) => _shader.setUniform(name, value);

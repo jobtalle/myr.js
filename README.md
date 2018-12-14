@@ -602,6 +602,7 @@ Function | Description
 [`setVariable(name, value)`](#setvariablename-value)|Set one of the variables' values
 [`setSurface(name, surface)`](#setsurfacename-surface)|Set one of the input surfaces' surface
 [`setSize(width, height)`](#setsizewidth-height)|Set the size of this shader
+[`free()`](#free-2)|Free this shader
 [`draw(x, y)`](#drawx-y-2)|Draws the shader
 [`drawScaled(x, y, xScale, yScale)`](#drawscaledx-y-xscale-yscale-2)|Draws the shader
 [`drawSheared(x, y, xShear, yShear)`](#drawshearedx-y-xshear-yshear-2)|Draws the shader
@@ -668,6 +669,9 @@ surface|[`Surface`](#surface)|The surface
 
 ### `setSize(width, height)`
 Sets the size of this shader. This should not be used when the the `surfaces` list was not empty when constructing this shader; in that case, the shader size will be equal to the size of its first surface. If no surfaces are provided, the shader size should be set using this function.
+
+### `free()`
+Free all resources occupied by this shader. When the shader is no longer used, this function should be called to ensure the occupied memory is freed.
 
 ### `draw(x, y)`
 Draws this shader on the currently bound target.
