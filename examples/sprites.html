@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sprites</title>
+    <script src="../myr.js"></script>
+</head>
+<body>
+    <canvas id="renderer" width=800 height=600></canvas>
+    <script>
+        const myr = new Myr(document.getElementById("renderer"));
+        const spriteSheet = new myr.Surface(128, 128);
+
+        spriteSheet.bind();
+
+        // Circle
+        myr.primitives.fillCircle(Myr.Color.RED, 32, 32, 31);
+
+        // Plus
+        myr.primitives.fillRectangle(Myr.Color.BLUE, 65, 25, 62, 14);
+        myr.primitives.fillRectangle(Myr.Color.BLUE, 89, 1, 14, 62);
+
+        // Animation
+        myr.primitives.drawTriangle(Myr.Color.GREEN, 32, 65, 1, 127, 63, 127);
+        myr.primitives.drawTriangle(Myr.Color.GREEN, 96, 127, 65, 65, 127, 65);
+
+        // Instantiate sprites
+
+
+        // Background color
+        myr.setClearColor(new Myr.Color(0.5, 0.6, 0.7));
+
+        // Register sprites
+        myr.register("circle", myr.makeSpriteFrame(
+            spriteSheet,
+            0, 0, 64, 64,
+            32, 32, 0));
+        myr.register("plus", myr.makeSpriteFrame(
+            spriteSheet,
+            64, 0, 64, 64,
+            32, 32, 0));
+        myr.register("animation",
+            myr.makeSpriteFrame(
+                spriteSheet,
+                0, 64, 64, 64,
+                32, 32, 0.2),
+            myr.makeSpriteFrame(
+                spriteSheet,
+                64, 64, 64, 64,
+                32, 32, 0.2));
+            
+        // Instantiate sprites
+        const circle = new myr.Sprite("circle");
+        const plus = new myr.Sprite("plus");
+        const animation = new myr.Sprite("animation");
+        const drawRadius = (myr.getHeight() - 64) / 2;
+        const drawSprites = [
+            circle, plus, animation, circle, plus, animation, circle, plus, animation];
+
+        let time = 0;
+
+        myr.utils.loop(function(timeStep) {
+            myr.bind();
+            myr.clear();
+
+            time += timeStep;
+
+            // Animate animation sprite
+            animation.animate(timeStep);
+
+            // Draw sprites
+            for (let i = 0; i < drawSprites.length; ++i) {
+                const angle = Math.PI * 2 * i / drawSprites.length + time;
+
+                drawSprites[i].draw(
+                    myr.getWidth() / 2 + Math.cos(angle) * drawRadius,
+                    myr.getHeight() / 2 + Math.sin(angle) * drawRadius);
+            }
+
+            spriteSheet.draw(0, 0);
+
+            myr.flush();
+
+            return true;
+        });
+    </script>
+</body>
+</html>
