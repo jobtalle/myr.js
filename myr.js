@@ -492,14 +492,14 @@ const Myr = function(canvasElement) {
         _instanceBuffer[++_instanceBufferAt] = y;
     };
 
-    const primitivesCirclePoints = new Array(1024);
-    const primitivesGetCircleStep = radius => Math.max(2, 32 >> Math.floor(radius / 128));
+    const _primitivesCirclePoints = new Array(1024);
+    const _primitivesGetCircleStep = radius => Math.max(2, 32 >> Math.floor(radius / 128));
 
     for(let i = 0; i < 1024; i += 2) {
-        const radians = i * Math.PI * 2 / 1024;
+        const radians = i * Math.PI / 512;
 
-        primitivesCirclePoints[i] = Math.cos(radians);
-        primitivesCirclePoints[i + 1] = Math.sin(radians);
+        _primitivesCirclePoints[i] = Math.cos(radians);
+        _primitivesCirclePoints[i + 1] = Math.sin(radians);
     }
 
     this.primitives = {};
@@ -526,23 +526,23 @@ const Myr = function(canvasElement) {
     };
 
     this.primitives.drawCircle = (color, x, y, radius) => {
-        const step = primitivesGetCircleStep(radius);
+        const step = _primitivesGetCircleStep(radius);
         let i;
 
         for(i = 0; i < 1024 - step; i += step)
             this.primitives.drawLine(
                 color,
-                x + primitivesCirclePoints[i] * radius,
-                y + primitivesCirclePoints[i + 1] * radius,
-                x + primitivesCirclePoints[i + step] * radius,
-                y + primitivesCirclePoints[i + 1 + step] * radius);
+                x + _primitivesCirclePoints[i] * radius,
+                y + _primitivesCirclePoints[i + 1] * radius,
+                x + _primitivesCirclePoints[i + step] * radius,
+                y + _primitivesCirclePoints[i + 1 + step] * radius);
 
         this.primitives.drawLine(
             color,
-            x + primitivesCirclePoints[i] * radius,
-            y + primitivesCirclePoints[i + 1] * radius,
-            x + primitivesCirclePoints[0] * radius,
-            y + primitivesCirclePoints[1] * radius);
+            x + _primitivesCirclePoints[i] * radius,
+            y + _primitivesCirclePoints[i + 1] * radius,
+            x + _primitivesCirclePoints[0] * radius,
+            y + _primitivesCirclePoints[1] * radius);
     };
 
     this.primitives.drawTriangle = (color, x1, y1, x2, y2, x3, y3) => {
@@ -568,29 +568,29 @@ const Myr = function(canvasElement) {
     };
 
     this.primitives.fillCircle = (color, x, y, radius) => {
-        const step = primitivesGetCircleStep(radius);
+        const step = _primitivesGetCircleStep(radius);
         let i = 0;
 
         for(; i < 1024 - step; i+= step)
             this.primitives.drawTriangle(
                 color,
                 x, y,
-                x + primitivesCirclePoints[i] * radius,
-                y + primitivesCirclePoints[i + 1] * radius,
-                x + primitivesCirclePoints[i + step] * radius,
-                y + primitivesCirclePoints[i + 1 + step] * radius);
+                x + _primitivesCirclePoints[i] * radius,
+                y + _primitivesCirclePoints[i + 1] * radius,
+                x + _primitivesCirclePoints[i + step] * radius,
+                y + _primitivesCirclePoints[i + 1 + step] * radius);
 
         this.primitives.drawTriangle(
             color,
             x, y,
-            x + primitivesCirclePoints[i] * radius,
-            y + primitivesCirclePoints[i + 1] * radius,
-            x + primitivesCirclePoints[0] * radius,
-            y + primitivesCirclePoints[1] * radius);
+            x + _primitivesCirclePoints[i] * radius,
+            y + _primitivesCirclePoints[i + 1] * radius,
+            x + _primitivesCirclePoints[0] * radius,
+            y + _primitivesCirclePoints[1] * radius);
     };
 
     this.primitives.fillCircleGradient = (colorStart, colorEnd, x, y, radius) => {
-        const step = primitivesGetCircleStep(radius);
+        const step = _primitivesGetCircleStep(radius);
         let i;
 
         for(i = 0; i < 1024 - step; i+= step)
@@ -598,21 +598,21 @@ const Myr = function(canvasElement) {
                 colorStart,
                 x, y,
                 colorEnd,
-                x + primitivesCirclePoints[i] * radius,
-                y + primitivesCirclePoints[i + 1] * radius,
+                x + _primitivesCirclePoints[i] * radius,
+                y + _primitivesCirclePoints[i + 1] * radius,
                 colorEnd,
-                x + primitivesCirclePoints[i + step] * radius,
-                y + primitivesCirclePoints[i + 1 + step] * radius);
+                x + _primitivesCirclePoints[i + step] * radius,
+                y + _primitivesCirclePoints[i + 1 + step] * radius);
 
         this.primitives.drawTriangleGradient(
             colorStart,
             x, y,
             colorEnd,
-            x + primitivesCirclePoints[i] * radius,
-            y + primitivesCirclePoints[i + 1] * radius,
+            x + _primitivesCirclePoints[i] * radius,
+            y + _primitivesCirclePoints[i + 1] * radius,
             colorEnd,
-            x + primitivesCirclePoints[0] * radius,
-            y + primitivesCirclePoints[1] * radius);
+            x + _primitivesCirclePoints[0] * radius,
+            y + _primitivesCirclePoints[1] * radius);
     };
 
     const meshBindSource = source => {
