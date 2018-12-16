@@ -125,8 +125,6 @@ const Myr = function(canvasElement) {
         let _height = 0;
         let _clearColor = new Myr.Color(0, 0, 0, 0);
 
-        flush();
-
         _gl.activeTexture(TEXTURE_EDITING);
         _gl.bindTexture(_gl.TEXTURE_2D, _texture);
         _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.NEAREST);
