@@ -137,7 +137,7 @@ const Myr = function(canvasElement) {
             _height = arguments[1];
             _ready = true;
 
-            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _width, _height, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, new Uint8Array(_width * _height * 4));
+            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _width, _height, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, new Uint8Array(_width * _height << 2));
         }
         else {
             const image = new Image();
@@ -182,8 +182,13 @@ const Myr = function(canvasElement) {
             _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, 1, 1, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, _emptyPixel);
         }
 
-        _gl.bindFramebuffer(_gl.FRAMEBUFFER, _framebuffer);
-        _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, _texture, 0);
+        {
+            const previousFramebuffer = _gl.getParameter(_gl.FRAMEBUFFER_BINDING);
+
+            _gl.bindFramebuffer(_gl.FRAMEBUFFER, _framebuffer);
+            _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, _texture, 0);
+            _gl.bindFramebuffer(_gl.FRAMEBUFFER, previousFramebuffer);
+        }
     };
 
     this.Surface.prototype = Object.create(Renderable.prototype);
