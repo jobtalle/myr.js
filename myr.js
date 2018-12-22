@@ -626,7 +626,7 @@ const Myr = function(canvasElement) {
         else
             source._setMeshBounds();
 
-        if(currentTextureMesh === source._getTexture())
+        if(_currentTextureMesh === source._getTexture())
             return;
 
         flush();
@@ -634,7 +634,7 @@ const Myr = function(canvasElement) {
         _gl.activeTexture(TEXTURE_MESH);
         _gl.bindTexture(_gl.TEXTURE_2D, source._getTexture());
 
-        currentTextureMesh = source._getTexture();
+        _currentTextureMesh = source._getTexture();
     };
 
     const pushVertexMesh = (mode, x, y, u, v) => {
@@ -686,10 +686,10 @@ const Myr = function(canvasElement) {
         };
 
         this.bind = () => {
-            if(currentShaderCore === this)
+            if(_currentShaderCore === this)
                 return;
 
-            currentShaderCore = this;
+            _currentShaderCore = this;
 
             _gl.useProgram(_program);
         };
@@ -740,22 +740,22 @@ const Myr = function(canvasElement) {
     };
 
     const bind = target => {
-        if(surface === target)
+        if(_surface === target)
             return;
 
         flush();
 
-        if(surface != null)
+        if(_surface != null)
             this.pop();
 
         if(target != null)
             pushIdentity();
 
-        surface = target;
+        _surface = target;
     };
 
     const bindTextureSurface = texture => {
-        if(currentTextureSurface === texture)
+        if(_currentTextureSurface === texture)
             return;
 
         flush();
@@ -763,11 +763,11 @@ const Myr = function(canvasElement) {
         _gl.activeTexture(TEXTURE_SURFACE);
         _gl.bindTexture(_gl.TEXTURE_2D, texture);
 
-        currentTextureSurface = texture;
+        _currentTextureSurface = texture;
     };
 
     const bindTextureAtlas = texture => {
-        if(currentTextureAtlas === texture)
+        if(_currentTextureAtlas === texture)
             return;
 
         flush();
@@ -775,7 +775,7 @@ const Myr = function(canvasElement) {
         _gl.activeTexture(TEXTURE_ATLAS);
         _gl.bindTexture(_gl.TEXTURE_2D, texture);
 
-        currentTextureAtlas = texture;
+        _currentTextureAtlas = texture;
     };
 
     const clear = color => {
@@ -822,13 +822,13 @@ const Myr = function(canvasElement) {
     };
 
     const sendUniformBuffer = () => {
-        if(surface == null) {
+        if(_surface == null) {
             _uboContents[3] = canvasElement.width;
             _uboContents[7] = canvasElement.height;
         }
         else {
-            _uboContents[3] = surface.getWidth();
-            _uboContents[7] = surface.getHeight();
+            _uboContents[3] = _surface.getWidth();
+            _uboContents[7] = _surface.getHeight();
         }
 
         _uboContents[0] = _transformStack[_transformAt]._00;
@@ -1140,7 +1140,7 @@ const Myr = function(canvasElement) {
             })
     ];
 
-    let _currentShader, currentShaderCore, surface, currentTextureSurface, currentTextureAtlas, currentTextureMesh;
+    let _currentShader, _currentShaderCore, _surface, _currentTextureSurface, _currentTextureAtlas, _currentTextureMesh;
     let _meshUvLeft, _meshUvTop, _meshUvWidth, _meshUvHeight;
     let _transformAt = 0;
     let _transformDirty = true;
@@ -1150,7 +1150,7 @@ const Myr = function(canvasElement) {
     let _instanceBuffer = new Float32Array(_instanceBufferCapacity);
     let _instanceCount = 0;
     let _clearColor = new Myr.Color(0, 0, 0);
-
+    
     _uboContents[8] = _uboContents[9] = _uboContents[10] = _uboContents[11] = 1;
 
     _gl.enable(_gl.BLEND);
