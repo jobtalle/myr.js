@@ -377,10 +377,7 @@ const Myr = function(canvasElement) {
             "in mediump vec2 uv;" +
             makeVariablesIn() +
             "layout(location=0) out lowp vec4 color;" +
-            "void main() {" +
-            "lowp vec4 colorFilter=c;" +
-            (fragment || "color=texture(source0,uv)*c;") +
-            "}"
+            fragment
         );
 
         const _shader = new Shader(_core, makeUniformsObject());
@@ -486,7 +483,7 @@ const Myr = function(canvasElement) {
 
     const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
-
+        
         _instanceBuffer[++_instanceBufferAt] = color.r;
         _instanceBuffer[++_instanceBufferAt] = color.g;
         _instanceBuffer[++_instanceBufferAt] = color.b;
@@ -1030,7 +1027,7 @@ const Myr = function(canvasElement) {
     const _emptyPixel = new Uint8Array(4);
     const _sprites = [];
     const _transformStack = [new Myr.Transform(1, 0, 0, 0, -1, canvasElement.height)];
-    const _uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 c;};";
+    const _uniformBlock = "layout(std140) uniform transform {mediump vec4 tw;mediump vec4 th;lowp vec4 colorFilter;};";
     const _shaderCoreSprites = new ShaderCore(
         "layout(location=0) in mediump vec2 vertex;" +
         "layout(location=1) in mediump vec4 a1;" +
@@ -1051,7 +1048,7 @@ const Myr = function(canvasElement) {
         "in mediump vec2 uv;" +
         "layout(location=0) out lowp vec4 color;" +
         "void main() {" +
-        "color=texture(source,uv)*c;" +
+        "color=texture(source,uv)*colorFilter;" +
         "}"
     );
     const _shaderCoreLines = new ShaderCore(
@@ -1064,7 +1061,7 @@ const Myr = function(canvasElement) {
         "mat2(tw.xy,th.xy)+vec2(tw.z,th.z))/" +
         "vec2(tw.w,th.w)*2.0;" +
         "gl_Position=vec4(transformed-vec2(1),0,1);" +
-        "colori = color*c;" +
+        "colori = color*colorFilter;" +
         "}",
         "in lowp vec4 colori;" +
         "layout(location=0) out lowp vec4 color;" +
@@ -1083,7 +1080,7 @@ const Myr = function(canvasElement) {
         "vec2(tw.w,th.w)*2.0;" +
         "gl_Position=vec4(transformed-vec2(1),0,1);" +
         "gl_PointSize=1.0;" +
-        "colorf = color*c;" +
+        "colorf = color*colorFilter;" +
         "}",
         "flat in lowp vec4 colorf;" +
         "layout(location=0) out lowp vec4 color;" +

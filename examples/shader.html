@@ -12,11 +12,13 @@
         const surface = new myr.Surface(myr.getWidth(), myr.getHeight());
 
         const shader = new myr.Shader(
+            "void main() {" +
             "mediump vec2 sampleOffset = uv * 80.0;" +
             "mediump vec2 shift = pixelSize * 3.0;" +
             "mediump vec2 movedUV = uv + vec2(sin(time * 5.0 + sampleOffset.y), cos(time * 4.0 + sampleOffset.x)) * shift;" +
             "mediump vec4 result = texture(source, movedUV);" +
-            "color = vec4(result.rgb, result.a) * colorFilter;",
+            "color = vec4(result.rgb, result.a) * colorFilter;" +
+            "}",
             ["source"],
             ["time"]);
         let moved = false;
