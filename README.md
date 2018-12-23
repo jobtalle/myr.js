@@ -642,7 +642,7 @@ void main() {
 
 Inside the GLSL code, several variables are accessible for the user besides the `surfaces` and `variables`. These are:
 
-* `uv`, the UV coordinates of the current pixel inside the drawing area of this shader.
+* `uv`, a `mediump vec2` representing the UV coordinates of the current pixel inside the drawing area of this shader.
 * `pixelSize`, a `mediump vec2` containing the UV size of one pixel. Sampling a pixel to the right for example can be done using `texture(source, vec2(uv.x + pixelSize.x, uv.y))`.
 * `colorFilter`, a `lowp vec4` containing the current color filter (set by [`setColor`](#setcolorcolor)).
 * `color`, a `lowp vec4` where the output pixel color should be written to.
