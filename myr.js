@@ -285,8 +285,15 @@ const Myr = function(canvasElement) {
     const _shaderVariables = [
         {
             name: "pixelSize",
+            storage: "flat",
             type: "mediump vec2",
             value: "1.0/vec2(a2.z,a3.y)"
+        },
+        {
+            name: "pixel",
+            storage: "",
+            type: "mediump vec2",
+            value: "vec2(a2.z, a3.y)*vertex"
         }
     ];
 
@@ -325,7 +332,7 @@ const Myr = function(canvasElement) {
             let result = "";
 
             for (const variable of _shaderVariables) if (fragment.includes(variable.name))
-                result += "out " + variable.type + " " + variable.name + ";";
+                result += variable.storage + " out " + variable.type + " " + variable.name + ";";
 
             return result;
         };
@@ -343,7 +350,7 @@ const Myr = function(canvasElement) {
             let result = "";
 
             for (const variable of _shaderVariables) if (fragment.includes(variable.name))
-                result += "in " + variable.type + " " + variable.name + ";";
+                result += variable.storage + " in " + variable.type + " " + variable.name + ";";
 
             return result;
         };
