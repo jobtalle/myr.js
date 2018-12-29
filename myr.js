@@ -433,8 +433,8 @@ const Myr = function(canvasElement) {
         };
 
         this._prepareDraw = () => {
-            bindTextures();
             prepareDraw(RENDER_MODE_SHADER, 12, _shader);
+            bindTextures();
 
             _instanceBuffer[++_instanceBufferAt] = 0;
             _instanceBuffer[++_instanceBufferAt] = 0;
@@ -736,30 +736,33 @@ const Myr = function(canvasElement) {
         _gl.deleteShader(_shaderFragment);
     };
 
-    const Shader = function(core, samplers) {
+    const Shader = function(core, uniforms) {
         this.bind = () => {
-            if(_currentShader === this)
+            if(_currentShader === this) {
+                for (const uniformCall of _uniformCalls)
+                    uniformCall[0](uniformCall[1], uniformCall[2].value);
+
                 return;
+            }
 
             _currentShader = this;
 
             core.bind();
-
-            for(let i = 0; i < _samplerCalls.length; ++i)
-                _samplerCalls[i][0](_samplerCalls[i][1], _samplerCalls[i][2].value);
+            
+            for (const uniformCall of _uniformCalls)
+                uniformCall[0](uniformCall[1], uniformCall[2].value);
         };
 
-        this.setUniform = (name, value) => samplers[name].value = value;
+        this.setUniform = (name, value) => uniforms[name].value = value;
         this.free = () => core.free();
 
-        const _samplerCalls = [];
-        const _samplerNames = Object.keys(samplers);
-
-        for(let i = 0; i < _samplerNames.length; ++i)
-            _samplerCalls.push([
-                _gl["uniform" + samplers[_samplerNames[i]].type].bind(_gl),
-                _gl.getUniformLocation(core.getProgram(), _samplerNames[i]),
-                samplers[_samplerNames[i]]
+        const _uniformCalls = [];
+        
+        for (const uniform of Object.keys(uniforms))
+            _uniformCalls.push([
+                _gl["uniform" + uniforms[uniform].type].bind(_gl),
+                _gl.getUniformLocation(core.getProgram(), uniform),
+                uniforms[uniform]
             ]);
     };
 
