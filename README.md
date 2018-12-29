@@ -89,6 +89,8 @@ Function | Description
 [`register(name, ...)`](#registername-)|Register a sprite
 [`isRegistered(name)`](#isregisteredname)|Check if a sprite is registered
 [`unregister(name)`](#unregistername)|Unregister a sprite
+[`blendEnable()`](#blendenable)|Enable blending
+[`blendDisable()`](#blenddisable)|Disable blending
 [`transform(transform)`](#transformtransform)|Transform
 [`translate(x, y)`](#translatex-y)|Translate
 [`rotate(angle)`](#rotateangle)|Rotate
@@ -215,6 +217,12 @@ Parameter | Type | Description
 -|-|-
 name|`String`|The name of the sprite to unregister
 
+### `blendEnable()`
+Enables blending when drawing. This means that new drawings will not simply overwrite the existing pixels, but blending will be applied depending on the sprite's alpha values. Blending is enabled by default.
+
+### `blendDisable()`
+Disables blending when drawing. This means that newly drawn pixels will completely overwrite the pixels previously at that location.
+
 ### `transform(transform)`
 Transform the current [transformation](#transform) by multiplying it with another transformation.
 
@@ -260,6 +268,7 @@ A surface in **myr.js** can be a render target. After binding it using its membe
 Function | Description
 -|-
 [`Surface(width, height)`](#surfacewidth-height)|Construct from size
+[`Surface(width, height, precision)`](#surfacewidth-height-precision)|Construct from size and precision
 [`Surface(image)`](#surfaceimage)|Construct from image
 [`Surface(image, width, height)`](#surfaceimage-width-height)|Construct from image and size
 [`bind()`](#bind-1)|Bind the surface
@@ -286,6 +295,21 @@ Parameter | Type | Description
 -|-|-
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
+
+### `Surface(width, height, precision)`
+Constructs a surface of a specific size with a certain color channel precision. Precision determines the number of bits that are used to describe one color channel. By default, each channel takes 8 bits, so a single pixel will take up 32 bits (RGBA). Increasing this value may be useful when a surface is used to store data instead of an image. The following values are allowed for this parameter:
+
+Value | Bits per channel
+-|-
+0|8 (default)
+1|16
+2|32
+
+Parameter | Type | Description
+-|-|-
+width|`Number`|Width in pixels
+height|`Number`|Height in pixels
+precision|`Number`|The color channel precision
 
 ### `Surface(image)`
 Constructs a surface from an existing image. The function `ready()` will return `false` until the image is loaded.

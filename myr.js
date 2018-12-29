@@ -132,12 +132,32 @@ const Myr = function(canvasElement) {
         _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
         _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
 
-        if(arguments.length === 2) {
+        if(typeof arguments[0] === "number") {
             _width = arguments[0];
             _height = arguments[1];
             _ready = true;
+            
+            switch (arguments[2]) {
+                default:
+                case 0:
+                    _gl.texImage2D(
+                        _gl.TEXTURE_2D, 0, _gl.RGBA, _width, _height, 0, _gl.RGBA, _gl.UNSIGNED_BYTE,
+                        new Uint8Array(_width * _height << 2));
 
-            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _width, _height, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, new Uint8Array(_width * _height << 2));
+                    break;
+                case 1:
+                    _gl.texImage2D(
+                        _gl.TEXTURE_2D, 0, _gl.RGBA16F, _width, _height, 0, _gl.RGBA, _gl.FLOAT,
+                        new Float32Array(_width * _height << 2));
+
+                    break;
+                case 2:
+                    _gl.texImage2D(
+                        _gl.TEXTURE_2D, 0, _gl.RGBA32F, _width, _height, 0, _gl.RGBA, _gl.FLOAT,
+                        new Float32Array(_width * _height << 2));
+
+                    break;
+            }
         }
         else {
             const image = new Image();
@@ -992,6 +1012,16 @@ const Myr = function(canvasElement) {
         _gl.bufferSubData(_gl.UNIFORM_BUFFER, 0, _uboContents);
     };
 
+    this.blendEnable = () => {
+        flush();
+        _gl.enable(_gl.BLEND);
+    };
+    
+    this.blendDisable = () => {
+        flush();
+        _gl.disable(_gl.BLEND);
+    };
+
     const touchTransform = () => {
         _transformDirty = true;
 
@@ -1160,6 +1190,7 @@ const Myr = function(canvasElement) {
     _gl.enable(_gl.BLEND);
     _gl.disable(_gl.DEPTH_TEST);
     _gl.blendFuncSeparate(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA, _gl.ONE, _gl.ONE_MINUS_SRC_ALPHA);
+    _gl.getExtension("EXT_color_buffer_float");
 
     _gl.bindBuffer(_gl.ARRAY_BUFFER, _instances);
     _gl.bufferData(_gl.ARRAY_BUFFER, _instanceBufferCapacity * 4, _gl.DYNAMIC_DRAW);
