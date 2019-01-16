@@ -1,5 +1,5 @@
 # myr.js
-**myr.js** is a WebGL 2 based 2D graphics renderer. The engine is optimized for rendering large amounts of sprites, and also supports render targets, primitives and advanced transformations. There are no external dependencies. **myr.js** has been licensed under the [MIT license](LICENSE). All source code is contained in the [myr.js](myr.js) file.
+**myr.js** is a WebGL 2 based 2D graphics renderer. The engine is optimized for rendering large amounts of sprites, and it also supports render targets, primitives, shaders and advanced transformations. There are no external dependencies. **myr.js** has been licensed under the [MIT license](LICENSE). All source code is contained in the [myr.js](myr.js) file.
 
 # Installation
 The [myr.js](myr.js) file can be included in any ES6 compatible javascript project. No external dependencies are required.
