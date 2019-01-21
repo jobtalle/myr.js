@@ -537,7 +537,7 @@ const Myr = function(canvasElement) {
 
     this.primitives.drawLine = (color, x1, y1, x2, y2) => {
         pushVertexColor(RENDER_MODE_LINES, color, x1, y1);
-        pushVertexColor(RENDER_MODE_LINES, color, x2 + 1, y2 + 1);
+        pushVertexColor(RENDER_MODE_LINES, color, x2, y2);
     };
 
     this.primitives.drawLineGradient = (color1, x1, y1, color2, x2, y2) => {
