@@ -221,6 +221,7 @@ const Myr = function(canvasElement) {
         this.animate = timeStep => {
             if (this.isFinished())
                 return;
+            
             _frameCounter += timeStep;
 
             while (_frameCounter > this._getFrame()[9]) {
