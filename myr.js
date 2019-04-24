@@ -1415,6 +1415,14 @@ Myr.Vector.prototype.angle = function() {
     return Math.atan2(this.y, this.x);
 };
 
+Myr.Vector.prototype.reflect = function(vector) {
+    const ddot = this.dot(vector) * 2;
+
+    return new Myr.Vector(
+        this.x - ddot * vector.x,
+        this.y - ddot * vector.y);
+};
+
 Myr.Vector.prototype.equals = function(vector) {
     return this.x === vector.x && this.y === vector.y;
 };
