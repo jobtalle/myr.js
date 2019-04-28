@@ -988,7 +988,7 @@ Function | Description
 [`normalize()`](#normalize)|Normalize
 [`rotate(angle)`](#rotateangle-2)|Rotate
 [`angle()`](#angle)|Returns the angle
-[`reflect(vector)`](#reflectvector)|Returns the reflected vector
+[`reflect(vector)`](#reflectvector)|Reflect
 [`equals(vector)`](#equalsvector)|Checks for equality
 
 ### `Vector(x, y)`
@@ -1057,7 +1057,7 @@ angle|`Number`|An angle in radians.
 Returns the angle this vector is pointing towards.
 
 ### `reflect(vector)`
-Returns the reflected vector against the given normal vector.
+Reflects the vector against the given normal vector.
 
 ### `equals(vector)`
 Returns a boolean indicating whether the vector is equal to another vector.

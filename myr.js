@@ -1418,9 +1418,8 @@ Myr.Vector.prototype.angle = function() {
 Myr.Vector.prototype.reflect = function(vector) {
     const ddot = this.dot(vector) * 2;
 
-    return new Myr.Vector(
-        this.x - ddot * vector.x,
-        this.y - ddot * vector.y);
+    this.x -= ddot * vector.x;
+    this.y -= ddot * vector.y;
 };
 
 Myr.Vector.prototype.equals = function(vector) {
