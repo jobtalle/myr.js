@@ -92,6 +92,7 @@ Function | Description
 [`blendEnable()`](#blendenable)|Enable blending
 [`blendDisable()`](#blenddisable)|Disable blending
 [`transform(transform)`](#transformtransform)|Transform
+[`transformSet(transform)`](#transformsettransform)|Set transform
 [`translate(x, y)`](#translatex-y)|Translate
 [`rotate(angle)`](#rotateangle)|Rotate
 [`shear(x, y)`](#shearx-y)|Shear
@@ -229,6 +230,13 @@ Transform the current [transformation](#transform) by multiplying it with anothe
 Parameter | Type | Description
 -|-|-
 transform|[`Transform`](#transform)|A transform to multiply the current transformation with
+
+### `transformSet(transform)`
+Set the current [transformation](#transform) by overwriting it.
+
+Parameter | Type | Description
+-|-|-
+transform|[`Transform`](#transform)|A transform to set the current transformation to
 
 ### `translate(x, y)`
 Translate the current transformation.
