@@ -232,7 +232,7 @@ Parameter | Type | Description
 transform|[`Transform`](#transform)|A transform to multiply the current transformation with
 
 ### `transformSet(transform)`
-Set the current [transformation](#transform) by overwriting it.
+Set the current [transformation](#transform) by overwriting it. Do not call this function when no custom [transformation](#transform) is on the stack; the root transform may never be modified.
 
 Parameter | Type | Description
 -|-|-

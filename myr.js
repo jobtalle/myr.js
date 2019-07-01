@@ -1038,8 +1038,11 @@ const Myr = function(canvasElement) {
     };
 
     this.getTransform = () => _transformStack[_transformAt];
+    this.transformSet = transform => {
+        touchTransform().set(_transformStack[0]);
+        touchTransform().multiply(transform);
+    }
     this.transform = transform => touchTransform().multiply(transform);
-    this.transformSet = transform => touchTransform().set(transform);
     this.translate = (x, y) => touchTransform().translate(x, y);
     this.rotate = angle => touchTransform().rotate(angle);
     this.shear = (x, y) => touchTransform().shear(x, y);
