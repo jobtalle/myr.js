@@ -123,7 +123,7 @@ const Myr = function(canvasElement) {
         let _ready = false;
         let _width = 0;
         let _height = 0;
-        let _clearColor = new Myr.Color(0, 0, 0, 0);
+        let _clearColor = new Myr.Color(1, 1, 1, 0);
 
         _gl.activeTexture(TEXTURE_EDITING);
         _gl.bindTexture(_gl.TEXTURE_2D, _texture);
@@ -1193,7 +1193,7 @@ const Myr = function(canvasElement) {
     let _instanceBufferAt = -1;
     let _instanceBuffer = new Float32Array(_instanceBufferCapacity);
     let _instanceCount = 0;
-    let _clearColor = new Myr.Color(0, 0, 0);
+    let _clearColor = new Myr.Color(1, 1, 1, 0);
     
     _uboContents[8] = _uboContents[9] = _uboContents[10] = _uboContents[11] = 1;
 
