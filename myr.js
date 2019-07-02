@@ -140,9 +140,16 @@ const Myr = function(canvasElement) {
             switch (arguments[2]) {
                 default:
                 case 0:
+                    const initial = new Uint8Array(_width * _height << 2);
+
+                    for (let i = 0; i < initial.length; i += 4) {
+                        initial[i] = initial[i + 1] = initial[i + 2] = 255;
+                        initial[i + 3] = 0;
+                    }
+
                     _gl.texImage2D(
                         _gl.TEXTURE_2D, 0, _gl.RGBA, _width, _height, 0, _gl.RGBA, _gl.UNSIGNED_BYTE,
-                        new Uint8Array(_width * _height << 2));
+                        initial);
 
                     break;
                 case 1:
