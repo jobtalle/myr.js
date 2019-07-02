@@ -1,9 +1,10 @@
-const Myr = function(canvasElement) {
+const Myr = function(canvasElement, antialias) {
     const _gl = canvasElement.getContext("webgl2", {
-        antialias: true,
-        depth: false
+        antialias: antialias ? antialias : false,
+        depth: false,
+        alpha: false
     });
-
+    
     const Renderable = {};
 
     Renderable.prototype = {

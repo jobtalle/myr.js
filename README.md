@@ -7,7 +7,7 @@ The [myr.js](myr.js) file can be included in any ES6 compatible javascript proje
 Alternatively, **myr.js** can be installed as an NPM package using `npm install myr.js`.
 
 # Initialization
-**myr.js** can be initialized by calling the `Myr` function, which requires a canvas element as an argument. All global functions and objects are members of the returned object. I call this object a **myr.js** context. The provided canvas must support *WebGL 2*.
+**myr.js** can be initialized by calling the `Myr` function, which requires a canvas element as an argument. All global functions and objects are members of the returned object. I call this object a **myr.js context**. The provided canvas must support *WebGL 2*.
 
 Initialization would typically look like this:
 ```javascript
@@ -17,6 +17,8 @@ let myr = new Myr(document.getElementById("some-canvas-id"));
 // Access myr.js functions and classes from here on
 myr.setClearColor(new Myr.Color(0.2, 0.5, 0.7));
 ```
+
+Alternatively, a second parameter can be given to the `Myr` function, which is a boolean indicating whether anti aliasing should be enabled on this context.
 
 # Objects
 Two types of **myr.js** objects exist. There are objects that are exposed through a **myr.js** context. These objects can only be used for that context. They can be initialized as follows:
