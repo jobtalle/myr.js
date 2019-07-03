@@ -280,7 +280,7 @@ Function | Description
 [`Surface(width, height)`](#surfacewidth-height)|Construct from size
 [`Surface(width, height, precision, linear, repeat)`](#surfacewidth-height-precision-linear-repeat)|Construct from size, precision, interpolation and repeat
 [`Surface(image)`](#surfaceimage)|Construct from image
-[`Surface(image, linear, repeat)`](#surfaceimage-linear,repeat)|Construct from image, interpolation and repeat
+[`Surface(image, linear, repeat)`](#surfaceimage-linear-repeat)|Construct from image, interpolation and repeat
 [`Surface(image, width, height)`](#surfaceimage-width-height)|Construct from image and size
 [`Surface(image, width, height, linear, repeat)`](#surfaceimage-width-height-linear-repeat)|Construct from image, size, interpolation and repeat
 [`bind()`](#bind-1)|Bind the surface
