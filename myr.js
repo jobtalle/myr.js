@@ -126,11 +126,10 @@ const Myr = function(canvasElement, antialias) {
         let _height = 0;
         let _clearColor = new Myr.Color(1, 1, 1, 0);
         let _linear = false;
+        let _repeat = false;
 
         _gl.activeTexture(TEXTURE_EDITING);
         _gl.bindTexture(_gl.TEXTURE_2D, _texture);
-        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
-        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
 
         if(typeof arguments[0] === "number") {
             _width = arguments[0];
@@ -168,6 +167,9 @@ const Myr = function(canvasElement, antialias) {
 
             if (arguments[3] === true)
                 _linear = true;
+
+            if (arguments[4] === true)
+                _repeat = true;
         }
         else {
             const image = new Image();
@@ -204,15 +206,23 @@ const Myr = function(canvasElement, antialias) {
                 image.src = source;
             }
 
-            if (arguments[2] !== undefined) {
+            if (arguments[2] !== undefined && (typeof arguments[2]) === "number") {
                 _width = arguments[1];
                 _height = arguments[2];
 
                 if (arguments[3] === true)
                     _linear = true;
+
+                if (arguments[4] === true)
+                    _repeat = true;
             }
-            else if (arguments[1] === true)
-                _linear = true;
+            else {
+                if (arguments[1] === true)
+                    _linear = true;
+
+                if (arguments[2] === true)
+                    _repeat = true;
+            }
 
             _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, 1, 1, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, _emptyPixel);
         }
@@ -224,6 +234,15 @@ const Myr = function(canvasElement, antialias) {
         else {
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.NEAREST);
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.NEAREST);
+        }
+
+        if (_repeat) {
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.REPEAT);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.REPEAT);
+        }
+        else {
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
         }
 
         {

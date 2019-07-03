@@ -278,12 +278,11 @@ A surface in **myr.js** can be a render target. After binding it using its membe
 Function | Description
 -|-
 [`Surface(width, height)`](#surfacewidth-height)|Construct from size
-[`Surface(width, height, precision)`](#surfacewidth-height-precision)|Construct from size and precision
-[`Surface(width, height, precision, linear`)](#surfacewidth-height-precision-linear)|Construct from size, precision and interpolation
+[`Surface(width, height, precision, linear, repeat)`](#surfacewidth-height-precision-linear-repeat)|Construct from size, precision, interpolation and repeat
 [`Surface(image)`](#surfaceimage)|Construct from image
-[`Surface(image, linear)`](#surfaceimage-linear)|Construct from image and interpolation
+[`Surface(image, linear, repeat)`](#surfaceimage-linear,repeat)|Construct from image, interpolation and repeat
 [`Surface(image, width, height)`](#surfaceimage-width-height)|Construct from image and size
-[`Surface(image, width, height, linear)`](#surfaceimage-width-height-linear)|Construct from image, size and interpolation
+[`Surface(image, width, height, linear, repeat)`](#surfaceimage-width-height-linear-repeat)|Construct from image, size, interpolation and repeat
 [`bind()`](#bind-1)|Bind the surface
 [`setClearColor(color)`](#setclearcolorcolor-1)|Set clear color
 [`clear()`](#clear-1)|Clear the surface
@@ -309,8 +308,8 @@ Parameter | Type | Description
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
 
-### `Surface(width, height, precision)`
-Constructs a surface of a specific size with a certain color channel precision. Precision determines the number of bits that are used to describe one color channel. By default, each channel takes 8 bits, so a single pixel will take up 32 bits (RGBA). Increasing this value may be useful when a surface is used to store data instead of an image. The following values are allowed for this parameter:
+### `Surface(width, height, precision, linear, repeat)`
+Constructs a surface of a specific size with a certain color channel precision. Precision determines the number of bits that are used to describe one color channel. By default, each channel takes 8 bits, so a single pixel will take up 32 bits (RGBA). Increasing this value may be useful when a surface is used to store data instead of an image. The linear interpolation option can be turned on to enable linear interpolation when reading this surface. Interpolation is nearest neighbor by default. The repeat option can be turned on to enable texture repeating when sampling this surface.
 
 Value | Bits per channel
 -|-
@@ -323,16 +322,8 @@ Parameter | Type | Description
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
 precision|`Number`|The color channel precision
-
-### `Surface(width, height, precision, linear)`
-Constructs a surface of a specific size with a certain color channel precision and optional linear interpolation. It takes the same precision parameter as the [Surface(width, height, precision)](#surfacewidth-height-precision) constructor. The linear interpolation option can be turned on to enable linear interpolation when reading this surface. Interpolation is nearest neighbor by default.
-
-Parameter | Type | Description
--|-|-
-width|`Number`|Width in pixels
-height|`Number`|Height in pixels
-precision|`Number`|The color channel precision
-linear|`Boolean`|True if the surface is interpolated linearly
+linear|`Boolean`|True if the surface should be interpolated linearly
+repeat|`Boolean`|True if the surface should repeat when sampling
 
 ### `Surface(image)`
 Constructs a surface from an existing image. The function `ready()` will return `false` until the image is loaded.
@@ -341,13 +332,14 @@ Parameter | Type | Description
 -|-|-
 image|`String` or `Image`|A URL or Image object referring to a valid image file
 
-### `Surface(image, linear)`
+### `Surface(image, linear, repeat)`
 Constructs a surface from an existing image. The function `ready()` will return `false` until the image is loaded.
 
 Parameter | Type | Description
 -|-|-
 image|`String` or `Image`|A URL or Image object referring to a valid image file
-linear|`Boolean`|True if the surface is interpolated linearly
+linear|`Boolean`|True if the surface should be interpolated linearly
+repeat|`Boolean`|True if the surface should repeat when sampling
 
 ### `Surface(image, width, height)`
 Construct a surface from an existing image. The width and height will be set from the beginning instead of after the image has been loaded.
@@ -358,7 +350,7 @@ image|`String`|A URL or Image object referring to a valid image file
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
 
-### `Surface(image, width, height, linear)`
+### `Surface(image, width, height, linear, repeat)`
 Construct a surface from an existing image. The width and height will be set from the beginning instead of after the image has been loaded.
 
 Parameter | Type | Description
@@ -366,7 +358,8 @@ Parameter | Type | Description
 image|`String`|A URL or Image object referring to a valid image file
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
-linear|`Boolean`|True if the surface is interpolated linearly
+linear|`Boolean`|True if the surface should be interpolated linearly
+repeat|`Boolean`|True if the surface should repeat when sampling
 
 ### `bind()`
 Binds the surface, making it the current render target until another one is bound. After binding, an empty [transform](#transform) is pushed onto the transformation stack.
