@@ -279,8 +279,11 @@ Function | Description
 -|-
 [`Surface(width, height)`](#surfacewidth-height)|Construct from size
 [`Surface(width, height, precision)`](#surfacewidth-height-precision)|Construct from size and precision
+[`Surface(width, height, precision, linear`)](#surfacewidth-height-precision-linear)|Construct from size, precision and interpolation
 [`Surface(image)`](#surfaceimage)|Construct from image
+[`Surface(image, linear)`](#surfaceimage-linear)|Construct from image and interpolation
 [`Surface(image, width, height)`](#surfaceimage-width-height)|Construct from image and size
+[`Surface(image, width, height, linear)`](#surfaceimage-width-height-linear)|Construct from image, size and interpolation
 [`bind()`](#bind-1)|Bind the surface
 [`setClearColor(color)`](#setclearcolorcolor-1)|Set clear color
 [`clear()`](#clear-1)|Clear the surface
@@ -321,12 +324,30 @@ width|`Number`|Width in pixels
 height|`Number`|Height in pixels
 precision|`Number`|The color channel precision
 
+### `Surface(width, height, precision, linear)`
+Constructs a surface of a specific size with a certain color channel precision and optional linear interpolation. It takes the same precision parameter as the [Surface(width, height, precision)](#surfacewidth-height-precision) constructor. The linear interpolation option can be turned on to enable linear interpolation when reading this surface. Interpolation is nearest neighbor by default.
+
+Parameter | Type | Description
+-|-|-
+width|`Number`|Width in pixels
+height|`Number`|Height in pixels
+precision|`Number`|The color channel precision
+linear|`Boolean`|True if the surface is interpolated linearly
+
 ### `Surface(image)`
 Constructs a surface from an existing image. The function `ready()` will return `false` until the image is loaded.
 
 Parameter | Type | Description
 -|-|-
 image|`String` or `Image`|A URL or Image object referring to a valid image file
+
+### `Surface(image, linear)`
+Constructs a surface from an existing image. The function `ready()` will return `false` until the image is loaded.
+
+Parameter | Type | Description
+-|-|-
+image|`String` or `Image`|A URL or Image object referring to a valid image file
+linear|`Boolean`|True if the surface is interpolated linearly
 
 ### `Surface(image, width, height)`
 Construct a surface from an existing image. The width and height will be set from the beginning instead of after the image has been loaded.
@@ -336,6 +357,16 @@ Parameter | Type | Description
 image|`String`|A URL or Image object referring to a valid image file
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
+
+### `Surface(image, width, height, linear)`
+Construct a surface from an existing image. The width and height will be set from the beginning instead of after the image has been loaded.
+
+Parameter | Type | Description
+-|-|-
+image|`String`|A URL or Image object referring to a valid image file
+width|`Number`|Width in pixels
+height|`Number`|Height in pixels
+linear|`Boolean`|True if the surface is interpolated linearly
 
 ### `bind()`
 Binds the surface, making it the current render target until another one is bound. After binding, an empty [transform](#transform) is pushed onto the transformation stack.

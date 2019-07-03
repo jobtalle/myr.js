@@ -4,7 +4,7 @@ const Myr = function(canvasElement, antialias) {
         depth: false,
         alpha: false
     });
-    
+
     const Renderable = {};
 
     Renderable.prototype = {
@@ -125,11 +125,10 @@ const Myr = function(canvasElement, antialias) {
         let _width = 0;
         let _height = 0;
         let _clearColor = new Myr.Color(1, 1, 1, 0);
+        let _linear = false;
 
         _gl.activeTexture(TEXTURE_EDITING);
         _gl.bindTexture(_gl.TEXTURE_2D, _texture);
-        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.NEAREST);
-        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.NEAREST);
         _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
         _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
 
@@ -137,7 +136,7 @@ const Myr = function(canvasElement, antialias) {
             _width = arguments[0];
             _height = arguments[1];
             _ready = true;
-            
+
             switch (arguments[2]) {
                 default:
                 case 0:
@@ -166,6 +165,9 @@ const Myr = function(canvasElement, antialias) {
 
                     break;
             }
+
+            if (arguments[3] === true)
+                _linear = true;
         }
         else {
             const image = new Image();
@@ -205,9 +207,23 @@ const Myr = function(canvasElement, antialias) {
             if (arguments[2] !== undefined) {
                 _width = arguments[1];
                 _height = arguments[2];
+
+                if (arguments[3] === true)
+                    _linear = true;
             }
+            else if (arguments[1] === true)
+                _linear = true;
 
             _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, 1, 1, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, _emptyPixel);
+        }
+
+        if (_linear) {
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+        }
+        else {
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.NEAREST);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.NEAREST);
         }
 
         {
@@ -229,7 +245,7 @@ const Myr = function(canvasElement, antialias) {
         this.animate = timeStep => {
             if (this.isFinished())
                 return;
-            
+
             _frameCounter += timeStep;
 
             while (_frameCounter > this._getFrame()[9]) {
@@ -524,7 +540,7 @@ const Myr = function(canvasElement, antialias) {
 
     const pushVertexColor = (mode, color, x, y) => {
         prepareDraw(mode, 6);
-        
+
         _instanceBuffer[++_instanceBufferAt] = color.r;
         _instanceBuffer[++_instanceBufferAt] = color.g;
         _instanceBuffer[++_instanceBufferAt] = color.b;
@@ -762,7 +778,7 @@ const Myr = function(canvasElement, antialias) {
             _currentShader = this;
 
             core.bind();
-            
+
             for (const uniformCall of _uniformCalls)
                 uniformCall[0](uniformCall[1], uniformCall[2].value);
         };
@@ -771,7 +787,7 @@ const Myr = function(canvasElement, antialias) {
         this.free = () => core.free();
 
         const _uniformCalls = [];
-        
+
         for (const uniform of Object.keys(uniforms))
             _uniformCalls.push([
                 _gl["uniform" + uniforms[uniform].type].bind(_gl),
@@ -1033,7 +1049,7 @@ const Myr = function(canvasElement, antialias) {
         flush();
         _gl.enable(_gl.BLEND);
     };
-    
+
     this.blendDisable = () => {
         flush();
         _gl.disable(_gl.BLEND);
@@ -1205,7 +1221,7 @@ const Myr = function(canvasElement, antialias) {
     let _instanceBuffer = new Float32Array(_instanceBufferCapacity);
     let _instanceCount = 0;
     let _clearColor = new Myr.Color(1, 1, 1, 0);
-    
+
     _uboContents[8] = _uboContents[9] = _uboContents[10] = _uboContents[11] = 1;
 
     _gl.enable(_gl.BLEND);
