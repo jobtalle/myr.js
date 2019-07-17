@@ -334,7 +334,7 @@ Parameter | Type | Description
 -|-|-
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
-pixels|`Array`|A `Uint8Array` with pixels.
+pixels|`Array`|A `Uint8Array` with pixels
 
 ### `Surface(width, height, pixels, linear, repeat)`
 Constructs a surface of a specific size from an array of pixels. The pixel array has the size `width * height * 4`, where every color channel has an entry. The range of the pixel channel values is `[0, 255]`.
@@ -343,7 +343,7 @@ Parameter | Type | Description
 -|-|-
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
-pixels|`Array`|A `Uint8Array` with pixels.
+pixels|`Array`|A `Uint8Array` with pixels
 linear|`Boolean`|True if the surface should be interpolated linearly
 repeat|`Boolean`|True if the surface should repeat when sampling
 
