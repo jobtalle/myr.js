@@ -279,6 +279,8 @@ Function | Description
 -|-
 [`Surface(width, height)`](#surfacewidth-height)|Construct from size
 [`Surface(width, height, precision, linear, repeat)`](#surfacewidth-height-precision-linear-repeat)|Construct from size, precision, interpolation and repeat
+[`Surface(width, height, pixels)`](#surfacewidth-height-pixels)|Construct from size and pixel data
+[`Surface(width, height, pixels, linear ,repeat)`](#surfacewidth-height-pixels-linear-repeat)|Constructs from size, pixel data, interpolation and repeat
 [`Surface(image)`](#surfaceimage)|Construct from image
 [`Surface(image, linear, repeat)`](#surfaceimage-linear-repeat)|Construct from image, interpolation and repeat
 [`Surface(image, width, height)`](#surfaceimage-width-height)|Construct from image and size
@@ -322,6 +324,26 @@ Parameter | Type | Description
 width|`Number`|Width in pixels
 height|`Number`|Height in pixels
 precision|`Number`|The color channel precision
+linear|`Boolean`|True if the surface should be interpolated linearly
+repeat|`Boolean`|True if the surface should repeat when sampling
+
+### `Surface(width, height, pixels)`
+Constructs a surface of a specific size from an array of pixels. The pixel array has the size `width * height * 4`, where every color channel has an entry. The range of the pixel channel values is `[0, 255]`.
+
+Parameter | Type | Description
+-|-|-
+width|`Number`|Width in pixels
+height|`Number`|Height in pixels
+pixels|`Array`|A `Uint8Array` with pixels.
+
+### `Surface(width, height, pixels, linear, repeat)`
+Constructs a surface of a specific size from an array of pixels. The pixel array has the size `width * height * 4`, where every color channel has an entry. The range of the pixel channel values is `[0, 255]`.
+
+Parameter | Type | Description
+-|-|-
+width|`Number`|Width in pixels
+height|`Number`|Height in pixels
+pixels|`Array`|A `Uint8Array` with pixels.
 linear|`Boolean`|True if the surface should be interpolated linearly
 repeat|`Boolean`|True if the surface should repeat when sampling
 

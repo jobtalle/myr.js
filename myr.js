@@ -136,7 +136,11 @@ const Myr = function(canvasElement, antialias) {
             _height = arguments[1];
             _ready = true;
 
-            switch (arguments[2]) {
+            if(arguments[2] !== undefined && typeof arguments[2] !== "number")
+                _gl.texImage2D(
+                    _gl.TEXTURE_2D, 0, _gl.RGBA, _width, _height, 0, _gl.RGBA, _gl.UNSIGNED_BYTE,
+                    arguments[2]);
+            else switch (arguments[2]) {
                 default:
                 case 0:
                     const initial = new Uint8Array(_width * _height << 2);
