@@ -1311,7 +1311,7 @@ Myr.Color.YELLOW = new Myr.Color(1, 1, 0);
 Myr.Color.WHITE = new Myr.Color(1, 1, 1);
 
 Myr.Color.fromHex = hex => {
-    let integer = parseInt(hex, 16);
+    const integer = parseInt(hex, 16);
 
     if (hex.length === 6)
         return new Myr.Color(
@@ -1328,7 +1328,7 @@ Myr.Color.fromHex = hex => {
 
 Myr.Color.prototype.toHex = function() {
     const componentToHex = component => {
-        let hex = component.toString(16);
+        const hex = component.toString(16);
 
         return hex.length === 1?"0" + hex:hex;
     };
