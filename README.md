@@ -18,7 +18,7 @@ let myr = new Myr(document.getElementById("some-canvas-id"));
 myr.setClearColor(new Myr.Color(0.2, 0.5, 0.7));
 ```
 
-Alternatively, a second parameter can be given to the `Myr` function, which is a boolean indicating whether anti aliasing should be enabled on this context.
+Alternatively, a second parameter can be given to the `Myr` function, which is a boolean indicating whether anti aliasing should be enabled on this context. To enable or disable transparency on the target canvas, a boolean can be passed as the third parameter. Transparency is off by default.
 
 # Objects
 Two types of **myr.js** objects exist. There are objects that are exposed through a **myr.js** context. These objects can only be used for that context. They can be initialized as follows:
